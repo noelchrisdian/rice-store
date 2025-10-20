@@ -25,7 +25,13 @@ const updateProductSchema = z.object({
     message: 'Please provide one field for update'
 })
 
+const inventorySchema = z.object({
+    quantity: z.coerce.number({ required_error: 'Quantity is required', invalid_type_error: 'Quantity must be a valid number' }).positive('Quantity must be positive number'),
+    receivedAt: z.coerce.date({ required_error: 'Received date is required', invalid_type_error: 'Received date must be a valid date format' })
+}).strict();
+
 export {
     addProductSchema,
+    inventorySchema,
     updateProductSchema
 }
