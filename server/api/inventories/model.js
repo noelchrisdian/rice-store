@@ -3,7 +3,8 @@ import mongoose, { model, Schema } from "mongoose";
 const inventorySchema = new Schema({
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
+        ref: 'Product',
+        required: true
     },
     quantity: {
         type: Number,

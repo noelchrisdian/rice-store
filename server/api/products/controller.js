@@ -5,6 +5,7 @@ import {
     getProducts,
     updateProduct
 } from "../../services/products.js"
+import { StatusCodes } from "http-status-codes";
 import { success } from "../../utils/response.js";
 
 const index = async (req, res, next) => {
@@ -27,8 +28,8 @@ const find = async (req, res, next) => {
 
 const create = async (req, res, next) => {
     try {
-        const { product, inventory } = await createProduct(req);
-        success(res, { product, inventory }, `${product.name} has been created`);
+        const product = await createProduct(req);
+        success(res, product, `${product.name} has been created`, StatusCodes.CREATED);
     } catch (error) {
         next(error);
     }

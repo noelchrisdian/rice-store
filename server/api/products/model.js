@@ -28,7 +28,8 @@ const productSchema = new Schema({
     },
     inventories: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Inventory'
+        ref: 'Inventory',
+        required: true
     }]
 }, { timestamps: true })
 

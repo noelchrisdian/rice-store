@@ -3,6 +3,7 @@ import {
     getInventories,
     updateInventory
 } from "../../services/inventories.js";
+import { StatusCodes } from "http-status-codes";
 import { success } from "../../utils/response.js";
 
 const index = async (req, res, next) => {
@@ -17,7 +18,7 @@ const index = async (req, res, next) => {
 const create = async (req, res, next) => {
     try {
         const inventory = await createInventory(req);
-        success(res, inventory, 'New inventory has been created');
+        success(res, inventory, 'New inventory has been created', StatusCodes.CREATED);
     } catch (error) {
         next(error);
     }

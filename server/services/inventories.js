@@ -33,8 +33,7 @@ const createInventory = async (req) => {
             throw new NotFound(`Product doesn't exist`);
         }
 
-        const { quantity, receivedAt } = req.body;
-        const parse = await inventorySchema.safeParseAsync({ quantity, receivedAt });
+        const parse = await inventorySchema.safeParseAsync(req.body);
         if (!parse.success) {
             const errors = parse.error.issues.map((error) => error.message);
             throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors);
@@ -67,15 +66,12 @@ const createInventory = async (req) => {
 
 const updateInventory = async (req) => {
     const { inventoryID } = req.params;
-    const { quantity, receivedAt } = req.body;
-
     const inventory = await Inventories.findOne({ _id: inventoryID });
     if (!inventory) {
         throw new NotFound(`Inventory doesn't exist`);
     }
 
-    
-    const parse = await inventorySchema.safeParseAsync({ quantity, receivedAt });
+    const parse = await inventorySchema.safeParseAsync(req.body);
     if (!parse.success) {
         const errors = parse.error.issues.map((error) => error.message);
         throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors);
