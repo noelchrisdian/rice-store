@@ -4,6 +4,7 @@ import express, { json, urlencoded } from 'express';
 import { connectDB } from './utils/db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { router as authRouter } from './api/auth/router.js';
+import { router as cartRouter } from './api/carts/router.js';
 import { router as productRouter } from './api/products/router.js';
 import { authenticated, authorize } from './middlewares/auth.js';
 
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 
 app
     .use('/admin/products', authenticated, authorize('admin'), productRouter)
+    .use('/customer/cart', authenticated, authorize('customer'), cartRouter)
     .use('/', authRouter)
     .use(errorHandler)
 

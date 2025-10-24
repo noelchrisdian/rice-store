@@ -21,8 +21,14 @@ const userSchema = z.object({
     address: z.string()
 }).strict();
 
+const cartSchema = z.object({
+    product: z.string(),
+    quantity: z.coerce.number().int().nonnegative('Quantity must be a positive number')
+})
+
 export {
-    productSchema,
+    cartSchema,
     inventorySchema,
+    productSchema,
     userSchema
 }

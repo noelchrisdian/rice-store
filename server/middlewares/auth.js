@@ -38,7 +38,7 @@ const authorize = (role) => (req, res, next) => {
         return next();
     }
 
-    throw new Forbidden('Only administrators can access this resources');
+    throw new Forbidden(`Only ${role === 'admin' ? 'administrators' : 'customers'} can access this resources`);
 } 
 
 

@@ -13,7 +13,7 @@ const getInventories = async (req) => {
             path: 'product',
             select: 'name price'
         })
-        .sort({ receivedAt: -1 });
+        .sort({ receivedAt: 1 });
 
     if (!inventories) {
         throw new NotFound(`No inventories found for this product`);
