@@ -1,13 +1,12 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express, { json, urlencoded } from 'express';
+import { authenticated, authorize } from './middlewares/auth.js';
 import { connectDB } from './utils/db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { router as adminRouter } from './api/admin/router.js';
 import { router as authRouter } from './api/auth/router.js';
-import { router as cartRouter } from './api/carts/router.js';
-import { router as productRouter } from './api/products/router.js';
-import { router as orderRouter } from './api/orders/router.js';
-import { authenticated, authorize } from './middlewares/auth.js';
+import { router as customerRouter } from './api/customers/router.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,9 +24,8 @@ app.get('/', (req, res) => {
 })
 
 app
-    .use('/admin/products', authenticated, authorize('admin'), productRouter)
-    .use('/customer/cart', authenticated, authorize('customer'), cartRouter)
-    .use('/customer/orders', authenticated, authorize('customer'), orderRouter)
+    .use('/admin', authenticated, authorize('admin'), adminRouter)
+    .use('/customers', authenticated, authorize('customer'), customerRouter)
     .use('/', authRouter)
     .use(errorHandler)
 

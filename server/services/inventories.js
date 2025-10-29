@@ -8,18 +8,29 @@ import { StatusCodes } from "http-status-codes";
 
 const getInventories = async (req) => {
     const { productID } = req.params;
-    const inventories = await Inventories.find({ product: productID })
-        .populate({
-            path: 'product',
-            select: 'name price'
-        })
-        .sort({ receivedAt: 1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    if (!inventories) {
-        throw new NotFound(`No inventories found for this product`);
+    const [inventories, total] = await Promise.all([
+        Inventories.find({ product: productID })
+            .sort({ receivedAt: 1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('product', 'name price'),
+        Inventories.countDocuments({ product: productID })
+    ])
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+        inventories,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages
+        }
     }
-
-    return inventories;
 }
 
 const createInventory = async (req) => {

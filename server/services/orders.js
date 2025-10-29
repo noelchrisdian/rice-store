@@ -5,7 +5,29 @@ import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
 
 const getOrders = async (req) => {
-    return await Orders.find({ user: req.user.id }).populate('products.product');
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+        Orders.find({ user: req.user.id })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('products.product', 'name price'),
+        Orders.countDocuments({ user: req.user.id })
+    ])
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+        orders,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages
+        }
+    }
 }
 
 const createOrder = async (req) => {
