@@ -26,9 +26,15 @@ const cartSchema = z.object({
     quantity: z.coerce.number().int().nonnegative('Quantity must be a positive number')
 })
 
+const reviewSchema = z.object({
+    rating: z.coerce.number().int('Rating must be an integer').min(1).max(5),
+    comment: z.string()
+}).strict();
+
 export {
     cartSchema,
     inventorySchema,
     productSchema,
+    reviewSchema,
     userSchema
 }

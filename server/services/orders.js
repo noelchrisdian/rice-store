@@ -14,7 +14,8 @@ const getOrders = async (req) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate('products.product', 'name price'),
+            .populate('products.product', 'name price')
+            .populate('user', 'name phoneNumber email address'),
         Orders.countDocuments({ user: req.user.id })
     ])
 
@@ -28,6 +29,19 @@ const getOrders = async (req) => {
             totalPages
         }
     }
+}
+
+const getOrder = async (req) => {
+    const { id } = req.params;
+    const order = await Orders.findOne({ _id: id })
+        .populate('products.product', 'name price')
+        .populate('user', 'name phoneNumber email address')
+
+    if (!order) {
+        throw new NotFound(`Order doesn't exist`);
+    }
+
+    return order;
 }
 
 const createOrder = async (req) => {
@@ -104,5 +118,6 @@ const createOrder = async (req) => {
 
 export {
     createOrder,
+    getOrder,
     getOrders
 }

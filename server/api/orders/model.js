@@ -16,6 +16,10 @@ const orderSchema = new Schema({
             type: Number,
             required: true,
             min: 1
+        },
+        reviewed: {
+            type: Boolean,
+            default: false
         }
     }],
     totalPrice: {

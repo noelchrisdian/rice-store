@@ -1,4 +1,7 @@
+import { NotFound } from '../errors/notFound.js';
+import { productModel as Products } from '../api/products/model.js';
 import { orderModel as Orders } from '../api/orders/model.js';
+import { reviewModel as Reviews } from '../api/reviews/model.js';
 import { userModel as Users } from '../api/users/model.js';
 
 const getOrders = async (req) => {
@@ -11,13 +14,73 @@ const getOrders = async (req) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate('products.product', 'name price'),
+            .populate('products.product', 'name price')
+            .populate('user', 'name phoneNumber email address'),
         Orders.countDocuments()
     ])
 
     const totalPages = Math.ceil(total / limit);
     return {
         orders,
+        meta: {
+            total,
+            page,
+            limit,
+            totalPages
+        }
+    }
+}
+
+const getOrder = async (req) => {
+    const { id } = req.params;
+    const order = await Orders.findOne({ _id: id })
+        .populate('products.product', 'name price')
+        .populate('user', 'name phoneNumber email address')
+    
+    if (!order) {
+        throw new NotFound(`Order doesn't exist`);
+    }
+
+    return order;
+}
+
+const deleteReview = async (req) => {
+    const { reviewID } = req.params;
+    const review = await Reviews.findOneAndDelete({ _id: reviewID })
+        .populate('product', 'name')
+        .populate('user', 'name')
+
+    if (!review) {
+        throw new NotFound(`Review doesn't exist`);
+    }
+
+    return review;
+}
+
+const getReviews = async (req) => {
+    const { id } = req.params;
+    const product = await Products.findOne({ _id: id });
+    if (!product) {
+        throw new NotFound(`Product doesn't exist`);
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+        Reviews.find({ product: id })
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .populate('user', 'name')
+            .populate('product', 'name'),
+        Reviews.countDocuments({ product: id })
+    ])
+
+    const totalPages = Math.ceil(total / limit);
+    return {
+        reviews,
         meta: {
             total,
             page,
@@ -53,6 +116,9 @@ const getUsers = async (req) => {
 }
 
 export {
+    deleteReview,
+    getOrder,
     getOrders,
+    getReviews,
     getUsers
 }
