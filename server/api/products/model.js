@@ -30,7 +30,12 @@ const productSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Inventory',
         required: true
-    }]
+    }],
+    stock: {
+        type: Number,
+        default: 0,
+        required: true
+    }
 }, { timestamps: true })
 
 const productModel = model('Product', productSchema);

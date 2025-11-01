@@ -7,6 +7,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { router as adminRouter } from './api/admin/router.js';
 import { router as authRouter } from './api/auth/router.js';
 import { router as customerRouter } from './api/customers/router.js';
+import { router as globalRouter } from './api/global/router.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app
     .use('/admin', authenticated, authorize('admin'), adminRouter)
     .use('/customers', authenticated, authorize('customer'), customerRouter)
     .use('/', authRouter)
+    .use('/', globalRouter)
     .use(errorHandler)
 
 app.listen(port, () => {

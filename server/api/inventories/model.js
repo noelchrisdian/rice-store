@@ -22,8 +22,26 @@ const inventorySchema = new Schema({
     expiredAt: {
         type: Date,
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['available', 'depleted', 'expired'],
+        default: 'available',
+        required: true
     }
 }, { timestamps: true })
+
+inventorySchema.pre('save', function (next) {
+    if (this.remaining === 0) {
+        this.status = 'depleted';
+    } else if (Date.now() > this.expiredAt) {
+        this.status = 'expired';
+    } else {
+        this.status = 'available';
+    }
+
+    next();
+})
 
 const inventoryModel = model('Inventory', inventorySchema);
 
