@@ -17,9 +17,13 @@ const userSchema = z.object({
     phoneNumber: z.e164(),
     email: z.string().email(),
     password: z.string().min(5, 'Password must be at least 5 characters long'),
-    role: z.enum(['admin', 'customer']),
-    address: z.string()
+    confirmPassword: z.string().min(5, 'Password must be at least 5 characters long'),
+    address: z.string().min(5, 'Address must be at least 5 characters long')
 }).strict();
+
+const phoneNumberSchema = userSchema.omit({ name: true, email: true, password: true, confirmPassword: true, address: true });
+
+const passwordSchema = userSchema.omit({ name: true, phoneNumber: true, email: true, address: true });
 
 const cartSchema = z.object({
     product: z.string(),
@@ -34,6 +38,8 @@ const reviewSchema = z.object({
 export {
     cartSchema,
     inventorySchema,
+    passwordSchema,
+    phoneNumberSchema,
     productSchema,
     reviewSchema,
     userSchema
