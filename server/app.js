@@ -22,13 +22,14 @@ app
     .use(cors())
 
 app.get('/', (req, res) => {
-    res.send('Welcome to AD Rice Store API')
+    res.send('Welcome to AD Rice Store API');
 })
+
+app.post('/midtrans-notification', notification);
 
 app
     .use('/admin', authenticated, authorize('admin'), adminRouter)
     .use('/customers', authenticated, authorize('customer'), customerRouter)
-    .post('/midtrans-notification', notification)
     .use('/', authRouter)
     .use('/', globalRouter)
     .use(errorHandler)
