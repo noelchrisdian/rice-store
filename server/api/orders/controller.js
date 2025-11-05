@@ -1,7 +1,8 @@
 import {
     createOrder,
     getOrder,
-    getOrders
+    getOrders,
+    midtransWebhook
 } from "../../services/orders.js"
 import { StatusCodes } from "http-status-codes";
 import { success } from "../../utils/response.js";
@@ -33,8 +34,18 @@ const create = async (req, res, next) => {
     }
 }
 
+const notification = async (req, res, next) => {
+    try {
+        const order = await midtransWebhook(req);
+        success(res, order, 'Payment successful');
+    } catch (error) {
+        next(error);
+    }
+}
+
 export {
     create,
     find,
-    index
+    index,
+    notification
 }

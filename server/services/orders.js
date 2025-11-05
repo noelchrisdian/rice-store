@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import mongoose from "mongoose";
 import { BadRequest } from "../errors/badRequest.js";
 import { cartModel as Carts } from "../api/carts/model.js";
+import { inventoryModel as Inventories } from '../api/inventories/model.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
 
@@ -116,8 +118,82 @@ const createOrder = async (req) => {
     }
 }
 
+const midtransWebhook = async (req) => {
+    const {
+        order_id,
+        transaction_status,
+        fraud_status,
+        signature_key,
+        status_code,
+        gross_amount
+    } = req.body;
+
+    const signature = crypto.createHash('sha512')
+        .update(`${order_id}${status_code}${gross_amount}${process.env.MIDTRANS_SERVER_KEY}`)
+        .digest('hex')
+    if (signature_key !== signature) {
+        throw new BadRequest('Invalid Midtrans signature');
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const order = await Orders.findOne({ _id: new mongoose.Types.ObjectId(order_id) }).populate('products.product', 'name price').session(session);
+        if (!order) {
+            throw new NotFound(`Order doesn't exist`);
+        }
+
+        if (['cancel', 'deny', 'expire', 'failure', 'refund', 'partial_refund'].includes(transaction_status)) {
+            order.status = 'failed';
+            order.payment.status = transaction_status;
+        }
+
+        if (transaction_status === 'settlement' || (transaction_status === 'capture' && fraud_status === 'accept')) {
+            for (const product of order.products) {
+                const inventories = await Inventories.find({ product: product._id })
+                    .sort({ receivedAt: 1 })
+                    .session(session)
+                if (!inventories.length) {
+                    throw new NotFound(`There are no inventories for this product`);
+                }
+
+                for (const inventory of inventories) {
+                    if (product.quantity <= 0) break;
+                    if (inventory.remaining >= product.quantity) {
+                        inventory.remaining -= product.quantity;
+                        await inventory.save({ session });
+                        product.quantity = 0;
+                    } else {
+                        product.quantity -= inventory.remaining;
+                        inventory.remaining = 0;
+                        await inventory.save({ session });
+                    }
+                }
+
+                if (product.quantity > 0) {
+                    throw new BadRequest(`Insufficient stock for product ${product.name}`);
+                }
+            }
+
+            order.status = 'success';
+            order.payment.status = transaction_status;
+            order.payment.paidAt = new Date();
+            await order.save({ session });
+        }
+        await session.commitTransaction();
+
+        return order;
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+    }
+}
+
 export {
     createOrder,
     getOrder,
-    getOrders
+    getOrders,
+    midtransWebhook
 }

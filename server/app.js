@@ -4,6 +4,7 @@ import express, { json, urlencoded } from 'express';
 import { authenticated, authorize } from './middlewares/auth.js';
 import { connectDB } from './utils/db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { notification } from './api/orders/controller.js';
 import { router as adminRouter } from './api/admin/router.js';
 import { router as authRouter } from './api/auth/router.js';
 import { router as customerRouter } from './api/customers/router.js';
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 app
     .use('/admin', authenticated, authorize('admin'), adminRouter)
     .use('/customers', authenticated, authorize('customer'), customerRouter)
+    .post('/midtrans-notification', notification)
     .use('/', authRouter)
     .use('/', globalRouter)
     .use(errorHandler)
