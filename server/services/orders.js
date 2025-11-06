@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import midtransClient from 'midtrans-client';
 import mongoose from "mongoose";
 import { BadRequest } from "../errors/badRequest.js";
 import { cartModel as Carts } from "../api/carts/model.js";
@@ -119,38 +119,31 @@ const createOrder = async (req) => {
 }
 
 const midtransWebhook = async (req) => {
-    const {
-        order_id,
-        transaction_status,
-        fraud_status,
-        signature_key,
-        status_code,
-        gross_amount
-    } = req.body;
-
-    const signature = crypto.createHash('sha512')
-        .update(`${order_id}${status_code}${gross_amount}${process.env.MIDTRANS_SERVER_KEY}`)
-        .digest('hex')
-    if (signature_key !== signature) {
-        throw new BadRequest('Invalid Midtrans signature');
-    }
-
     const session = await mongoose.startSession();
     session.startTransaction();
+
     try {
-        const order = await Orders.findOne({ _id: new mongoose.Types.ObjectId(order_id) }).populate('products.product', 'name price').session(session);
+        const client = new midtransClient.Snap({
+            isProduction: false,
+            serverKey: process.env.MIDTRANS_SERVER_KEY,
+            clientKey: process.env.MIDTRANS_CLIENT_KEY
+        })
+
+        const statusResponse = await client.transaction.notification(req.body);
+        const orderID = statusResponse.order_id;
+        const transactionStatus = statusResponse.transaction_status;
+        const fraudStatus = statusResponse.fraud_status;
+
+        const order = await Orders.findOne({ _id: new mongoose.Types.ObjectId(orderID) })
+            .populate('products.product')
+            .session(session)
         if (!order) {
             throw new NotFound(`Order doesn't exist`);
         }
 
-        if (['cancel', 'deny', 'expire', 'failure', 'refund', 'partial_refund'].includes(transaction_status)) {
-            order.status = 'failed';
-            order.payment.status = transaction_status;
-        }
-
-        if (transaction_status === 'settlement' || (transaction_status === 'capture' && fraud_status === 'accept')) {
+        if (transactionStatus === 'settlement' || (transactionStatus === 'capture' && fraudStatus === 'accept')) {
             for (const product of order.products) {
-                const inventories = await Inventories.find({ product: product._id })
+                const inventories = await Inventories.find({ product: product.product._id })
                     .sort({ receivedAt: 1 })
                     .session(session)
                 if (!inventories.length) {
@@ -169,17 +162,19 @@ const midtransWebhook = async (req) => {
                         await inventory.save({ session });
                     }
                 }
-
                 if (product.quantity > 0) {
-                    throw new BadRequest(`Insufficient stock for product ${product.name}`);
+                    throw new BadRequest(`Insufficient stock`);
                 }
             }
 
             order.status = 'success';
-            order.payment.status = transaction_status;
+            order.payment.status = transactionStatus;
             order.payment.paidAt = new Date();
-            await order.save({ session });
+        } else if (['cancel', 'deny', 'expire', 'failure', 'refund', 'partial_refund'].includes(transactionStatus)) {
+            order.status = 'failed';
+            order.payment.status = transactionStatus;
         }
+        await order.save({ session });
         await session.commitTransaction();
 
         return order;
