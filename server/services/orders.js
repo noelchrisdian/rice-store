@@ -133,6 +133,7 @@ const midtransWebhook = async (req) => {
         const orderID = statusResponse.order_id;
         const transactionStatus = statusResponse.transaction_status;
         const fraudStatus = statusResponse.fraud_status;
+        console.log(statusResponse);
 
         const order = await Orders.findOne({ _id: new mongoose.Types.ObjectId(orderID) })
             .populate('products.product')
@@ -149,8 +150,10 @@ const midtransWebhook = async (req) => {
                 if (!inventories.length) {
                     throw new NotFound(`There are no inventories for this product`);
                 }
+                console.log(product);
 
                 for (const inventory of inventories) {
+                    console.log(inventory);
                     if (product.quantity <= 0) break;
                     if (inventory.remaining >= product.quantity) {
                         inventory.remaining -= product.quantity;
@@ -170,16 +173,18 @@ const midtransWebhook = async (req) => {
             order.status = 'success';
             order.payment.status = transactionStatus;
             order.payment.paidAt = new Date();
-        } else if (['cancel', 'deny', 'expire', 'failure', 'refund', 'partial_refund'].includes(transactionStatus)) {
+        } else if (['cancel', 'deny', 'expire'].includes(transactionStatus)) {
             order.status = 'failed';
             order.payment.status = transactionStatus;
         }
         await order.save({ session });
         await session.commitTransaction();
+        console.log(order);
 
         return order;
     } catch (error) {
         await session.abortTransaction();
+        console.log(error);
         throw error;
     } finally {
         session.endSession();
