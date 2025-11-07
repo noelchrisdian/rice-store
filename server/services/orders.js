@@ -133,7 +133,6 @@ const midtransWebhook = async (req) => {
         const orderID = statusResponse.order_id;
         const transactionStatus = statusResponse.transaction_status;
         const fraudStatus = statusResponse.fraud_status;
-        console.log(statusResponse);
 
         const order = await Orders.findOne({ _id: new mongoose.Types.ObjectId(orderID) })
             .populate('products.product')
@@ -144,17 +143,15 @@ const midtransWebhook = async (req) => {
 
         if (transactionStatus === 'settlement' || (transactionStatus === 'capture' && fraudStatus === 'accept')) {
             for (const product of order.products) {
-                let productQuantity = product.quantity;
+                let productQuantity = product.quantity * product.product.weightPerUnit;
                 const inventories = await Inventories.find({ product: product.product._id })
                     .sort({ receivedAt: 1 })
                     .session(session)
                 if (!inventories.length) {
                     throw new NotFound(`There are no inventories for this product`);
                 }
-                console.log(product);
 
                 for (const inventory of inventories) {
-                    console.log(inventory);
                     if (productQuantity <= 0) break;
                     if (inventory.remaining >= productQuantity) {
                         inventory.remaining -= productQuantity;
@@ -180,12 +177,10 @@ const midtransWebhook = async (req) => {
         }
         await order.save({ session });
         await session.commitTransaction();
-        console.log(order);
 
         return order;
     } catch (error) {
         await session.abortTransaction();
-        console.log(error);
         throw error;
     } finally {
         session.endSession();

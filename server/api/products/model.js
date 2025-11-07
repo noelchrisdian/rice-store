@@ -24,7 +24,12 @@ const productSchema = new Schema({
     },
     unit: {
         type: String,
-        default: 'kg'
+        default: 'package'
+    },
+    weightPerUnit: {
+        type: Number,
+        required: true,
+        default: 5
     },
     inventories: [{
         type: mongoose.Schema.Types.ObjectId,

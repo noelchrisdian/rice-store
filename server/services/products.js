@@ -64,7 +64,8 @@ const createProduct = async (req) => {
             imagePublicID
         },
         description: parse.data?.description,
-        unit: parse.data?.unit,
+        unit: 'package',
+        weightPerUnit: parse.data?.weightPerUnit, 
         inventories: []
     })
 }
