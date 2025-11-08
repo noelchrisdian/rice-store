@@ -55,8 +55,8 @@ const signin = async (req) => {
 }
 
 const signup = async (req) => {
-    const imageURL = req.file?.path;
-    const imagePublicID = req.file?.filename;
+    const imageURL = req.file?.path || process.env.DEFAULT_AVATAR_URL;
+    const imagePublicID = req.file?.filename || process.env.DEFAULT_AVATAR_PUBLIC_ID;
 
     const parse = await userSchema.safeParseAsync(req.body);
     if (!parse.success) {
@@ -215,7 +215,7 @@ const updateUser = async (req) => {
     }
     
     if (imageURL && imagePublicID) {
-        if (user.avatar?.imagePublicID) {
+        if (user.avatar.imagePublicID && user.avatar.imagePublicID !== process.env.DEFAULT_AVATAR_PUBLIC_ID) {
             await cloudinary.uploader.destroy(user.avatar.imagePublicID)
         }
 
