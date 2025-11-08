@@ -27,8 +27,10 @@ const phoneNumberSchema = userSchema.omit({ name: true, email: true, password: t
 const passwordSchema = userSchema.omit({ name: true, phoneNumber: true, email: true, address: true });
 
 const cartSchema = z.object({
-    product: z.string(),
-    quantity: z.coerce.number().int().nonnegative('Quantity must be a positive number')
+    products: z.array(z.object({
+        product: z.string(),
+        quantity: z.coerce.number().int().nonnegative('Quantity must be a positive number')
+    })).min(1, 'At least one product is required')
 })
 
 const reviewSchema = z.object({

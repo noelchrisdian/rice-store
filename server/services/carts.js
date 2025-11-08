@@ -37,18 +37,17 @@ const addItem = async (req) => {
     if (!cart) {
         return await Carts.create({
             user: req.user.id,
-            products: [{
-                product: parse.data.product,
-                quantity: parse.data.quantity
-            }]
+            products: parse.data?.products
         })
     }
 
-    const exist = cart.products.find((item) => item.product.toString() === parse.data.product);
-    if (exist) {
-        exist.quantity += parse.data.quantity;
-    } else {
-        cart.products.push({ product: parse.data.product, quantity: parse.data.quantity });
+    for (const product of parse.data?.products) {
+        const exist = cart.products.find((item) => item.product.toString() === product.product);
+        if (exist) {
+            exist.quantity += product.quantity;
+        } else {
+            cart.products.push({ product: product.product, quantity: product.quantity });
+        }
     }
     await cart.save();
 
@@ -67,15 +66,17 @@ const updateCart = async (req) => {
         throw new NotFound('Cart not found');
     }
 
-    const product = cart.products.find((item) => item.product.toString() === parse.data.product);
-    if (!product) {
-        throw new NotFound('Product not found in cart');
-    }
-
-    if (parse.data.quantity === 0) {
-        cart.products = cart.products.filter((item) => item.product.toString() !== parse.data.product);
-    } else {
-        product.quantity = parse.data.quantity;
+    for (const product of parse.data.products) {
+        const exist = cart.products.find((item) => item.product.toString() === product.product);
+        if (!exist) {
+            throw new NotFound('Product not found in cart');
+        }
+    
+        if (product.quantity === 0) {
+            cart.products = cart.products.filter((item) => item.product.toString() !== product.product);
+        } else {
+            exist.quantity = product.quantity;
+        }
     }
     await cart.save();
 

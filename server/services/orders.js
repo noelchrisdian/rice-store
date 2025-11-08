@@ -143,7 +143,7 @@ const midtransWebhook = async (req) => {
 
         if (transactionStatus === 'settlement' || (transactionStatus === 'capture' && fraudStatus === 'accept')) {
             for (const product of order.products) {
-                let productQuantity = product.quantity * product.product.weightPerUnit;
+                let requiredKg = product.quantity * product.product.weightPerUnit;
                 const inventories = await Inventories.find({ product: product.product._id })
                     .sort({ receivedAt: 1 })
                     .session(session)
@@ -152,20 +152,25 @@ const midtransWebhook = async (req) => {
                 }
 
                 for (const inventory of inventories) {
-                    if (productQuantity <= 0) break;
-                    if (inventory.remaining >= productQuantity) {
-                        inventory.remaining -= productQuantity;
+                    if (requiredKg <= 0) break;
+                    if (inventory.remaining >= requiredKg) {
+                        inventory.remaining -= requiredKg;
                         await inventory.save({ session });
-                        productQuantity = 0;
+                        requiredKg = 0;
                     } else {
-                        productQuantity -= inventory.remaining;
+                        requiredKg -= inventory.remaining;
                         inventory.remaining = 0;
                         await inventory.save({ session });
                     }
                 }
-                if (productQuantity > 0) {
+                if (requiredKg > 0) {
                     throw new BadRequest(`Insufficient stock`);
                 }
+
+                const remaining = inventories.reduce((acc, inventory) => acc + inventory.remaining, 0)
+
+                product.product.stock = remaining || 0;
+                await product.product.save({ session });
             }
 
             order.status = 'success';
