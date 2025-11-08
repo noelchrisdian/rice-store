@@ -61,6 +61,18 @@ const createOrder = async (req) => {
             throw new BadRequest('Cart is empty');
         }
 
+        for (const product of cart.products) {
+            const inventories = await Inventories.find({ product: product.product._id })
+                .sort({ receivedAt: 1 })
+                .session(session)
+            const stockAvailable = inventories.reduce((acc, inventory) => acc + inventory.remaining, 0);
+            const requiredKg = product.quantity * product.product.weightPerUnit;
+
+            if (requiredKg > stockAvailable) {
+                throw new BadRequest(`Insufficient stock for ${product.product.name}`);
+            }
+        }
+
         const [order] = await Orders.create([{
             user: req.user.id,
             products: cart.products.map((item) => {
@@ -73,34 +85,30 @@ const createOrder = async (req) => {
             status: 'pending'
         }], { session })
 
-        const response = await fetch(process.env.MIDTRANS_URL, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                Authorization: `Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY}:`).toString('base64')}`
-            },
-            body: JSON.stringify({
-                transaction_details: {
-                    "order_id": String(order._id),
-                    "gross_amount": order.totalPrice
-                },
-                credit_card: {
-                    "secure": true
-                },
-                customer_details: {
-                    email: req.user.email
-                },
-                callbacks: {
-                    finish: process.env.PAYMENT_REDIRECT_URL
-                }
-            })
+        const snap = new midtransClient.Snap({
+            isProduction: false,
+            serverKey: process.env.MIDTRANS_SERVER_KEY
         })
 
-        const data = await response.json();
-        if (!response.ok) {
-            throw new BadRequest(data.status_message || 'Something wrong with Midtrans');
+        const parameter = {
+            transaction_details: {
+                "order_id": String(order._id),
+                "gross_amount": order.totalPrice
+            },
+            credit_card: {
+                "secure": true
+            },
+            customer_details: {
+                first_name: req.user.name,
+                email: req.user.email,
+                phone: req.user.phoneNumber
+            },
+            callbacks: {
+                finish: process.env.PAYMENT_REDIRECT_URL
+            }
         }
+
+        const transaction = await snap.createTransaction(parameter);
         await session.commitTransaction();
         cart.products = [];
         cart.markModified('products');
@@ -108,7 +116,7 @@ const createOrder = async (req) => {
 
         return {
             orderID: order._id,
-            snap: data
+            snap: transaction
         }
     } catch (error) {
         await session.abortTransaction();
@@ -137,9 +145,6 @@ const midtransWebhook = async (req) => {
         const order = await Orders.findOne({ _id: new mongoose.Types.ObjectId(orderID) })
             .populate('products.product')
             .session(session)
-        if (!order) {
-            throw new NotFound(`Order doesn't exist`);
-        }
 
         if (transactionStatus === 'settlement' || (transactionStatus === 'capture' && fraudStatus === 'accept')) {
             for (const product of order.products) {
@@ -147,9 +152,6 @@ const midtransWebhook = async (req) => {
                 const inventories = await Inventories.find({ product: product.product._id })
                     .sort({ receivedAt: 1 })
                     .session(session)
-                if (!inventories.length) {
-                    throw new NotFound(`There are no inventories for this product`);
-                }
 
                 for (const inventory of inventories) {
                     if (requiredKg <= 0) break;
@@ -164,7 +166,13 @@ const midtransWebhook = async (req) => {
                     }
                 }
                 if (requiredKg > 0) {
-                    throw new BadRequest(`Insufficient stock`);
+                    order.status = 'failed';
+                    order.payment.status = 'failure';
+                    order.payment.paidAt = new Date();
+                    await order.save({ session });
+                    await session.commitTransaction();
+                    
+                    return order;
                 }
 
                 const remaining = inventories.reduce((acc, inventory) => acc + inventory.remaining, 0)
@@ -186,7 +194,9 @@ const midtransWebhook = async (req) => {
         return order;
     } catch (error) {
         await session.abortTransaction();
-        throw error;
+        console.error(`Webhook error : ${error}`);
+        
+        return;
     } finally {
         session.endSession();
     }
