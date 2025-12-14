@@ -3,6 +3,7 @@ import {
     getOrder,
     getOrders,
     getReviews,
+    getUser,
     getUsers
 } from "../../services/admin.js"
 import { success } from "../../utils/response.js";
@@ -52,8 +53,18 @@ const indexUsers = async (req, res, next) => {
     }
 }
 
+const findUser = async (req, res, next) => {
+    try {
+        const user = await getUser(req);
+        success(res, user, 'User fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
 export {
     findOrder,
+    findUser,
     indexOrders,
     indexReviews,
     indexUsers,

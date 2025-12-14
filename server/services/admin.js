@@ -1,6 +1,6 @@
 import { NotFound } from '../errors/notFound.js';
-import { productModel as Products } from '../api/products/model.js';
 import { orderModel as Orders } from '../api/orders/model.js';
+import { productModel as Products } from '../api/products/model.js';
 import { reviewModel as Reviews } from '../api/reviews/model.js';
 import { userModel as Users } from '../api/users/model.js';
 
@@ -33,9 +33,10 @@ const getOrders = async (req) => {
 
 const getOrder = async (req) => {
     const { id } = req.params;
-    const order = await Orders.findOne({ _id: id })
-        .populate('products.product', 'name price')
+    const order = await Orders.findById(id)
+        .populate('products.product', 'name image price')
         .populate('user', 'name phoneNumber email address')
+        .lean()
     
     if (!order) {
         throw new NotFound(`Order doesn't exist`);
@@ -73,7 +74,7 @@ const getReviews = async (req) => {
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 })
-            .populate('user', 'name')
+            .populate('user', 'name avatar')
             .populate('product', 'name'),
         Reviews.countDocuments({ product: id })
     ])
@@ -115,10 +116,21 @@ const getUsers = async (req) => {
     }
 }
 
+const getUser = async (req) => {
+    const user = await Users.findById(req.user.id).lean();
+
+    if (!user) {
+        throw new NotFound(`User doesn't exist`);
+    }
+
+    return user;
+}
+
 export {
     deleteReview,
     getOrder,
     getOrders,
     getReviews,
+    getUser,
     getUsers
 }

@@ -31,14 +31,7 @@ const signin = async (req) => {
 
     const token = jwt.sign({
         id: user._id,
-        phoneNumber: user.phoneNumber,
-        email: user.email,
-        name: user.name,
         role: user.role,
-        avatar: {
-            imageURL: user.avatar.imageURL,
-            imagePublicID: user.avatar.imagePublicID
-        }
     }, process.env.JWT_SECRET, { expiresIn: '6h' })
 
     return {
@@ -228,8 +221,8 @@ const updateUser = async (req) => {
 }
 
 export {
-    resetPassword,
     changePassword,
+    resetPassword,
     signin,
     signup,
     updateUser

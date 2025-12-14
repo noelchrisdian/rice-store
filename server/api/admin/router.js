@@ -1,5 +1,6 @@
 import {
     findOrder,
+    findUser,
     indexOrders,
     indexUsers
 } from './controller.js';
@@ -12,6 +13,7 @@ router
     .get('/orders', indexOrders)
     .get('/orders/:id', findOrder)
     .get('/users', indexUsers)
+    .get('/user', findUser)
     .use('/products', productRouter)
 
 export {

@@ -1,13 +1,13 @@
 import secureLocalStorage from "react-secure-storage";
 import { Form, Input } from "antd";
-import { Link, useNavigate, useOutletContext } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login, loginSchema } from "../../services/auth";
+import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 
 const LoginForm = () => {
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
-	const setAlert = useOutletContext();
 
 	const { isPending, mutateAsync } = useMutation({
 		mutationFn: (data) => login(data)
@@ -35,24 +35,15 @@ const LoginForm = () => {
 		try {
 			const response = await mutateAsync(result.data);
 			secureLocalStorage.setItem("SESSION_KEY", response.data);
-
-			setAlert({
-				display: true,
-				type: "success",
-				message: `Selamat datang, ${response.data?.name}!`,
-			})
-
+			toast.success(`Halo, ${response.data?.name}`)
 			if (response.data?.role === "admin") {
 				navigate("/admin");
 			} else {
 				navigate("/");
 			}
 		} catch (error) {
-			setAlert({
-				display: true,
-				type: "error",
-				message: error?.response?.data?.message === 'Phone number is not registered' ? 'Akun tidak ditemukan' : (error?.response?.data?.message === 'Incorrect password' ? 'Kata sandi salah' : 'Terjadi kesalahan di sistem')
-			})
+			toast.error(`${error?.response?.data?.message === 'Phone number is not registered' ? 'Akun tidak ditemukan' : (error?.response?.data?.message === 'Incorrect password' ? 'Kata sandi salah' : 'Terjadi kesalahan di sistem')}`)
+			
 		}
 	}
 
@@ -88,12 +79,12 @@ const LoginForm = () => {
 					<div className="flex justify-end">
 						<Link
 							to={"#"}
-							className="text-sm! text-primary! font-medium! hover:underline!">
+							className="text-sm! text-primary! font-medium! hover:underline! focus:underline! focus:outline-none!">
 							Lupa kata sandi?
 						</Link>
 					</div>
 					<button
-						className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl active:scale-[0.98] transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md outline-none"
+						className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:ring-2 focus:outline-none focus:ring-primary/50"
 						disabled={isPending}>
 						Masuk
 					</button>
@@ -103,7 +94,7 @@ const LoginForm = () => {
 				<p className="text-sm text-muted-foreground">Belum punya akun?</p>
 				<Link
 					to={"/sign-up"}
-					className="text-sm text-primary font-medium hover:underline ml-2">
+					className="text-sm text-primary font-medium ml-2 hover:underline focus:outline-none focus:underline">
 					Daftar
 				</Link>
 			</div>

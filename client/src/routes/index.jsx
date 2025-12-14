@@ -1,8 +1,8 @@
-import { AuthLayout } from '../layout/auth';
+import { AuthLayout } from '../layouts/auth';
 import { createBrowserRouter, redirect } from 'react-router-dom';
 import { getSession } from '../utils/axios';
-import { LoginForm } from '../pages/login/Form';
-import { RegisterForm } from '../pages/register/Form';
+import { LoginForm } from '../pages/login/form';
+import { RegisterForm } from '../pages/register/form';
 import { router as AdminRouter } from './admin';
 
 const router = createBrowserRouter([

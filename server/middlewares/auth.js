@@ -17,14 +17,7 @@ const authenticated = async (req, res, next) => {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         req.user = {
             id: payload.id,
-            phoneNumber: payload.phoneNumber,
-            email: payload.email,
-            name: payload.name,
             role: payload.role,
-            avatar: {
-                imageURL: payload.avatar.imageURL,
-                imagePublicID: payload.avatar.imagePublicID
-            }
         }
 
         next();

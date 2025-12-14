@@ -38,6 +38,24 @@ const getInventories = async (req) => {
     }
 }
 
+const getInventory = async (req) => {
+    const { inventoryID, productID } = req.params;
+    const product = await Products.findById(productID);
+    if (!product) {
+        throw new NotFound(`Product doesn't exist`);
+    }
+
+    const inventory = await Inventories.findOne({
+        _id: inventoryID,
+        product: productID
+    }).lean();
+    if (!inventory) {
+        throw new NotFound(`Inventory doesn't exist`);
+    }
+
+    return inventory;
+}
+
 const createInventory = async (req) => {
     const { productID } = req.params;
     const session = await mongoose.startSession();
@@ -159,6 +177,7 @@ const updateInventory = async (req) => {
 
 export {
     createInventory,
+    getInventory,
     getInventories,
     updateInventory
 }

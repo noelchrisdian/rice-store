@@ -1,6 +1,7 @@
 import {
     createInventory,
     getInventories,
+    getInventory,
     updateInventory
 } from "../../services/inventories.js";
 import { StatusCodes } from "http-status-codes";
@@ -12,6 +13,15 @@ const index = async (req, res, next) => {
         success(res, inventories, `Inventories fetched successfully`);
     } catch (error) {
         next(error);   
+    }
+}
+
+const find = async (req, res, next) => {
+    try {
+        const inventory = await getInventory(req);
+        success(res, inventory, `Inventory fetched successfully`);
+    } catch (error) {
+        next(error);
     }
 }
 
@@ -35,6 +45,7 @@ const update = async (req, res, next) => {
 
 export {
     create,
+    find,
     index,
     update
 }

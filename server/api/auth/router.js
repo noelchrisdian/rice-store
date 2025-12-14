@@ -16,7 +16,7 @@ router
     .post('/sign-up', upload.single('image'), register)
     .post('/reset-password', reset)
     .post('/change-password', change)
-    .post('/change-profile', authenticated, upload.single('image'), update)
+    .put('/change-profile', authenticated, upload.single('image'), update)
 
 export {
     router

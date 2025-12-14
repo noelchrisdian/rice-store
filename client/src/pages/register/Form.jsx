@@ -1,6 +1,12 @@
-import { Form, Input, Upload } from "antd";
-import { Link, useNavigate, useOutletContext } from "react-router-dom";
+import {
+	Form,
+	Image,
+	Input,
+	Upload
+} from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import { register, registerSchema } from "../../services/auth";
+import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -8,7 +14,6 @@ const RegisterForm = () => {
 	const [form] = Form.useForm();
 	const [file, setFile] = useState(null);
 	const [preview, setPreview] = useState(null);
-	const setAlert  = useOutletContext();
 
 	const beforeUpload = (file) => {
 		const typesAllowed = [
@@ -19,20 +24,12 @@ const RegisterForm = () => {
 		]
 		const fileType = typesAllowed.includes(file.type);
 		if (!fileType) {
-			setAlert({
-				display: true,
-				type: "error",
-				message: "File tidak valid",
-			})
+			toast.error("File tidak valid");
 		}
 
-		const fileSize = file.size / 1024 / 1024 < 4;
+		const fileSize = file.size / 1024 / 1024 <= 4;
 		if (!fileSize) {
-			setAlert({
-				display: true,
-				type: "error",
-				message: "Ukuran file <4MB",
-			})
+			toast.error('Ukuran file maksimal 4 MB');
 		}
 
 		if (!fileType || !fileSize) {
@@ -86,24 +83,17 @@ const RegisterForm = () => {
 		formData.append("password", result.data.password);
 		formData.append("confirmPassword", result.data.confirmPassword);
 		formData.append("address", result.data.address);
+		
 		if (file) {
 			formData.append("image", file);
         }
         
 		try {
 			await mutateAsync(formData);
-			setAlert({
-				display: true,
-				type: "success",
-				message: "Akun Anda berhasil dibuat",
-			})
+			toast.success('Akun berhasil dibuat');
             navigate('/sign-in');
 		} catch (error) {
-			setAlert({
-				display: true,
-				type: "error",
-				message: error?.response?.data?.message === 'Phone number existed' ? 'Akun sudah terdaftar' : (error?.response?.data?.message === `Passwords don't match` ? 'Kata sandi harus sama' : 'Terjadi kesalahan di sistem')
-			})
+			toast.error(`${error?.response?.data?.message === 'Phone number existed' ? 'Akun sudah terdaftar' : (error?.response?.data?.message === `Passwords don't match` ? 'Kata sandi harus sama' : 'Terjadi kesalahan di sistem')}`)
 		}
 	}
 
@@ -122,10 +112,13 @@ const RegisterForm = () => {
 							showUploadList={false}
 							onChange={handleChange}>
 							{preview ? (
-								<img
+								<Image
+									height={98}
+									width={98}
+									preview={false}
 									src={preview}
 									alt=""
-									className="w-full! h-full! object-cover! rounded-full!"
+									className="w-full! object-cover! rounded-full!"
 								/>
 							) : (
 								<div className="text-sm!">
@@ -212,7 +205,7 @@ const RegisterForm = () => {
 						<Input.TextArea placeholder="Jalan Mrica 3 T26, Lembah Hijau" />
 					</Form.Item>
 					<button
-						className="w-full bg-primary text-primary-foreground font-bold py-3.5 mt-2.5 rounded-xl active:scale-[0.98] transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md outline-none"
+						className="w-full bg-primary text-primary-foreground font-bold py-3.5 mt-2.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
 						disabled={isPending}>
 						Daftar
 					</button>
@@ -222,7 +215,7 @@ const RegisterForm = () => {
 				<p className="text-sm text-muted-foreground">Sudah punya akun?</p>
 				<Link
 					to={"/sign-in"}
-					className="text-sm text-primary font-medium hover:underline ml-2">
+					className="text-sm text-primary font-medium ml-2 hover:underline focus:outline-none focus:underline">
 					Masuk
 				</Link>
 			</div>

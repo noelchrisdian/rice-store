@@ -5,6 +5,7 @@ import { cartModel as Carts } from "../api/carts/model.js";
 import { inventoryModel as Inventories } from '../api/inventories/model.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
+import { userModel as Users } from '../api/users/model.js';
 
 const getOrders = async (req) => {
     const page = parseInt(req.query.page) || 1;
@@ -85,6 +86,11 @@ const createOrder = async (req) => {
             status: 'pending'
         }], { session })
 
+        const user = await Users.findById(req.user.id).session(session);
+        if (!user) {
+            throw new NotFound(`User not found`);
+        }
+
         const snap = new midtransClient.Snap({
             isProduction: false,
             serverKey: process.env.MIDTRANS_SERVER_KEY
@@ -99,9 +105,9 @@ const createOrder = async (req) => {
                 "secure": true
             },
             customer_details: {
-                first_name: req.user.name,
-                email: req.user.email,
-                phone: req.user.phoneNumber
+                first_name: user.name,
+                email: user.email,
+                phone: user.phoneNumber
             },
             callbacks: {
                 finish: process.env.PAYMENT_REDIRECT_URL
