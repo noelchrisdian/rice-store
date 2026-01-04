@@ -6,15 +6,15 @@ import {
 	useNavigate
 } from "react-router-dom";
 import { LogOutIcon, UserPen } from "lucide-react";
-import { Navbar } from "../../components/Navbar";
+import { Navbar } from "../components/Navbar";
 
-const AdminSettings = () => {
+const UserSettings = () => {
     const user = useLoaderData();
     const navigate = useNavigate();
 
     const handleLogout = () => {
         secureLocalStorage.removeItem('SESSION_KEY');
-        navigate('/sign-in');
+        navigate('/');
     }
 
 	return (
@@ -45,7 +45,7 @@ const AdminSettings = () => {
 					<div className="mb-4">
 						<div className="space-y-2">
                             <Link
-                                to={`/admin/change-profile`}
+                                to={user.role === 'admin' ? `/admin/change-profile` : '/account/change-profile'}
                                 className="w-full bg-card rounded-xl border border-border/50 shadow-sm p-4 flex items-center justify-between transition-colors active:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/50">
 								<div className="flex items-center gap-3">
 									<div className="size-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -85,12 +85,12 @@ const AdminSettings = () => {
 				</section>
 			</main>
 			<section className="lg:hidden">
-				<Navbar active={"settings"} position={"bottom"} />
+				<Navbar active={user.role === 'admin' ? "settings" : 'account'} position={"bottom"} />
 			</section>
 		</>
 	)
 }
 
 export {
-	AdminSettings,
+	UserSettings
 }

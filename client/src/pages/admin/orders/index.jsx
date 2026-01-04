@@ -34,7 +34,7 @@ const AdminOrders = () => {
 				<Navbar active={"orders"} position={"top"} />
 			</section>
 			<main className="bg-background font-sans text-foreground min-h-screen">
-				<section className="pt-6 pb-28 px-6 lg:py-20">
+				<section className="pt-6 pb-28 px-6 lg:py-20 lg:max-w-5xl lg:mx-auto">
 					<div className="mb-6 lg:grid lg:grid-cols-2 lg:gap-2 lg:items-center">
 						<div className="space-y-3 pb-3 lg:pt-10 lg:pb-1">
 							<div className="relative">
@@ -78,7 +78,7 @@ const AdminOrders = () => {
 					</div>
 					{orders?.orders.length > 0 ? (
 						<>
-							<div className="space-y-3 pt-1 pb-4 lg:grid lg:grid-cols-1 lg:gap-4 lg:pt-0 ">
+							<div className="space-y-3 pt-1 pb-4 lg:grid lg:grid-cols-1 lg:gap-1 lg:pt-0 ">
 								{orders.orders.map((order, index) => (
 									<div
 										className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden"
@@ -158,7 +158,6 @@ const AdminOrders = () => {
 						</section>
 					)}
 				</section>
-
 			</main>
 			<section className="lg:hidden">
 				<Navbar active={"orders"} position={"bottom"} />

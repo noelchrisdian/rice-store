@@ -6,12 +6,10 @@ import {
 	Search,
 	UserRoundX,
 } from "lucide-react";
-import { columns } from "./columns";
 import { handleDate } from "../../../utils/date";
 import {
 	Input,
-	Pagination,
-	Table
+	Pagination
 } from "antd";
 import { Navbar } from "../../../components/Navbar";
 import { useLoaderData, useSearchParams } from "react-router-dom";
@@ -31,8 +29,8 @@ const AdminUsers = () => {
 			<section className="hidden lg:block">
 				<Navbar active={"users"} position={"top"} />
 			</section>
-			<main className="bg-background font-sans text-foreground min-h-screen lg:hidden">
-				<section className="pt-6 pb-28 px-6 lg:hidden">
+			<main className="bg-background font-sans text-foreground min-h-screen">
+				<section className="pt-6 pb-28 px-6 lg:pt-20 lg:max-w-5xl lg:mx-auto">
 					<div className="mb-6">
 						<div className="pt-4 lg:pt-10 lg:pb-1">
 							<div className="relative">
@@ -55,7 +53,7 @@ const AdminUsers = () => {
 									<div
 										className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden"
 										key={index}>
-										<div className="p-4 flex items-start gap-4">
+										<div className="p-4 flex items-start gap-4 lg:grid lg:grid-cols-1">
 											<div className="flex-col min-w-0 space-y-3">
 												<div className="">
 													<h3 className="font-semibold text-foreground text-lg mb-1">
@@ -71,7 +69,7 @@ const AdminUsers = () => {
 														<Phone className="size-4 text-primary" />
 														{user?.phoneNumber}
 													</p>
-													<p className="text-sm text-muted-foreground flex items-center gap-3">
+													<p className="text-sm text-muted-foreground flex items-center gap-3 lg:gap-1.5">
 														<MapPin className="size-5 text-primary" />
 														{user?.address}
 													</p>
@@ -114,27 +112,6 @@ const AdminUsers = () => {
 						</section>
 					)}
 				</section>
-			</main>
-			<main className="hidden bg-background font-sans text-foreground min-h-screen lg:block">
-				<div className="lg:pt-40 lg:px-10 lg:pb-10">
-					<Table
-						columns={columns(searchParams)}
-						dataSource={users?.users}
-						pagination={{
-							position: ['none', 'bottomCenter'],
-							pageSize,
-							current: currentPage,
-							total: users?.meta?.total,
-							showSizeChanger: true,
-							onChange: (page, pageSize) => {
-								const params = new URLSearchParams();
-								params.set('limit', String(pageSize));
-								params.set('page', String(page));
-								setSearchParams(params)
-							}
-						}}
-					/>
-				</div>
 			</main>
 			<section className="lg:hidden">
 				<Navbar active={"users"} position={"bottom"} />

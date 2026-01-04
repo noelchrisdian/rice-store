@@ -1,9 +1,9 @@
 import {
     BanknoteArrowDown,
     ClipboardClock,
+    ShieldUser,
     TriangleAlert,
-    User,
-    UserCog
+    User
 } from "lucide-react";
 import { Navbar } from "../../components/Navbar";
 
@@ -13,16 +13,16 @@ const AdminHome = () => {
             <section className="hidden lg:block">
                 <Navbar active={'home'} position={'top'}/>
             </section>
-            <main className="bg-background text-foreground font-sans flex flex-col min-h-screen lg:py-20">
+            <main className="bg-background text-foreground font-sans flex flex-col min-h-screen py-10 lg:py-20">
                 <section className="mb-4">
-                    <div className="flex-1 py-10 px-6 justify-center items-center">
+                    <div className="flex-1 pb-6 px-6 justify-center items-center lg:py-10">
                         <div className="w-full max-w-sm mx-auto md:max-w-3xl lg:max-w-3xl">
                             <div className="bg-linear-to-br from-primary to-primary/80 rounded-2xl relative overflow-hidden p-10">
                                 <div className="absolute top-0 right-0 size-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-2xl" />
                                 <div className="absolute bottom-0 left-0 size-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4 blur-xl" />
                                 <div className="relative z-10 text-center">
                                     <div className="size-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 mx-auto mb-4">
-                                        <UserCog className="size-10 text-white" />
+                                        <ShieldUser className="size-10 text-white" />
                                     </div>
                                     <h2 className="font-heading text-xl text-white mb-2">Selamat datang, Admin!</h2>
                                 </div>

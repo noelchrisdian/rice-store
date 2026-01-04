@@ -4,6 +4,7 @@ import { getSession } from '../utils/axios';
 import { LoginForm } from '../pages/login/form';
 import { RegisterForm } from '../pages/register/form';
 import { router as AdminRouter } from './admin';
+import { router as CustomerRouter } from './customer';
 
 const router = createBrowserRouter([
     {
@@ -29,7 +30,8 @@ const router = createBrowserRouter([
             }
         ]
     },
-    ...AdminRouter
+    ...AdminRouter,
+    ...CustomerRouter
 ])
 
 export {

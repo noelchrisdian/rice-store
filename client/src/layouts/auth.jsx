@@ -23,7 +23,7 @@ const AuthLayout = () => {
 				</div>
 			</div>
 			<div className="hidden lg:flex lg:flex-col lg:justify-center lg:items-center lg:bg-background relative">
-                <div className="lg:w-[400px]">
+                <div className="lg:w-100">
 					<Outlet />
 				</div>
 			</div>

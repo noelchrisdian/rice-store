@@ -1,7 +1,7 @@
 import {
 	ArrowLeft,
-	SquarePen,
 	Plus,
+	SquarePen,
 	Trash
 } from "lucide-react";
 import { columns as inventoriesColumns } from "../inventories/columns";
@@ -320,19 +320,21 @@ const AdminDetailProduct = () => {
 									</div>
 								</div>
 							</div> */}
-							<Pagination
-								align="center"
-								current={currentPageReview}
-								pageSize={pageSizeReview}
-								showSizeChanger
-								total={reviews?.meta?.total}
-								onChange={(page, pageSize) => {
-									const params = new URLSearchParams(searchParams);
-									params.set("reviewLimit", String(pageSize));
-									params.set("reviewPage", String(page));
-									setSearchParams(params);
-								}}
-							/>
+							{reviews?.reviews.length > 0 && (
+								<Pagination
+									align="center"
+									current={currentPageReview}
+									pageSize={pageSizeReview}
+									showSizeChanger
+									total={reviews?.meta?.total}
+									onChange={(page, pageSize) => {
+										const params = new URLSearchParams(searchParams);
+										params.set("reviewLimit", String(pageSize));
+										params.set("reviewPage", String(page));
+										setSearchParams(params);
+									}}
+								/>
+							)}
 						</div>
 					</div>
 				</section>

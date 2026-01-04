@@ -5,19 +5,19 @@ import { AdminDetailProduct } from "../pages/admin/products/detail";
 import { AdminHome } from "../pages/admin";
 import { AdminOrders } from "../pages/admin/orders";
 import { AdminProducts } from "../pages/admin/products/index";
-import { AdminSettings } from "../pages/admin/settings";
 import { AdminUsers } from "../pages/admin/users";
 import { EditInventoryForm } from "../pages/admin/inventories/edit";
 import { EditProductForm } from "../pages/admin/products/edit";
 import { EditUserForm } from "../pages/admin/users/edit";
 import { FormLayout } from "../layouts/form";
+import { getAdmin, getUsers } from "../services/users";
 import { getInventories, getInventory } from "../services/inventories";
 import { getOrder, getOrders } from "../services/orders";
 import { getProduct, getProducts } from "../services/products";
 import { getReviews } from "../services/reviews";
 import { getSession } from "../utils/axios";
-import { getUser, getUsers } from "../services/users";
 import { redirect } from "react-router-dom";
+import { UserSettings } from "../pages/settings";
 
 const router = [
 	{
@@ -25,7 +25,7 @@ const router = [
 		loader: () => {
 			const session = getSession();
 			if (!session || session.role !== "admin") {
-				throw redirect("/sign-in");
+				throw redirect("/");
 			}
 		},
 		children: [
@@ -90,7 +90,7 @@ const router = [
 					{
 						path: "/admin/change-profile",
 						loader: async () => {
-							const user = await getUser();
+							const user = await getAdmin();
 							return user.data;
 						},
 						element: <EditUserForm />
@@ -173,10 +173,10 @@ const router = [
 			{
 				path: "/admin/settings",
 				loader: async () => {
-					const user = await getUser();
+					const user = await getAdmin();
 					return user.data;
 				},
-				element: <AdminSettings />
+				element: <UserSettings />
 			}
 		]
 	}

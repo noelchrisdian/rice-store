@@ -89,7 +89,7 @@ const EditProductForm = () => {
                 id: product._id
             })
 			toast.success('Produk berhasil diubah');
-			navigate("/admin/products");
+			navigate(`/admin/products/${product._id}`);
 		} catch (error) {
 			toast.error(`${error?.response?.data?.message === 'Product existed' ? 'Produk sudah terdaftar' : 'Terjadi kesalahan di sistem'}`)
 		}
@@ -108,7 +108,7 @@ const EditProductForm = () => {
 						<Image
 							src={preview}
 							width={100}
-							className="rounded-md! bg-muted! border! border-border/60! w-[100px]! h-[103px]! object-cover!"
+							className="rounded-md! bg-muted! border! border-border/60! w-25! h-25.75! object-cover!"
 						/>
 						<Form.Item
 							required={false}
@@ -177,7 +177,7 @@ const EditProductForm = () => {
 					<button
 						type="submit"
 						disabled={isPending}
-						className="w-[250px] mx-auto bg-primary text-primary-foreground p-4 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
+						className="w-62.5 mx-auto bg-primary text-primary-foreground p-4 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 						{isPending ? <CircularLoading size={26} color="#FFFFFF"/> : 'Ubah Produk'}
 					</button>
 				</div>

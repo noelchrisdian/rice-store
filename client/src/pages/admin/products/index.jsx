@@ -68,7 +68,7 @@ const AdminProducts = () => {
 						Buat Produk
 					</Link>
 				</section>
-				<section className="space-y-3 px-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:items-stretch lg:px-8">
+				<section className="space-y-3 px-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:px-8">
 					{products?.map((product, index) => (
 						<div
 							className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden h-full"

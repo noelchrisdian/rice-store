@@ -20,8 +20,13 @@ const getUsers = async ({ limit, page }) => {
     return response.data;
 }
 
-const getUser = async () => {
+const getAdmin = async () => {
     const response = await privateAPI.get(`/admin/user`);
+    return response.data;
+}
+
+const getCustomer = async () => {
+    const response = await privateAPI.get('/customers/user');
     return response.data;
 }
 
@@ -32,7 +37,8 @@ const updateUser = async (data) => {
 
 export {
     changeProfileSchema,
-    getUser,
+    getAdmin,
+    getCustomer,
     getUsers,
     updateUser
 }

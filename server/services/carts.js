@@ -7,7 +7,7 @@ import { StatusCodes } from "http-status-codes";
 const getCart = async (req) => {
     const cart = await Carts.findOne({ user: req.user.id }).populate({
         path: 'products.product',
-        select: 'name price image'
+        select: 'name price image stock weightPerUnit'
     })
 
     if (!cart) {

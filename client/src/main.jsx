@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
 	<StrictMode>
-		<Toaster position="top-right" duration={2000} richColors />
+		<Toaster position="top-right" duration={3000} richColors />
 		<QueryClientProvider client={queryClient}>
 			<ConfigProvider locale={id_ID} theme={{
 				token: {
