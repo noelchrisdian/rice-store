@@ -6,6 +6,7 @@ import {
 	ShoppingBag
 } from "lucide-react";
 import { CircularLoading } from "respinner";
+import { createOrder } from "../../services/orders";
 import { getCart } from "../../services/carts";
 import { handleCurrency } from "../../utils/price";
 import { Link, useLoaderData } from "react-router-dom";
@@ -46,7 +47,7 @@ const CustomerCart = () => {
 		setCartItem(cart.products);
 	}, [cart.products])
 
-	const { mutateAsync } = useMutation({
+	const { mutateAsync: updateCart } = useMutation({
 		mutationFn: (data) => updateItem(data),
 		onSuccess: () => queryClient.invalidateQueries(["user-cart"])
 	})
@@ -69,7 +70,7 @@ const CustomerCart = () => {
 				...prev,
 				[data?.product?._id]: true
 			}))
-			await mutateAsync({
+			await updateCart({
 				products: [
 					{
 						product: data?.product._id,
@@ -105,7 +106,7 @@ const CustomerCart = () => {
 				...prev,
 				[data?.product?._id]: true
 			}))
-			await mutateAsync({
+			await updateCart({
 				products: [
 					{
 						product: data?.product?._id,
@@ -127,7 +128,7 @@ const CustomerCart = () => {
 		setModal({ open: true, item: data });
 		setCartItem((prev) => prev.filter((item) => item._id !== data._id));
 		try {
-			await mutateAsync({
+			await updateCart({
 				products: [
 					{
 						product: data?.product?._id,
@@ -150,6 +151,19 @@ const CustomerCart = () => {
 		(acc, item) => acc + item?.product?.price * item?.quantity,
 		0
 	)
+
+	const { isPending, mutateAsync } = useMutation({
+		mutationFn: () => createOrder()
+	})
+
+	const handleCreateOrder = async () => {
+		try {
+			const result = await mutateAsync();
+			window.location.href = result?.data?.redirect_url;
+		} catch (error) {
+			toast.error(error?.response?.data?.message)
+		}
+	}
 
 	return (
 		<>
@@ -269,8 +283,8 @@ const CustomerCart = () => {
 											</span>
 										</div>
 									</div>
-									<button className="w-3xs mx-auto bg-primary text-primary-foreground font-bold p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center shadow-lg text-lg shadow-primary/20 mb-2 mt-10 active:scale-[0.98]">
-										Bayar
+									<button disabled={isPending} onClick={() => handleCreateOrder()} className="w-3xs mx-auto bg-primary text-primary-foreground font-bold p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center shadow-lg text-lg shadow-primary/20 mb-2 mt-10 active:scale-[0.98]">
+										{isPending ? <CircularLoading color="#FFFFFF" size={28}/> : 'Bayar'}
 									</button>
 								</div>
 							</div>

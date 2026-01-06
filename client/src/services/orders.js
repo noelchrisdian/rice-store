@@ -12,7 +12,19 @@ const getOrder = async (id) => {
     return response.data;
 }
 
+const createOrder = async () => {
+    const response = await privateAPI.post('/customers/orders');
+    return response.data;
+}
+
+const findOrder = async (id) => {
+    const response = await privateAPI.get(`/customers/orders/${id}`);
+    return response.data;
+}
+
 export {
+    createOrder,
+    findOrder,
     getOrder,
     getOrders
 }

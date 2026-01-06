@@ -172,7 +172,7 @@ const AddProductForm = () => {
 					<button
 						type="submit"
 						disabled={isPending}
-						className="w-[250px] mx-auto bg-primary text-primary-foreground p-4 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
+						className="w-62.5 mx-auto bg-primary text-primary-foreground p-4 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 						{isPending ? <CircularLoading color="#FFFFFF" size={26} /> : 'Buat Produk'}
 					</button>
 				</div>

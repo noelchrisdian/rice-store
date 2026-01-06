@@ -110,7 +110,7 @@ const createOrder = async (req) => {
                 phone: user.phoneNumber
             },
             callbacks: {
-                finish: process.env.PAYMENT_REDIRECT_URL
+                finish: `${process.env.PAYMENT_REDIRECT_URL}?order_id=${String(order._id)}`
             }
         }
 
