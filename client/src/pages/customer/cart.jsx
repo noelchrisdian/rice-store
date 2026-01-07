@@ -159,7 +159,7 @@ const CustomerCart = () => {
 	const handleCreateOrder = async () => {
 		try {
 			const result = await mutateAsync();
-			window.location.href = result?.data?.redirect_url;
+			window.location.href = result?.data?.snap?.redirect_url;
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
 		}

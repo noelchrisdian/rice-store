@@ -63,12 +63,6 @@ const router = [
 			},
 			{
                 path: "/order/confirmation",
-                loader: ({ request }) => {
-                    const url = new URL(request.url);
-                    if (!url.searchParams.get('order_id')) {
-                        throw redirect('/');
-                    }
-                },
 				element: <CustomerCheckout />
 			}
 		]

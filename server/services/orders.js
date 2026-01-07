@@ -70,7 +70,7 @@ const createOrder = async (req) => {
             const requiredKg = product.quantity * product.product.weightPerUnit;
 
             if (requiredKg > stockAvailable) {
-                throw new BadRequest(`Insufficient stock for ${product.product.name}`);
+                throw new BadRequest(`Stok kurang untuk ${product.product.name}`);
             }
         }
 
