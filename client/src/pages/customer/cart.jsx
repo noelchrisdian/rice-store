@@ -158,8 +158,28 @@ const CustomerCart = () => {
 
 	const handleCreateOrder = async () => {
 		try {
-			const result = await mutateAsync();
-			window.location.href = result?.data?.snap?.redirect_url;
+			const response = await mutateAsync();
+			const orderID = response?.data?.orderID
+			const token = response?.data?.snap?.token;
+
+			if (!orderID || !token) {
+				toast.warning('Token pembayaran tidak valid');
+			}
+
+			window.snap.pay(token, {
+				onSuccess: () => {
+					window.location.href = `/order/confirmation?order_id=${orderID}`;
+				},
+				onPending: () => {
+					window.location.href = `/order/confirmation?order_id=${orderID}`;
+				},
+				onError: () => {
+					toast.error('Pembayaran gagal');
+				},
+				onClose: () => {
+					toast.warning('Pembayaran dibatalkan');
+				}
+			})
 		} catch (error) {
 			toast.error(error?.response?.data?.message)
 		}

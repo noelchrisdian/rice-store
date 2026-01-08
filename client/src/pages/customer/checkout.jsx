@@ -1,13 +1,31 @@
-import { useQuery } from "@tanstack/react-query";
 import { CircleCheck } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
 import { findOrder } from "../../services/orders";
+import {
+    Link,
+    useNavigate,
+    useSearchParams
+} from "react-router-dom";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 const CustomerCheckout = () => {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const orderID = searchParams.get('order_id');
 
+    useEffect(() => {
+        if (!orderID) {
+            toast.warning('ID Pesanan tidak ditemukan');
+            navigate('/');
+        }
+    }, [navigate, orderID])
+
+
     const { data } = useQuery({
+        queryKey: ['orderID', orderID],
+        enabled: !!orderID,
+        retry: false,
         queryFn: async () => {
             const result = await findOrder(orderID);
             return result.data;
