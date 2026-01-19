@@ -4,7 +4,8 @@ const orderSchema = new Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
+        index: true
     },
     products: [{
         product: {
@@ -22,6 +23,18 @@ const orderSchema = new Schema({
             default: false
         }
     }],
+    reservedStock: [{
+        inventory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Inventory',
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1
+        }
+    }], 
     totalPrice: {
         type: Number,
         required: true
@@ -29,17 +42,28 @@ const orderSchema = new Schema({
     status: {
         type: String,
         enum: ['pending', 'success', 'failed'],
-        default: 'pending'
+        default: 'pending',
+        index: true
     },
     payment: {
+        method: {
+            type: String,
+            enum: ['midtrans', 'cash'],
+            default: 'midtrans'
+        },
         status: {
             type: String,
             enum: ['pending', 'settlement', 'deny', 'cancel', 'expire', 'failure', 'refund', 'partial_refund', 'capture'],
             default: 'pending'
         },
-        paidAt: Date
+        paidAt: Date,
+        midtransOrderID: String,
+        midtransTransactionID: String
     }
 }, { timestamps: true })
+
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
 
 const orderModel = model('Order', orderSchema);
 

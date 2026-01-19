@@ -1,5 +1,5 @@
 import { addProduct, productSchema } from "../../../services/products";
-import { CircularLoading } from 'respinner';
+import { CircularLoading } from "respinner";
 import {
 	Form,
 	Image,
@@ -26,12 +26,12 @@ const AddProductForm = () => {
 		]
 		const fileType = typesAllowed.includes(file.type);
 		if (!fileType) {
-			toast.error('File tidak valid');
+			toast.error("File tidak valid");
 		}
 
 		const fileSize = file.size / 1024 / 1024 <= 4;
 		if (!fileSize) {
-			toast.error('Ukuran file maksimal 4 MB');
+			toast.error("Ukuran file maksimal 4 MB");
 		}
 
 		if (!fileType || !fileSize) {
@@ -81,10 +81,18 @@ const AddProductForm = () => {
 
 		try {
 			await mutateAsync(formData);
-			toast.success('Produk berhasil ditambahkan');
+			toast.success("Produk berhasil ditambahkan");
 			navigate("/admin/products");
 		} catch (error) {
-			toast.error(`${error?.response?.data?.message === 'Product existed' ? 'Produk sudah terdaftar' : (error?.response?.data?.message === 'Image is required' ? 'Gambar produk wajib diunggah' : 'Terjadi kesalahan di sistem')}`)
+			toast.error(
+				`${
+					error?.response?.data?.message === "Product existed"
+						? "Produk sudah terdaftar"
+						: error?.response?.data?.message === "Image is required"
+						? "Gambar produk wajib diunggah"
+						: "Terjadi kesalahan di sistem"
+				}`
+			)
 		}
 	}
 
@@ -173,7 +181,11 @@ const AddProductForm = () => {
 						type="submit"
 						disabled={isPending}
 						className="w-62.5 mx-auto bg-primary text-primary-foreground p-4 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
-						{isPending ? <CircularLoading color="#FFFFFF" size={26} /> : 'Buat Produk'}
+						{isPending ? (
+							<CircularLoading color="#FFFFFF" size={26} />
+						) : (
+							"Buat Produk"
+						)}
 					</button>
 				</div>
 			</Form>

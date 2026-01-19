@@ -31,7 +31,7 @@ const router = [
 		children: [
 			{
 				index: true,
-				element: <AdminHome />,
+				element: <AdminHome />
 			},
 			{
 				path: "/admin/products",
@@ -46,7 +46,7 @@ const router = [
 				children: [
 					{
 						path: "/admin/products/add-product",
-						element: <AddProductForm />,
+						element: <AddProductForm />
 					},
 					{
 						path: "/admin/products/edit-product/:id",
@@ -82,7 +82,7 @@ const router = [
 							)
 							return {
 								inventory: inventory.data,
-								product: product.data,
+								product: product.data
 							}
 						},
 						element: <EditInventoryForm />
@@ -183,5 +183,5 @@ const router = [
 ]
 
 export {
-    router
+	router
 }

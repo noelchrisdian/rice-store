@@ -45,7 +45,13 @@ const AddInventoryForm = () => {
 			toast.success("Stok baru berhasil dibuat");
 			navigate(`/admin/products/${product._id}`);
 		} catch (error) {
-			toast.error(`${error?.response?.data?.message === `Product doesn't exist` ? 'Produk tidak ditemukan' : 'Terjadi kesalahan di sistem'}`)
+			toast.error(
+				`${
+					error?.response?.data?.message === `Product doesn't exist`
+						? "Produk tidak ditemukan"
+						: "Terjadi kesalahan di sistem"
+				}`
+			)
 		}
 	}
 
@@ -81,12 +87,16 @@ const AddInventoryForm = () => {
 								message: "Tanggal diterima wajib diisi"
 							}
 						]}>
-						<DatePicker className="w-full!" needConfirm format={"DD-MM-YYYY"} />
+						<DatePicker
+							className="w-full!"
+							needConfirm
+							format={"DD-MM-YYYY"}
+						/>
 					</Form.Item>
 					<button
 						type="submit"
 						disabled={isPending}
-						className="w-[150px] mx-auto bg-primary text-primary-foreground px-1 py-3 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
+						className="w-37.5 mx-auto bg-primary text-primary-foreground px-1 py-3 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 						{isPending ? (
 							<CircularLoading color="#FFFFFF" size={26} />
 						) : (

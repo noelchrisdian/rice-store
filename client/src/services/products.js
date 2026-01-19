@@ -47,10 +47,10 @@ const deleteProduct = async (id) => {
 export {
     addProduct,
     deleteProduct,
+    getGlobalProduct,
     getProduct,
     getGlobalProducts,
     getProducts,
-    getGlobalProduct,
     productSchema,
     updateProduct
 }

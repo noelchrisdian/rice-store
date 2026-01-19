@@ -9,7 +9,7 @@ import {
 	ShoppingBag,
 	User,
 	Users,
-	UserPen,
+	UserPen
 } from "lucide-react";
 import { Dropdown } from "antd";
 import { getSession } from "../utils/axios";
@@ -67,7 +67,11 @@ const Navbar = ({ active, position }) => {
 
 	const handleClick = (e) => {
 		if (e.key === "change-profile") {
-			navigate(User.role === 'admin' ? "/admin/change-profile" : '/account/change-profile');
+			navigate(
+				User.role === "admin"
+					? "/admin/change-profile"
+					: "/account/change-profile"
+			);
 		} else if (e.key === "log-out") {
 			handleLogout();
 		}
@@ -184,7 +188,7 @@ const Navbar = ({ active, position }) => {
 						{active === "orders" ? (
 							<Link className="flex items-center gap-2 px-4 py-2 rounded-full shadow-sm transition-all bg-primary text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
 								<ClipboardList className="size-6" />
-								<span className="text-sm font-medium">Keranjang</span>
+								<span className="text-sm font-medium">Transaksi</span>
 							</Link>
 						) : (
 							<Link
@@ -205,17 +209,26 @@ const Navbar = ({ active, position }) => {
 								placement="bottomLeft"
 								trigger={["hover"]}
 								menu={{ items, onClick: handleClick }}>
-								<img src={session?.avatar?.imageURL} className="w-7 h-7 rounded-full object-cover"/>
+								<img
+									src={session?.avatar?.imageURL}
+									className="w-7 h-7 rounded-full object-cover"
+								/>
 							</Dropdown>
 						) : active === "account" ? (
 							<Link className="flex items-center gap-2 p-0.5 rounded-full shadow-sm transition-all bg-primary text-primary-foreground focus:outline-none focus:ring-1 focus:ring-primary/20">
-								<img src={session?.avatar?.imageURL} className="w-7 h-7 rounded-full object-cover" />
+								<img
+									src={session?.avatar?.imageURL}
+									className="w-7 h-7 rounded-full object-cover"
+								/>
 							</Link>
 						) : (
 							<Link
 								to={"/account"}
 								className="flex items-center justify-center size-12 text-primary transition-colors rounded-full active:bg-secondary/50">
-								<img src={session?.avatar?.imageURL} className="w-7 h-7 rounded-full object-cover" />
+								<img
+									src={session?.avatar?.imageURL}
+									className="w-7 h-7 rounded-full object-cover"
+								/>
 							</Link>
 						)}
 					</div>

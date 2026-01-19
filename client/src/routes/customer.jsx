@@ -1,8 +1,11 @@
 import { CustomerCart } from "../pages/customer/cart";
 import { CustomerCheckout } from "../pages/customer/checkout";
 import { CustomerHome } from "../pages/customer";
+import { CustomerOrders } from "../pages/customer/orders";
+import { CustomerOrderDetail } from "../pages/customer/orders/detail";
 import { CustomerProductDetail } from "../pages/customer/detail";
 import { EditUserForm } from "../pages/admin/users/edit";
+import { findOrder, getCustomerOrder } from "../services/orders";
 import { getCart } from "../services/carts";
 import { getCustomer } from "../services/users";
 import { getGlobalProduct, getGlobalProducts } from "../services/products";
@@ -23,8 +26,15 @@ const router = [
 	{
 		path: "/products/:id",
 		loader: async ({ params }) => {
-			const product = await getGlobalProduct(params.id);
-			return product.data;
+			try {
+				const product = await getGlobalProduct(params.id);
+				return product.data;
+			} catch (error) {
+				toast.error(
+					error?.response?.data?.message || "Terjadi kesalahan di sistem"
+				);
+				return redirect("/");
+			}
 		},
 		element: <CustomerProductDetail />
 	},
@@ -62,7 +72,42 @@ const router = [
 				element: <EditUserForm />
 			},
 			{
-                path: "/order/confirmation",
+				path: "/orders",
+				loader: async ({ request }) => {
+					const url = new URL(request.url);
+					const limit = Number(url.searchParams.get("limit") || 10);
+					const page = Number(url.searchParams.get("page") || 1);
+					const status = url.searchParams.get("status");
+					const range = url.searchParams.get("range");
+
+					const orders = await getCustomerOrder({
+						limit,
+						page,
+						range,
+						status
+					})
+					return orders.data;
+				},
+				element: <CustomerOrders />
+			},
+			{
+				path: "/orders/:id",
+				loader: async ({ params }) => {
+					try {
+						const order = await findOrder(params.id);
+						return order.data;
+					} catch (error) {
+						toast.error(
+							error?.response?.data?.message ||
+								"Terjadi kesalahan di sistem"
+						);
+						return redirect("/orders");
+					}
+				},
+				element: <CustomerOrderDetail />
+			},
+			{
+				path: "/orders/confirmation",
 				element: <CustomerCheckout />
 			}
 		]
@@ -70,5 +115,5 @@ const router = [
 ]
 
 export {
-    router
+	router
 }

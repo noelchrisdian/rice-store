@@ -1,4 +1,5 @@
 import {
+    cancel,
     create as createOrder,
     find,
     index
@@ -12,6 +13,7 @@ router
     .get('/', index)
     .get('/:id', find)
     .post('/', createOrder)
+    .post('/:id/cancel-order', cancel)
     .post('/:orderID/products/:productID/review', createReview)
 
 export {

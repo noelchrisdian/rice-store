@@ -23,7 +23,7 @@ const AuthLayout = () => {
 				</div>
 			</div>
 			<div className="hidden lg:flex lg:flex-col lg:justify-center lg:items-center lg:bg-background relative">
-                <div className="lg:w-100">
+				<div className="lg:w-100">
 					<Outlet />
 				</div>
 			</div>
@@ -32,5 +32,5 @@ const AuthLayout = () => {
 }
 
 export {
-    AuthLayout
+	AuthLayout
 }

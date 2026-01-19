@@ -21,7 +21,8 @@ const EditInventoryForm = () => {
 	}
 
 	const { isPending, mutateAsync } = useMutation({
-		mutationFn: ({ data, id, productID }) => updateInventory(data, id, productID)
+		mutationFn: ({ data, id, productID }) =>
+			updateInventory(data, id, productID)
 	})
 
 	const onFinish = async (data) => {
@@ -54,20 +55,20 @@ const EditInventoryForm = () => {
 		} catch (error) {
 			switch (error?.response?.data?.message) {
 				case `Product doesn't exist`:
-					toast.error('Produk tidak ditemukan');
+					toast.error("Produk tidak ditemukan");
 					break;
 				case `Inventory doesn't exist`:
-					toast.error('Stok tidak ditemukan');
+					toast.error("Stok tidak ditemukan");
 					break;
 				case `Remaining stock couldn't be negative number`:
-					toast.error('Stok sisa harus bernilai positif');
+					toast.error("Stok sisa harus bernilai positif");
 					break;
 				default:
-					toast.error('Terjadi kesalahan di sistem');
+					toast.error("Terjadi kesalahan di sistem");
 					break;
 			}
 		}
-	}
+	};
 
 	return (
 		<div className="px-5 py-24 lg:py-20">
@@ -99,15 +100,19 @@ const EditInventoryForm = () => {
 						rules={[
 							{
 								required: true,
-								message: "Tanggal diterima wajib diisi",
+								message: "Tanggal diterima wajib diisi"
 							}
 						]}>
-						<DatePicker className="w-full!" needConfirm format={"DD-MM-YYYY"} />
+						<DatePicker
+							className="w-full!"
+							needConfirm
+							format={"DD-MM-YYYY"}
+						/>
 					</Form.Item>
 					<button
 						type="submit"
 						disabled={isPending}
-						className="w-[150px] mx-auto bg-primary text-primary-foreground px-1 py-3 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
+						className="w-37.5 mx-auto bg-primary text-primary-foreground px-1 py-3 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 						{isPending ? (
 							<CircularLoading color="#FFFFFF" size={26} />
 						) : (
@@ -121,5 +126,5 @@ const EditInventoryForm = () => {
 }
 
 export {
-    EditInventoryForm
+	EditInventoryForm
 }

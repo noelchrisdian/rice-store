@@ -2,8 +2,8 @@ import { CircularLoading } from "respinner";
 import {
 	Form,
 	Image,
-    Input,
-    Upload
+	Input,
+	Upload
 } from "antd";
 import { productSchema, updateProduct } from "../../../services/products";
 import { toast } from "sonner";
@@ -12,11 +12,11 @@ import { useLoaderData, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 
 const EditProductForm = () => {
-    const product = useLoaderData();
+	const product = useLoaderData();
 	const [form] = Form.useForm();
 	const [file, setFile] = useState(null);
-    const [preview, setPreview] = useState(product?.image?.imageURL);
-    const navigate = useNavigate();
+	const [preview, setPreview] = useState(product?.image?.imageURL);
+	const navigate = useNavigate();
 
 	const beforeUpload = (file) => {
 		const typesAllowed = [
@@ -53,13 +53,13 @@ const EditProductForm = () => {
 
 		const url = URL.createObjectURL(file);
 		setPreview(url);
-    }
+	}
 
-    const { isPending, mutateAsync } = useMutation({
-        mutationFn: ({ data, id }) => updateProduct(data, id)
-    })
-    
-    const onFinish = async (data) => {
+	const { isPending, mutateAsync } = useMutation({
+		mutationFn: ({ data, id }) => updateProduct(data, id)
+	})
+
+	const onFinish = async (data) => {
 		const result = await productSchema.safeParseAsync(data);
 		if (!result.success) {
 			const fieldError = result.error.flatten().fieldErrors;
@@ -77,29 +77,35 @@ const EditProductForm = () => {
 		formData.append("name", result.data.name);
 		formData.append("price", result.data.price);
 		formData.append("description", result.data.description);
-        formData.append("weightPerUnit", result.data.weightPerUnit);
-        
-        if (file) {
-            formData.append('image', file)
-        }
+		formData.append("weightPerUnit", result.data.weightPerUnit);
+
+		if (file) {
+			formData.append("image", file);
+		}
 
 		try {
-            await mutateAsync({
-                data: formData,
-                id: product._id
-            })
-			toast.success('Produk berhasil diubah');
+			await mutateAsync({
+				data: formData,
+				id: product._id
+			})
+			toast.success("Produk berhasil diubah");
 			navigate(`/admin/products/${product._id}`);
 		} catch (error) {
-			toast.error(`${error?.response?.data?.message === 'Product existed' ? 'Produk sudah terdaftar' : 'Terjadi kesalahan di sistem'}`)
+			toast.error(
+				`${
+					error?.response?.data?.message === "Product existed"
+						? "Produk sudah terdaftar"
+						: "Terjadi kesalahan di sistem"
+				}`
+			)
 		}
 	}
 
 	return (
 		<div className="px-5 py-24 lg:py-20">
 			<Form
-                form={form}
-                initialValues={product}
+				form={form}
+				initialValues={product}
 				layout="vertical"
 				onFinish={onFinish}
 				className="space-y-10">
@@ -145,7 +151,7 @@ const EditProductForm = () => {
 							className="w-full!"
 							placeholder="50000"
 							prefix={"Rp"}
-                            type="number"
+							type="number"
 						/>
 					</Form.Item>
 					<Form.Item
@@ -178,7 +184,11 @@ const EditProductForm = () => {
 						type="submit"
 						disabled={isPending}
 						className="w-62.5 mx-auto bg-primary text-primary-foreground p-4 rounded-xl font-semibold text-base shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
-						{isPending ? <CircularLoading size={26} color="#FFFFFF"/> : 'Ubah Produk'}
+						{isPending ? (
+							<CircularLoading size={26} color="#FFFFFF" />
+						) : (
+							"Ubah Produk"
+						)}
 					</button>
 				</div>
 			</Form>
@@ -187,5 +197,5 @@ const EditProductForm = () => {
 }
 
 export {
-    EditProductForm
+	EditProductForm
 }

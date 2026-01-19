@@ -9,15 +9,12 @@ import { StatusCodes } from "http-status-codes";
 import { v2 as cloudinary } from "cloudinary";
 
 const getProducts = async () => {
-    return await Products.find().populate({
-        path: 'inventories',
-        select: 'product quantity remaining receivedAt expiredAt'
-    })
+    return await Products.find().populate('inventories', 'remaining');
 }
 
 const getProduct = async (req) => {
     const { id } = req.params;
-    const product = await Products.findOne({ _id: id }).populate({
+    const product = await Products.findById(id).populate({
         path: 'inventories',
         select: 'product quantity remaining receivedAt expiredAt'
     })

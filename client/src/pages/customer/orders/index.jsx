@@ -1,14 +1,9 @@
 import {
 	ClipboardX,
 	Eye,
-	Printer,
-	Search
+	Printer
 } from "lucide-react";
-import {
-	Input,
-	Pagination,
-	Select
-} from "antd";
+import { Pagination, Select } from "antd";
 import {
 	Link,
 	useLoaderData,
@@ -18,7 +13,7 @@ import { Navbar } from "../../../components/Navbar";
 import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
 
-const AdminOrders = () => {
+const CustomerOrders = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const orders = useLoaderData();
 	const currentPage = Number(
@@ -27,6 +22,21 @@ const AdminOrders = () => {
 	const pageSize = Number(
 		searchParams.get("limit") || orders.meta.limit || 10
 	)
+	const currentStatus = searchParams.get('status') || null;
+	const currentRange = searchParams.get('range') || null;
+
+	const statusOptions = [
+		{ value: "success", label: "Berhasil" },
+		{ value: "pending", label: "Pending" },
+		{ value: "failed", label: "Gagal" }
+	]
+
+	const rangeOptions = [
+		{ value: "today", label: "Hari Ini" },
+		{ value: "7d", label: "7 Hari Terakhir" },
+		{ value: "30d", label: "30 Hari Terakhir" },
+		{ value: "90d", label: "90 Hari Terakhir" }
+	]
 
 	return (
 		<>
@@ -35,43 +45,48 @@ const AdminOrders = () => {
 			</section>
 			<main className="bg-background font-sans text-foreground min-h-screen">
 				<section className="pt-6 pb-28 px-6 lg:py-20 lg:max-w-5xl lg:mx-auto">
-					<div className="mb-6 lg:grid lg:grid-cols-2 lg:gap-2 lg:items-center">
-						<div className="space-y-3 pb-3 lg:pt-10 lg:pb-1">
-							<div className="relative">
-								<Input
-									type="text"
-									className="w-full! pl-11! pr-4! py-3! rounded-xl! bg-input! border-0! text-foreground! placeholder:text-muted-foreground! lg:py-1.5!"
-									suffix={
-										<Search className="size-5 text-muted-foreground absolute left-3.5" />
-									}
-									placeholder="Cari berdasarkan nama pelanggan"
-								/>
-							</div>
-						</div>
-						<div className="grid grid-cols-2 gap-2 lg:pt-10 lg:pb-1">
+					<div className="mb-4">
+						<div className="grid grid-cols-2 gap-4 lg:pt-10 lg:pb-1">
 							<div className="flex-1">
 								<Select
-									className="w-full!"
-									placeholder={"Pilih Status Pesanan"}
+									className="w-full! p-0!"
+									placeholder={"Status Pesanan"}
 									allowClear
-									options={[
-										{ value: "success", label: "Sukses" },
-										{ value: "pending", label: "Pending" },
-										{ value: "cancelled", label: "Batal" }
-									]}
+									options={statusOptions}
+									value={currentStatus}
+									onChange={(value) => {
+										const params = new URLSearchParams(searchParams);
+
+										if (value) {
+											params.set("status", value);
+										} else {
+											params.delete("status");
+										}
+
+										params.set("page", "1");
+										setSearchParams(params);
+									}}
 								/>
 							</div>
 							<div className="flex-1">
 								<Select
-									className="w-full!"
-									placeholder={"Pilih Rentang Waktu"}
+									className="w-full! p-0!"
+									placeholder={"Rentang Waktu"}
 									allowClear
-									options={[
-										{ value: "today", label: "Hari Ini" },
-										{ value: "7d", label: "7 Hari Terakhir" },
-										{ value: "30d", label: "30 Hari Terakhir" },
-										{ value: "90d", label: "90 Hari Terakhir" }
-									]}
+									options={rangeOptions}
+									value={currentRange}
+									onChange={(value) => {
+										const params = new URLSearchParams(searchParams);
+
+										if (value) {
+											params.set("range", value);
+										} else {
+											params.delete("range");
+										}
+
+										params.set("page", "1");
+										setSearchParams(params);
+									}}
 								/>
 							</div>
 						</div>
@@ -83,17 +98,21 @@ const AdminOrders = () => {
 									<div
 										className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden"
 										key={index}>
-										<div className="p-3 space-y-2">
-											<div className="flex items-start justify-between gap-2">
-												<div className="flex-1 min-w-0">
-													<h3 className="font-semibold text-foreground text-base">
-														{order?.user?.name}
-													</h3>
-													<p className="text-sm text-muted-foreground">
-														{handleDate(order?.createdAt)} •{" "}
-														{order?.products.length} item
-													</p>
-												</div>
+										<div
+											className={`p-3 ${
+												order.products.length > 1
+													? "space-y-2"
+													: "space-y-1"
+											}`}>
+											<div className="flex items-start justify-between">
+												<img
+													src={
+														order.products[0]?.product?.image
+															?.imageURL
+													}
+													alt=""
+													className="size-16 rounded-xl object-cover bg-muted"
+												/>
 												<span
 													className={`text-xs px-2.5 py-1.5 rounded-md ${
 														order?.status === "success"
@@ -109,6 +128,29 @@ const AdminOrders = () => {
 														: "Gagal"}
 												</span>
 											</div>
+											<div className="flex-1 min-w-0">
+												<div className="flex items-start">
+													<div className="flex-1 min-w-0">
+														<h3 className="font-semibold text-foreground text-base">
+															{order.products[0]?.product?.name}
+														</h3>
+														<p className="text-sm text-muted-foreground">
+															{order.products.length > 1
+																? `+ ${
+																		order.products.length - 1
+																  } lainnya`
+																: ""}
+														</p>
+													</div>
+												</div>
+											</div>
+											<div className="flex items-start justify-between gap-2">
+												<div className="flex-1 min-w-0">
+													<p className="text-sm text-muted-foreground">
+														{handleDate(order?.createdAt)}
+													</p>
+												</div>
+											</div>
 											<div className="flex items-center justify-between pt-1">
 												<div className="">
 													<p className="font-font-heading text-lg font-bold text-primary">
@@ -117,7 +159,7 @@ const AdminOrders = () => {
 												</div>
 												<div className="flex items-center gap-2">
 													<Link
-														to={`/admin/orders/${order._id}`}
+														to={`/orders/${order._id}`}
 														className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 														<Eye className="size-4" />
 													</Link>
@@ -146,8 +188,8 @@ const AdminOrders = () => {
 							/>
 						</>
 					) : (
-						<section className="flex-1 flex items-center justify-center py-16">
-							<div className="text-center px-6 max-w-md mx-auto">
+						<section className="absolute inset-0 flex items-center justify-center">
+							<div className="text-center max-w-md mx-auto">
 								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
 									<ClipboardX className="size-12 text-muted-foreground lg:size-16" />
 								</div>
@@ -167,5 +209,5 @@ const AdminOrders = () => {
 }
 
 export {
-	AdminOrders
+	CustomerOrders
 }

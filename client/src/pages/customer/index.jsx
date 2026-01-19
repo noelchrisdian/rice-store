@@ -5,7 +5,7 @@ import {
 	Coins,
 	Eye,
 	Sprout,
-	ThumbsUp,
+	ThumbsUp
 } from "lucide-react";
 import { Footer } from "../../components/Footer";
 import { getGlobalProducts } from "../../services/products";
@@ -21,7 +21,7 @@ const CustomerHome = () => {
 	const initial = useLoaderData();
 
 	const { data: products } = useQuery({
-		queryKey: ['index-product'],
+		queryKey: ["index-product"],
 		queryFn: async () => {
 			const result = await getGlobalProducts();
 			return result.data;
@@ -114,7 +114,9 @@ const CustomerHome = () => {
 						</div>
 					</div>
 				</section>
-				<section className="px-4 pt-8 pb-6 bg-secondary/30 lg:pt-12 lg:pb-10" id="product">
+				<section
+					className="px-4 pt-8 pb-6 bg-secondary/30 lg:pt-12 lg:pb-10"
+					id="product">
 					<div className="flex items-center mb-6">
 						<h2 className="font-font-heading text-2xl font-bold lg:text-4xl">
 							Produk Kami
@@ -124,7 +126,7 @@ const CustomerHome = () => {
 						<Swiper
 							modules={[Pagination]}
 							spaceBetween={16}
-							slidesPerView={'auto'}
+							slidesPerView={"auto"}
 							breakpoints={{
 								1024: {
 									slidesPerView: 3
@@ -132,11 +134,10 @@ const CustomerHome = () => {
 							}}
 							pagination={{ clickable: true }}
 							scrollbar={{ draggable: true }}
-							grabCursor={true}
-							>
+							grabCursor={true}>
 							{products.map(
 								(product, index) =>
-									product.stock > 0 && (
+									product?.stock > 0 && (
 										<SwiperSlide key={index}>
 											<div className="bg-card rounded-2xl p-3 shadow-sm flex flex-col h-full">
 												<div className="relative aspect-square rounded-xl overflow-hidden bg-muted mb-3">
@@ -152,7 +153,9 @@ const CustomerHome = () => {
 													<span className="font-bold text-lg text-primary">
 														{handleCurrency(product?.price)}
 													</span>
-													<Link to={`/products/${product._id}`} className="size-8 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center transition-all active:scale-95 focus:outline-none focus:ring-primary focus:ring-2">
+													<Link
+														to={`/products/${product._id}`}
+														className="size-8 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center transition-all active:scale-95 focus:outline-none focus:ring-primary focus:ring-2">
 														<Eye className="size-4" />
 													</Link>
 												</div>
@@ -181,7 +184,8 @@ const CustomerHome = () => {
 								</div>
 								<p className="text-foreground text-sm leading-relaxed mb-2 lg:text-[16px]">
 									The aroma of the Basmati rice filled my entire house.
-									Absolutely authentic taste, reminds me of home cooking.
+									Absolutely authentic taste, reminds me of home
+									cooking.
 								</p>
 								<div className="flex items-center gap-3">
 									<div className="">

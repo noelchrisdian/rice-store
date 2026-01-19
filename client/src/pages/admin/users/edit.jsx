@@ -78,16 +78,16 @@ const EditUserForm = () => {
 
 		const formData = new FormData();
 		formData.append("name", result.data.name);
-		formData.append('phoneNumber', result.data.phoneNumber);
-		formData.append('email', result.data.email);
-		formData.append('address', result.data.address);
+		formData.append("phoneNumber", result.data.phoneNumber);
+		formData.append("email", result.data.email);
+		formData.append("address", result.data.address);
 
 		if (result.data.password && result.data.confirmPassword) {
-			formData.append('password', result.data.password);
-			formData.append('confirmPassword', result.data.confirmPassword);
+			formData.append("password", result.data.password);
+			formData.append("confirmPassword", result.data.confirmPassword);
 		} else {
-			formData.append('password', user.password);
-			formData.append('confirmPassword', user.password);
+			formData.append("password", user.password);
+			formData.append("confirmPassword", user.password);
 		}
 
 		if (file) {
@@ -95,22 +95,22 @@ const EditUserForm = () => {
 		}
 
 		try {
-			await mutateAsync(formData)
+			await mutateAsync(formData);
 			toast.success("Data Anda berhasil diubah");
-			navigate(user.role === 'admin' ? "/admin/settings" : '/account');
+			navigate(user.role === "admin" ? "/admin/settings" : "/account");
 		} catch (error) {
 			switch (error?.response?.data?.message) {
 				case `User doesn't exist`:
-					toast.error('Pengguna belum terdaftar');
+					toast.error("Pengguna belum terdaftar");
 					break;
 				case `Email already in use`:
-					toast.error('Alamat email sudah digunakan');
+					toast.error("Alamat email sudah digunakan");
 					break;
 				case `Phone number already in use`:
-					toast.error('Nomor handphone sudah digunakan');
+					toast.error("Nomor handphone sudah digunakan");
 					break;
 				default:
-					toast.error('Terjadi kesalahan di sistem');
+					toast.error("Terjadi kesalahan di sistem");
 					break;
 			}
 		}
@@ -118,10 +118,12 @@ const EditUserForm = () => {
 
 	return (
 		<>
-			{user.role === 'customer' && (
-				<button className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg cursor-pointer transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5" onClick={() => navigate('/')}>
-                <ArrowLeft className="size-6 cursor-pointer" />
-            </button>
+			{user.role === "customer" && (
+				<button
+					className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg cursor-pointer transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5"
+					onClick={() => navigate("/")}>
+					<ArrowLeft className="size-6 cursor-pointer" />
+				</button>
 			)}
 			<div className="px-5 py-20 lg:py-20">
 				<Form
@@ -151,9 +153,7 @@ const EditUserForm = () => {
 							label={"Nama"}
 							name={"name"}
 							required={false}
-							rules={[
-								{ required: true, message: "Nama wajib diisi" }
-							]}>
+							rules={[{ required: true, message: "Nama wajib diisi" }]}>
 							<Input type="text" placeholder="Masukkan nama Anda" />
 						</Form.Item>
 						<div className="lg:grid lg:grid-cols-2 lg:gap-4">
@@ -161,7 +161,12 @@ const EditUserForm = () => {
 								label={"Nomor Handphone"}
 								name={"phoneNumber"}
 								required={false}
-								rules={[{ required: true, message: "Nomor handphone wajib diisi" }]}>
+								rules={[
+									{
+										required: true,
+										message: "Nomor handphone wajib diisi"
+									}
+								]}>
 								<Input
 									className="w-full!"
 									placeholder="+628123456789"
@@ -172,7 +177,12 @@ const EditUserForm = () => {
 								label={"Email"}
 								name={"email"}
 								required={false}
-								rules={[{ required: true, message: "Alamat email wajib diisi" }]}>
+								rules={[
+									{
+										required: true,
+										message: "Alamat email wajib diisi"
+									}
+								]}>
 								<Input
 									className="w-full!"
 									placeholder="emailanda@gmail.com"
@@ -181,9 +191,7 @@ const EditUserForm = () => {
 							</Form.Item>
 						</div>
 						<div className="lg:grid lg:grid-cols-2 lg:gap-4">
-							<Form.Item
-								label={"Kata sandi"}
-								name={"password"}>
+							<Form.Item label={"Kata sandi"} name={"password"}>
 								<Input
 									className="w-full!"
 									placeholder="Masukkan kata sandi Anda"
@@ -204,7 +212,9 @@ const EditUserForm = () => {
 							label={"Alamat"}
 							name={"address"}
 							required={false}
-							rules={[{ required: true, message: "Alamat wajib diisi" }]}>
+							rules={[
+								{ required: true, message: "Alamat wajib diisi" }
+							]}>
 							<Input.TextArea
 								className="w-full!"
 								placeholder="Jalan Mrica 3 T26, Lembah Hijau"
@@ -229,5 +239,5 @@ const EditUserForm = () => {
 }
 
 export {
-    EditUserForm
+	EditUserForm
 }

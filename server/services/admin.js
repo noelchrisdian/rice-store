@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { NotFound } from '../errors/notFound.js';
 import { orderModel as Orders } from '../api/orders/model.js';
 import { productModel as Products } from '../api/products/model.js';
@@ -14,8 +15,8 @@ const getOrders = async (req) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate('products.product', 'name price')
-            .populate('user', 'name phoneNumber email address'),
+            .populate('user', 'name')
+            .lean(),
         Orders.countDocuments()
     ])
 
@@ -37,7 +38,7 @@ const getOrder = async (req) => {
         .populate('products.product', 'name image price')
         .populate('user', 'name phoneNumber email address')
         .lean()
-    
+
     if (!order) {
         throw new NotFound(`Order doesn't exist`);
     }
@@ -60,7 +61,7 @@ const deleteReview = async (req) => {
 
 const getReviews = async (req) => {
     const { id } = req.params;
-    const product = await Products.findOne({ _id: id });
+    const product = await Products.findById(id);
     if (!product) {
         throw new NotFound(`Product doesn't exist`);
     }
@@ -69,19 +70,54 @@ const getReviews = async (req) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const [reviews, total] = await Promise.all([
+    const [reviews, total, statistic] = await Promise.all([
         Reviews.find({ product: id })
+            .select('user rating comment createdAt')
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 })
             .populate('user', 'name avatar')
-            .populate('product', 'name'),
-        Reviews.countDocuments({ product: id })
+            .lean(),
+        Reviews.countDocuments({ product: id }),
+        Reviews.aggregate([
+            { $match: { product: new mongoose.Types.ObjectId(id) } },
+            {
+                $group: {
+                    _id: null,
+                    average: { $avg: '$rating' },
+                    total: { $sum: 1 },
+                    star5: { $sum: { $cond: [{ $eq: ['$rating', 5] }, 1, 0] } },
+                    star4: { $sum: { $cond: [{ $eq: ['$rating', 4] }, 1, 0] } },
+                    star3: { $sum: { $cond: [{ $eq: ['$rating', 3] }, 1, 0] } },
+                    star2: { $sum: { $cond: [{ $eq: ['$rating', 2] }, 1, 0] } },
+                    star1: { $sum: { $cond: [{ $eq: ['$rating', 1] }, 1, 0] } }
+                }
+            }
+        ])
     ])
+
+    const analytics = statistic.length > 0 ? {
+        average: statistic[0].average.toFixed(1),
+        total: statistic[0].total,
+        star5: statistic[0].star5,
+        star4: statistic[0].star4,
+        star3: statistic[0].star3,
+        star2: statistic[0].star2,
+        star1: statistic[0].star1
+    } : {
+        average: 0,
+        total: 0,
+        star5: 0,
+        star4: 0,
+        star3: 0,
+        star2: 0,
+        star1: 0
+    }
 
     const totalPages = Math.ceil(total / limit);
     return {
         reviews,
+        analytics,
         meta: {
             total,
             page,
@@ -98,9 +134,11 @@ const getUsers = async (req) => {
 
     const [users, total] = await Promise.all([
         Users.find({ role: 'customer' })
+            .select('name phoneNumber email address createdAt')
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit),
+            .limit(limit)
+            .lean(),
         Users.countDocuments({ role: 'customer' })
     ])
 

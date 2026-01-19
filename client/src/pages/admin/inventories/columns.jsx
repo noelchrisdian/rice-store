@@ -57,5 +57,5 @@ const columns = (productID) => {
 }
 
 export {
-    columns
+	columns
 }

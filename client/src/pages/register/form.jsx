@@ -29,7 +29,7 @@ const RegisterForm = () => {
 
 		const fileSize = file.size / 1024 / 1024 <= 4;
 		if (!fileSize) {
-			toast.error('Ukuran file maksimal 4 MB');
+			toast.error("Ukuran file maksimal 4 MB");
 		}
 
 		if (!fileType || !fileSize) {
@@ -49,9 +49,9 @@ const RegisterForm = () => {
 
 		const url = URL.createObjectURL(file);
 		setPreview(url);
-    }
-    
-    const navigate = useNavigate();
+	}
+
+	const navigate = useNavigate();
 
 	const { isPending, mutateAsync } = useMutation({
 		mutationFn: (data) => register(data)
@@ -61,7 +61,7 @@ const RegisterForm = () => {
 		const value = {
 			...data,
 			phoneNumber: `+62${data.phoneNumber}`
-        }
+		}
 
 		const result = await registerSchema.safeParseAsync(value);
 		if (!result.success) {
@@ -83,17 +83,25 @@ const RegisterForm = () => {
 		formData.append("password", result.data.password);
 		formData.append("confirmPassword", result.data.confirmPassword);
 		formData.append("address", result.data.address);
-		
+
 		if (file) {
 			formData.append("image", file);
-        }
-        
+		}
+
 		try {
 			await mutateAsync(formData);
-			toast.success('Akun berhasil dibuat');
-            navigate('/sign-in');
+			toast.success("Akun berhasil dibuat");
+			navigate("/sign-in");
 		} catch (error) {
-			toast.error(`${error?.response?.data?.message === 'Phone number existed' ? 'Akun sudah terdaftar' : (error?.response?.data?.message === `Passwords don't match` ? 'Kata sandi harus sama' : 'Terjadi kesalahan di sistem')}`)
+			toast.error(
+				`${
+					error?.response?.data?.message === "Phone number existed"
+						? "Akun sudah terdaftar"
+						: error?.response?.data?.message === `Passwords don't match`
+						? "Kata sandi harus sama"
+						: "Terjadi kesalahan di sistem"
+				}`
+			)
 		}
 	}
 
@@ -151,7 +159,11 @@ const RegisterForm = () => {
 									message: "Nomor handphone wajib diisi"
 								}
 							]}>
-							<Input type="text" placeholder="8123456789" prefix={"+62"} />
+							<Input
+								type="text"
+								placeholder="8123456789"
+								prefix={"+62"}
+							/>
 						</Form.Item>
 						<Form.Item
 							label={"Email"}
@@ -171,10 +183,7 @@ const RegisterForm = () => {
 							rules={[
 								{ required: true, message: "Kata sandi wajib diisi" }
 							]}>
-							<Input
-								type="password"
-								placeholder="Masukkan kata sandi"
-							/>
+							<Input type="password" placeholder="Masukkan kata sandi" />
 						</Form.Item>
 						<Form.Item
 							label={"Konfirmasi Kata Sandi"}
@@ -186,10 +195,7 @@ const RegisterForm = () => {
 									message: "Konfirmasi kata sandi wajib diisi"
 								}
 							]}>
-							<Input
-								type="password"
-								placeholder="Masukkan kata sandi"
-							/>
+							<Input type="password" placeholder="Masukkan kata sandi" />
 						</Form.Item>
 					</div>
 					<Form.Item
@@ -224,5 +230,5 @@ const RegisterForm = () => {
 }
 
 export {
-    RegisterForm
+	RegisterForm
 }

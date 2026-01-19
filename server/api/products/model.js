@@ -35,13 +35,19 @@ const productSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Inventory',
         required: true
-    }],
-    stock: {
-        type: Number,
-        default: 0,
-        required: true
-    }
-}, { timestamps: true })
+    }]
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+})
+
+productSchema.virtual('stock').get(function () {
+    if (!this.inventories || this.inventories.length === 0) return 0;
+    const totalKg = this.inventories.reduce((acc, inv) => acc + inv.remaining, 0);
+
+    return Math.floor(totalKg / this.weightPerUnit);
+})
 
 const productModel = model('Product', productSchema);
 

@@ -12,7 +12,8 @@ const inventorySchema = new Schema({
     },
     remaining: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
     receivedAt: {
         type: Date,
@@ -30,6 +31,8 @@ const inventorySchema = new Schema({
         required: true
     }
 }, { timestamps: true })
+
+inventorySchema.index({ product: 1, receivedAt: 1 });
 
 inventorySchema.pre('save', function (next) {
     if (this.remaining === 0) {

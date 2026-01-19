@@ -3,14 +3,15 @@ import { productModel as Products } from "../api/products/model.js";
 import { reviewModel as Reviews } from '../api/reviews/model.js';
 
 const getProducts = async () => {
-    return await Products.find({ stock: { $gt: 0 } })
-        .select('name price image description stock')
+    return await Products.find()
+        .select('name price image description inventories weightPerUnit')
+        .populate('inventories', 'remaining')
         .sort({ name: 1 })
 }
 
 const getProduct = async (req) => {
     const { id } = req.params;
-    const product = await Products.findOne({ _id: id }).select('name price image description stock');
+    const product = await Products.findById(id).select('name price image description').lean();
     if (!product) {
         throw new NotFound(`Product doesn't exist`);
     }
@@ -20,7 +21,7 @@ const getProduct = async (req) => {
 
 const getReviews = async (req) => {
     const { id } = req.params;
-    const product = await Products.findOne({ _id: id });
+    const product = await Products.findById(id).lean();
     if (!product) {
         throw new NotFound(`Product doesn't exist`);
     }

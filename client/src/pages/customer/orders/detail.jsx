@@ -10,13 +10,40 @@ import {
 	Printer,
 	Store
 } from "lucide-react";
-import { Image } from "antd";
+import { CircularLoading } from "respinner";
+import { createReview, reviewSchema } from "../../../services/reviews";
+import { findOrder } from "../../../services/orders";
+import {
+	Form,
+	Image,
+	Input,
+	Modal,
+	Rate
+} from "antd";
 import { Link, useLoaderData } from "react-router-dom";
 import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import {
+	useMutation,
+	useQuery,
+	useQueryClient
+} from "@tanstack/react-query";
 
-const AdminDetailOrder = () => {
-	const order = useLoaderData();
+const CustomerOrderDetail = () => {
+	const initial = useLoaderData();
+	const queryClient = useQueryClient();
+	const [form] = Form.useForm();
+	const [modal, setModal] = useState({
+		open: false,
+		data: null
+	})
+
+	const handleCloseModal = () => {
+		setModal({ open: false, data: null });
+		form.resetFields();
+	}
 
 	const setPaymentStatus = (data) => {
 		if (["settlement", "capture"].includes(data)) {
@@ -28,10 +55,61 @@ const AdminDetailOrder = () => {
 		}
 	}
 
+	const { data: order } = useQuery({
+		queryKey: ['order_detail', initial?._id],
+		queryFn: () => findOrder(initial?._id),
+		initialData: initial
+	})
+
+	const { isPending, mutateAsync } = useMutation({
+		mutationFn: ({ data, orderID, productID }) =>
+			createReview(data, orderID, productID),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['order_detail', initial?._id] });
+			toast.success('Ulasan Anda berhasil disimpan');
+			form.resetFields();
+		},
+		onError: (error) => {
+			toast.error(error?.response?.data?.message);
+		}
+	})
+
+	const onFinish = async (data) => {
+		const result = await reviewSchema.safeParseAsync(data);
+		if (!result.data) {
+			const fieldErrors = result.error.flatten().fieldErrors;
+			form.setFields(
+				Object.entries(fieldErrors).map(([name, errors]) => ({
+					name,
+					errors
+				}))
+			)
+
+			return;
+		}
+
+		try {
+			await mutateAsync({
+				data,
+				orderID: order?.data?._id,
+				productID: modal.data?._id
+			})
+		} finally {
+			setModal({
+				open: false,
+				data: null
+			})
+		}
+	}
+
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [])
+
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen pt-10 pb-2">
 			<Link
-				to={"/admin/orders"}
+				to={"/orders"}
 				className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5">
 				<ArrowLeft className="size-6" />
 			</Link>
@@ -43,7 +121,7 @@ const AdminDetailOrder = () => {
 								Status Pesanan
 							</p>
 							<p className="font-semibold text-foreground mt-1">
-								{setPaymentStatus(order?.payment?.status)}
+								{setPaymentStatus(order?.data?.payment?.status)}
 							</p>
 						</div>
 						<div className="">
@@ -61,7 +139,7 @@ const AdminDetailOrder = () => {
 						Item Pesanan
 					</h2>
 					<div className="space-y-4">
-						{order?.products.map((product, index) => (
+						{order.data?.products.map((product, index) => (
 							<div
 								className="flex items-center gap-3 pb-4 border-b border-border"
 								key={index}>
@@ -83,6 +161,21 @@ const AdminDetailOrder = () => {
 											product?.product?.price * product?.quantity
 										)}
 									</p>
+									{order?.data?.status === "success" &&
+										!product?.reviewed && (
+											<div className="flex justify-end">
+												<button
+													onClick={() =>
+														setModal({
+															open: true,
+															data: product.product
+														})
+													}
+													className="bg-none text-xs text-primary cursor-pointer hover:underline focus:underline">
+													Beri Ulasan
+												</button>
+											</div>
+										)}
 								</div>
 							</div>
 						))}
@@ -96,7 +189,7 @@ const AdminDetailOrder = () => {
 						<div className="flex items-center justify-between text-sm">
 							<span className="text-muted-foreground">Subtotal</span>
 							<span className="text-foreground">
-								{handleCurrency(order?.totalPrice)}
+								{handleCurrency(order?.data?.totalPrice)}
 							</span>
 						</div>
 						<div className="flex items-center justify-between text-sm">
@@ -110,7 +203,7 @@ const AdminDetailOrder = () => {
 								Total
 							</span>
 							<span className="text-foreground">
-								{handleCurrency(order?.totalPrice)}
+								{handleCurrency(order?.data?.totalPrice)}
 							</span>
 						</div>
 					</div>
@@ -119,7 +212,7 @@ const AdminDetailOrder = () => {
 					<h2 className="font-font-heading text-lg font-bold text-foreground mb-4">
 						Informasi Pembayaran
 					</h2>
-					<div className="space-y-3">
+					<div className="space-y-5">
 						<div className="flex items-start gap-3">
 							<CreditCard className="size-7 text-primary mt-0.5 shrink-0" />
 							<div className="flex-1">
@@ -130,9 +223,9 @@ const AdminDetailOrder = () => {
 							</div>
 						</div>
 						<div className="flex items-start gap-3">
-							{setPaymentStatus(order?.payment?.status) === "Berhasil" ? (
+							{setPaymentStatus(order?.data?.payment?.status) === "Berhasil" ? (
 								<ClipboardCheck className="size-7 text-primary mt-0.5 shrink-0" />
-							) : setPaymentStatus(order?.payment?.status) ===
+							) : setPaymentStatus(order?.data?.payment?.status) ===
 							  "Pending" ? (
 								<ClipboardClock className="size-7 text-primary mt-0.5 shrink-0" />
 							) : (
@@ -143,7 +236,7 @@ const AdminDetailOrder = () => {
 									Status Pembayaran
 								</p>
 								<p className="text-sm text-foreground">
-									{setPaymentStatus(order?.payment?.status)}
+									{setPaymentStatus(order?.data?.payment?.status)}
 								</p>
 							</div>
 						</div>
@@ -154,7 +247,7 @@ const AdminDetailOrder = () => {
 									Tanggal Pembayaran
 								</p>
 								<p className="text-sm text-foreground">
-									{handleDate(order?.payment?.paidAt)}
+									{handleDate(order?.data?.payment?.paidAt)}
 								</p>
 							</div>
 						</div>
@@ -169,13 +262,13 @@ const AdminDetailOrder = () => {
 							<Contact className="size-7 text-primary mt-0.5 shrink-0" />
 							<div className="flex-1 mb-2">
 								<p className="text-sm text-foreground mb-1">
-									{order?.user?.name}
+									{order?.data?.user?.name}
 								</p>
 								<p className="text-sm text-foreground mb-1">
-									{order?.user?.email}
+									{order?.data?.user?.email}
 								</p>
 								<p className="text-sm text-foreground">
-									{order?.user?.phoneNumber}
+									{order?.data?.user?.phoneNumber}
 								</p>
 							</div>
 						</div>
@@ -183,7 +276,7 @@ const AdminDetailOrder = () => {
 							<MapPin className="size-7 text-primary mt-0.5 shrink-0" />
 							<div className="flex-1">
 								<p className="text-sm text-foreground mb-2 lg:mt-1.5">
-									{order?.user?.address}
+									{order?.data?.user?.address}
 								</p>
 							</div>
 						</div>
@@ -215,10 +308,97 @@ const AdminDetailOrder = () => {
 					</button>
 				</div>
 			</section>
+			<Modal
+				open={modal.open}
+				onCancel={handleCloseModal}
+				title={null}
+				centered
+				footer={null}
+				styles={{
+					content: {
+						borderRadius: "36px",
+						overflow: "hidden"
+					}
+				}}
+				width={380}>
+				<div className="bg-card">
+					<div className="space-y-6 p-2 max-h-[80vh] overflow-y-auto">
+						<div className="flex items-center gap-3">
+							<div className="size-12 bg-secondary rounded-xl overflow-hidden shrink-0">
+								<img
+									alt={modal.data?.name}
+									src={modal.data?.image?.imageURL}
+									className="w-full h-full object-cover"
+								/>
+							</div>
+							<div className="">
+								<p className="font-bold text-lg text-foreground">
+									{modal.data?.name}
+								</p>
+								<p className="text-xs text-muted-foreground">
+									Bagikan pengalaman Anda dengan produk ini
+								</p>
+							</div>
+						</div>
+						<Form form={form} onFinish={onFinish}>
+							<div className="space-y-3">
+								<Form.Item
+									name={"rating"}
+									required={false}
+									className="[&_.ant-form-item-explain]:mt-2"
+									rules={[
+										{ required: true, message: "Rating wajib diisi" }
+									]}
+									style={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										gap: "0.5rem",
+										marginBlock: "0.75rem"
+									}}>
+									<Rate
+										className="ant-rate-review"
+										allowClear={false}
+									/>
+								</Form.Item>
+							</div>
+							<div className="mb-7 space-y-2">
+								<label
+									htmlFor="comment"
+									className="text-sm font-semibold text-foreground px-1">
+									Berikan ulasan Anda
+								</label>
+								<Form.Item
+									name={"comment"}
+									required={false}
+									className="[&_.ant-form-item-explain]:my-2"
+									rules={[
+										{ required: true, message: "Ulasan wajib diisi" }
+									]}>
+									<Input.TextArea
+										id="comment"
+										className="w-full! min-h-35! bg-input/50! border-none! rounded-2xl! p-4! text-foreground! placeholder:text-muted-foreground! focus:ring-2! focus:ring-primary/50! focus:outline-none! resize-none! mt-2!"
+									/>
+								</Form.Item>
+							</div>
+							<button
+								disabled={isPending}
+								type="submit"
+								className="w-full h-14 bg-primary text-primary-foreground flex items-center justify-center rounded-2xl font-bold text-base shadow-md cursor-pointer transition-all active:scale-[0.98] focus:outline-none focus:ring-primary focus:ring-2">
+								{isPending ? (
+									<CircularLoading color="#FFFFFF" size={30} />
+								) : (
+									"Kirim Ulasan"
+								)}
+							</button>
+						</Form>
+					</div>
+				</div>
+			</Modal>
 		</main>
 	)
 }
 
 export {
-	AdminDetailOrder
+	CustomerOrderDetail
 }

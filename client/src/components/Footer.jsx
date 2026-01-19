@@ -1,8 +1,8 @@
 import {
-    Facebook,
-    Instagram,
-    Sprout,
-    Twitter
+	Facebook,
+	Instagram,
+	Sprout,
+	Twitter
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -42,5 +42,5 @@ const Footer = () => {
 }
 
 export {
-    Footer
+	Footer
 }

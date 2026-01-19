@@ -4,13 +4,10 @@ import {
 	MapPin,
 	Phone,
 	Search,
-	UserRoundX,
+	UserRoundX
 } from "lucide-react";
 import { handleDate } from "../../../utils/date";
-import {
-	Input,
-	Pagination
-} from "antd";
+import { Input, Pagination } from "antd";
 import { Navbar } from "../../../components/Navbar";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 
@@ -77,7 +74,8 @@ const AdminUsers = () => {
 												<div className="pt-2 border-t border-border/50">
 													<p className="text-xs text-muted-foreground flex items-center gap-2">
 														<CalendarDays className="size-3.5" />
-														Terdaftar : {handleDate(user?.createdAt)}
+														Terdaftar :{" "}
+														{handleDate(user?.createdAt)}
 													</p>
 												</div>
 											</div>
@@ -100,7 +98,7 @@ const AdminUsers = () => {
 							/>
 						</>
 					) : (
-						<section className="flex-1 flex items-center justify-center py-16">
+						<section className="absolute inset-0 flex items-center justify-center">
 							<div className="text-center px-6 max-w-md mx-auto">
 								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
 									<UserRoundX className="size-12 text-muted-foreground lg:size-16" />
@@ -121,5 +119,5 @@ const AdminUsers = () => {
 }
 
 export {
-    AdminUsers
+	AdminUsers
 }

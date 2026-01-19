@@ -35,15 +35,24 @@ const LoginForm = () => {
 		try {
 			const response = await mutateAsync(result.data);
 			secureLocalStorage.setItem("SESSION_KEY", response.data);
-			toast.success(`Halo, ${response.data?.name}`)
+			toast.success(`Halo, ${response.data?.name}`);
 			if (response.data?.role === "admin") {
 				navigate("/admin");
 			} else {
 				navigate("/");
 			}
 		} catch (error) {
-			toast.error(`${error?.response?.data?.message === 'Phone number is not registered' ? 'Akun tidak ditemukan' : (error?.response?.data?.message === 'Incorrect password' ? 'Kata sandi salah' : 'Terjadi kesalahan di sistem')}`)
-			
+			switch (error?.response?.data?.message) {
+				case 'Phone number is not registered':
+					toast.error('Akun tidak ditemukan');
+					break;
+				case 'Incorrect password':
+					toast.error('Kata sandi salah');
+					break;
+				default:
+					toast.error('Terjadi kesalahan di sistem');
+					break;
+			}
 		}
 	}
 
@@ -71,10 +80,7 @@ const LoginForm = () => {
 						rules={[
 							{ required: true, message: "Kata sandi wajib diisi" }
 						]}>
-						<Input
-							type="password"
-							placeholder="Masukkan kata sandi"
-						/>
+						<Input type="password" placeholder="Masukkan kata sandi" />
 					</Form.Item>
 					<div className="flex justify-end">
 						<Link

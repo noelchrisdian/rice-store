@@ -74,7 +74,7 @@ const CustomerCart = () => {
 				products: [
 					{
 						product: data?.product._id,
-						quantity: newQuantity,
+						quantity: newQuantity
 					}
 				]
 			})
@@ -105,12 +105,12 @@ const CustomerCart = () => {
 			setLoadingItem((prev) => ({
 				...prev,
 				[data?.product?._id]: true
-			}))
+			}));
 			await updateCart({
 				products: [
 					{
 						product: data?.product?._id,
-						quantity: newQuantity,
+						quantity: newQuantity
 					}
 				]
 			})
@@ -119,7 +119,7 @@ const CustomerCart = () => {
 		} finally {
 			setLoadingItem((prev) => ({
 				...prev,
-				[data?.product?._id]: false,
+				[data?.product?._id]: false
 			}))
 		}
 	}
@@ -159,29 +159,29 @@ const CustomerCart = () => {
 	const handleCreateOrder = async () => {
 		try {
 			const response = await mutateAsync();
-			const orderID = response?.data?.orderID
+			const orderID = response?.data?.orderID;
 			const token = response?.data?.snap?.token;
 
 			if (!orderID || !token) {
-				toast.warning('Token pembayaran tidak valid');
+				toast.warning("Token pembayaran tidak valid");
 			}
 
 			window.snap.pay(token, {
 				onSuccess: () => {
-					window.location.href = `/order/confirmation?order_id=${orderID}`;
+					window.location.href = `/orders/confirmation?order_id=${orderID}`;
 				},
 				onPending: () => {
-					window.location.href = `/order/confirmation?order_id=${orderID}`;
+					window.location.href = `/orders/confirmation?order_id=${orderID}`;
 				},
 				onError: () => {
-					toast.error('Pembayaran gagal');
+					toast.error("Pembayaran gagal");
 				},
 				onClose: () => {
-					toast.warning('Pembayaran dibatalkan');
+					window.location.href = `/orders/confirmation?order_id=${orderID}`;
 				}
 			})
 		} catch (error) {
-			toast.error(error?.response?.data?.message)
+			toast.error(error?.response?.data?.message);
 		}
 	}
 
@@ -303,8 +303,15 @@ const CustomerCart = () => {
 											</span>
 										</div>
 									</div>
-									<button disabled={isPending} onClick={() => handleCreateOrder()} className="w-3xs mx-auto bg-primary text-primary-foreground font-bold p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center shadow-lg text-lg shadow-primary/20 mb-2 mt-10 active:scale-[0.98]">
-										{isPending ? <CircularLoading color="#FFFFFF" size={28}/> : 'Bayar'}
+									<button
+										disabled={isPending}
+										onClick={() => handleCreateOrder()}
+										className="w-3xs mx-auto bg-primary text-primary-foreground font-bold p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center shadow-lg text-lg shadow-primary/20 mb-2 mt-10 active:scale-[0.98]">
+										{isPending ? (
+											<CircularLoading color="#FFFFFF" size={28} />
+										) : (
+											"Bayar"
+										)}
 									</button>
 								</div>
 							</div>
@@ -326,11 +333,20 @@ const CustomerCart = () => {
 								</div>
 							</div>
 							<div className="text-center space-y-3 max-w-lg mx-auto">
-								<h2 className="text-3xl font-font-heading text-foreground">Keranjangmu masih kosong</h2>
-								<p className="text-muted-foreground text-lg leading-relaxed">Sepertinya Anda belum memilih item favorit. Yuk, cek koleksi kami sekarang!</p>
+								<h2 className="text-3xl font-font-heading text-foreground">
+									Keranjangmu masih kosong
+								</h2>
+								<p className="text-muted-foreground text-lg leading-relaxed">
+									Sepertinya Anda belum memilih item favorit. Yuk, cek
+									koleksi kami sekarang!
+								</p>
 							</div>
 							<div className="max-w-lg mt-12 space-y-4">
-								<Link to={'/#product'} className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">Mulai Belanja</Link>
+								<Link
+									to={"/#product"}
+									className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+									Mulai Belanja
+								</Link>
 							</div>
 						</div>
 					</section>

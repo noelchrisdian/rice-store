@@ -22,7 +22,7 @@ const getInventories = async (req) => {
             .sort({ receivedAt: 1 })
             .skip(skip)
             .limit(limit)
-            .populate('product', 'name price'),
+            .lean(),
         Inventories.countDocuments({ product: productID })
     ])
 
@@ -86,17 +86,6 @@ const createInventory = async (req) => {
         }], { session })
 
         product.inventories.push(inventory._id);
-
-        const [stock] = await Inventories.aggregate([
-            { $match: { product: new mongoose.Types.ObjectId(productID) } },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: '$remaining' }
-                }
-            }
-        ]).session(session);
-        product.stock = stock?.total || 0;
         await product.save({ session });
         await session.commitTransaction();
 
@@ -152,18 +141,7 @@ const updateInventory = async (req) => {
             { new: true, runValidators: true, session }
         )
 
-        const [stock] = await Inventories.aggregate([
-            { $match: { product: new mongoose.Types.ObjectId(productID) } },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: '$remaining' }
-                }
-            }
-        ]).session(session);
-        product.stock = stock?.total || 0;
         await inventory.save({ session });
-        await product.save({ session });
         await session.commitTransaction();
 
         return inventory;

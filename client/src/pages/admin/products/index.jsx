@@ -65,7 +65,7 @@ const AdminProducts = () => {
 							"flex bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm justify-center items-center gap-3 shadow-sm active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 						}>
 						<Plus className="size-4 bg-background rounded-full text-primary" />
-						Buat Produk
+						Produk
 					</Link>
 				</section>
 				<section className="space-y-3 px-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:px-8">
@@ -101,9 +101,9 @@ const AdminProducts = () => {
 													? "bg-destructive/80 text-white"
 													: "bg-orange-500 text-white"
 											} text-primary font-medium whitespace-nowrap`}>
-											{product.stock >= 10
+											{product?.stock >= 10
 												? "Tersedia"
-												: product.stock === 0
+												: product?.stock === 0
 												? "Habis"
 												: "Stok Menipis"}
 										</span>
@@ -151,12 +151,12 @@ const AdminProducts = () => {
 						okText={"Hapus"}
 						okButtonProps={{
 							className:
-								"bg-destructive! border-destructive! text-white! shadow-none!",
+								"bg-destructive! border-destructive! text-white! shadow-none!"
 						}}
 						cancelText={"Batal"}
 						cancelButtonProps={{
 							className:
-								"bg-primary! border-primary! text-white! shadow-none!",
+								"bg-primary! border-primary! text-white! shadow-none!"
 						}}
 						centered>
 						<p className="text-sm font-semibold my-4">
@@ -173,5 +173,5 @@ const AdminProducts = () => {
 }
 
 export {
-    AdminProducts
+	AdminProducts
 }

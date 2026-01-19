@@ -1,5 +1,18 @@
 import { privateAPI } from "../utils/axios";
 
+const getCustomerOrder = async ({ limit, page, range, status }) => {
+    const response = await privateAPI.get('/customers/orders', {
+        params: {
+            limit,
+            page,
+            range,
+            status
+        }
+    })
+
+    return response.data;
+}
+
 const getOrders = async ({ limit, page }) => {
     const response = await privateAPI.get('/admin/orders', {
         params: { limit, page }
@@ -17,14 +30,21 @@ const createOrder = async () => {
     return response.data;
 }
 
+const cancelOrder = async (id) => {
+    const response = await privateAPI.post(`/customers/orders/${id}/cancel-order`);
+    return response.data;
+}
+
 const findOrder = async (id) => {
     const response = await privateAPI.get(`/customers/orders/${id}`);
     return response.data;
 }
 
 export {
+    cancelOrder,
     createOrder,
     findOrder,
+    getCustomerOrder,
     getOrder,
     getOrders
 }

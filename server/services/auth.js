@@ -36,12 +36,9 @@ const signin = async (req) => {
 
     return {
         name: user.name,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
         role: user.role,
         avatar: {
-            imageURL: user.avatar.imageURL,
-            imagePublicID: user.avatar.imagePublicID
+            imageURL: user.avatar.imageURL
         },
         token
     }

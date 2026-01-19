@@ -1,4 +1,10 @@
+import z from 'zod';
 import { privateAPI } from "../utils/axios";
+
+const reviewSchema = z.object({
+    rating: z.coerce.number().int().min(1).max(5),
+    comment: z.string().min(5, 'Ulasan minimal 5 karakter')
+}) 
 
 const getReviews = async (id, { limit, page }) => {
     const response = await privateAPI.get(`/admin/products/${id}/reviews`, {
@@ -7,6 +13,13 @@ const getReviews = async (id, { limit, page }) => {
     return response.data;
 }
 
+const createReview = async (data, orderID, productID) => {
+    const response = await privateAPI.post(`/customers/orders/${orderID}/products/${productID}/review`, data);
+    return response.data;
+}
+
 export {
-    getReviews
+    createReview,
+    getReviews,
+    reviewSchema
 }

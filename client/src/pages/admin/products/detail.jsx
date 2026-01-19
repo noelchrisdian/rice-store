@@ -38,6 +38,9 @@ const AdminDetailProduct = () => {
 		searchParams.get("reviewLimit") || reviews?.meta?.limit || 10
 	)
 
+	const totalReviews = reviews?.analytics?.total;
+	const handlePercentage = (data) => data > 0 ? (data * totalReviews) / 100 : 0;
+
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen py-10 lg:py-20">
 			<Link
@@ -136,13 +139,13 @@ const AdminDetailProduct = () => {
 							<div className="flex items-center gap-4 mb-4 lg:gap-8">
 								<div className="text-center">
 									<p className="font-heading text-4xl font-bold text-primary mb-1">
-										4.5
+										{reviews?.analytics?.average}
 									</p>
 									<div className="flex items-center justify-center gap-1 mb-1.5">
-										<Rate allowHalf defaultValue={4.5} />
+										<Rate allowHalf defaultValue={Number(reviews?.analytics?.average)} />
 									</div>
 									<p className="text-xs text-muted-foreground">
-										100 reviews
+										{Number(reviews?.analytics?.total)} {Number(reviews?.analytics?.total) > 1 ? 'reviews' : 'review'}
 									</p>
 								</div>
 								<div className="flex-1 space-y-2">
@@ -151,13 +154,13 @@ const AdminDetailProduct = () => {
 											5★
 										</span>
 										<Progress
-											percent={40}
+											percent={handlePercentage(Number(reviews?.analytics?.star5))}
 											showInfo={false}
 											strokeColor={"#3D6F2E"}
 											style={{ width: "60%" }}
 										/>
 										<span className="text-xs text-muted-foreground w-10 text-right">
-											40
+											{Number(reviews?.analytics?.star5)}
 										</span>
 									</div>
 									<div className="flex items-center gap-2">
@@ -165,13 +168,13 @@ const AdminDetailProduct = () => {
 											4★
 										</span>
 										<Progress
-											percent={30}
+											percent={handlePercentage(Number(reviews?.analytics?.star4))}
 											showInfo={false}
 											strokeColor={"#3D6F2E"}
 											style={{ width: "60%" }}
 										/>
 										<span className="text-xs text-muted-foreground w-10 text-right">
-											30
+											{Number(reviews?.analytics?.star4)}
 										</span>
 									</div>
 									<div className="flex items-center gap-2">
@@ -179,13 +182,13 @@ const AdminDetailProduct = () => {
 											3★
 										</span>
 										<Progress
-											percent={20}
+											percent={handlePercentage(Number(reviews?.analytics?.star3))}
 											showInfo={false}
 											strokeColor={"#3D6F2E"}
 											style={{ width: "60%" }}
 										/>
 										<span className="text-xs text-muted-foreground w-10 text-right">
-											20
+											{Number(reviews?.analytics?.star3)}
 										</span>
 									</div>
 									<div className="flex items-center gap-2">
@@ -193,13 +196,13 @@ const AdminDetailProduct = () => {
 											2★
 										</span>
 										<Progress
-											percent={5}
+											percent={handlePercentage(Number(reviews?.analytics?.star2))}
 											showInfo={false}
 											strokeColor={"#3D6F2E"}
 											style={{ width: "60%" }}
 										/>
 										<span className="text-xs text-muted-foreground w-10 text-right">
-											5
+											{Number(reviews?.analytics?.star2)}
 										</span>
 									</div>
 									<div className="flex items-center gap-2">
@@ -207,13 +210,13 @@ const AdminDetailProduct = () => {
 											1★
 										</span>
 										<Progress
-											percent={5}
+											percent={handlePercentage(Number(reviews?.analytics?.star1))}
 											showInfo={false}
 											strokeColor={"#3D6F2E"}
 											style={{ width: "60%" }}
 										/>
 										<span className="text-xs text-muted-foreground w-10 text-right">
-											5
+											{Number(reviews?.analytics?.star1)}
 										</span>
 									</div>
 								</div>
@@ -256,70 +259,6 @@ const AdminDetailProduct = () => {
 									</div>
 								</div>
 							))}
-							{/* <div className="p-4 bg-muted rounded-xl">
-								<div className="flex items-start gap-3 mb-3">
-									<Image
-										src="https://randomuser.me/api/portraits/men/42.jpg"
-										width={35}
-										className="rounded-full!"
-									/>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center justify-between mb-1">
-											<h4 className="font-semibold text-sm text-foreground">
-												Michael Chen
-											</h4>
-											<div className="flex items-center gap-2">
-												<span className="text-xs text-muted-foreground">
-													10 Maret 2024
-												</span>
-												<button className="p-1.5 rounded-lg bg-destructive/10 text-destructive active:bg-destructive/20 transition-all">
-													<Trash className="size-4" />
-												</button>
-											</div>
-										</div>
-										<div className="flex items-center gap-1 mb-2">
-											<Rate disabled defaultValue={5} />
-										</div>
-										<p className="text-sm text-foreground leading-relaxed">
-											Great product overall. The aroma is authentic and
-											cooking time is consistent. Only minor issue is
-											the packaging could be better sealed.
-										</p>
-									</div>
-								</div>
-							</div> */}
-							{/* <div className="p-4 bg-muted rounded-xl">
-								<div className="flex items-start gap-3 mb-3">
-									<Image
-										src="https://randomuser.me/api/portraits/women/67.jpg"
-										width={35}
-										className="rounded-full!"
-									/>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center justify-between mb-1">
-											<h4 className="font-semibold text-sm text-foreground">
-												Emma Rodriguez
-											</h4>
-											<div className="flex items-center gap-2">
-												<span className="text-xs text-muted-foreground">
-													8 Maret 2024
-												</span>
-												<button className="p-1.5 rounded-lg bg-destructive/10 text-destructive active:bg-destructive/20 transition-all">
-													<Trash className="size-4" />
-												</button>
-											</div>
-										</div>
-										<div className="flex items-center gap-1 mb-2">
-											<Rate disabled defaultValue={5} />
-										</div>
-										<p className="text-sm text-foreground leading-relaxed">
-											Best basmati rice I've tried! My family loves it.
-											The quality is consistent and it cooks perfectly
-											every time. Highly recommended!
-										</p>
-									</div>
-								</div>
-							</div> */}
 							{reviews?.reviews.length > 0 && (
 								<Pagination
 									align="center"

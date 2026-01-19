@@ -93,6 +93,19 @@
   --tracking-normal: var(--tracking-normal); 
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* 3. Thumb (batang abu-abu) dibikin tipis dan elegan */
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/50 rounded-3xl;
+}
+
 .ant-pagination-item-active {
   width: 32px !important;
   height: 32px !important;
@@ -124,6 +137,11 @@
   height: 16px;
   color: var(--primary) !important;
   fill: var(--primary) !important;
+}
+
+.ant-rate-review .ant-rate-star {
+  font-size: 40px;
+  margin-inline-end: 38px !important;
 }
 
 .ant-select-outlined .ant-select-selector {
