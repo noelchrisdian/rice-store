@@ -145,7 +145,7 @@ const AdminDetailProduct = () => {
 										<Rate allowHalf defaultValue={Number(reviews?.analytics?.average)} />
 									</div>
 									<p className="text-xs text-muted-foreground">
-										{Number(reviews?.analytics?.total)} {Number(reviews?.analytics?.total) > 1 ? 'reviews' : 'review'}
+										{Number(reviews?.analytics?.total)} ulasan
 									</p>
 								</div>
 								<div className="flex-1 space-y-2">

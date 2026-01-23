@@ -172,7 +172,7 @@ const RegisterForm = () => {
 							rules={[
 								{ required: true, message: "Alamat email wajib diisi" }
 							]}>
-							<Input type="email" placeholder="emailanda@gmail.com" />
+							<Input type="email" placeholder="emailanda@email.com" />
 						</Form.Item>
 					</div>
 					<div className="grid lg:grid-cols-2 lg:gap-4">
@@ -183,7 +183,7 @@ const RegisterForm = () => {
 							rules={[
 								{ required: true, message: "Kata sandi wajib diisi" }
 							]}>
-							<Input type="password" placeholder="Masukkan kata sandi" />
+							<Input.Password type="password" placeholder="Masukkan kata sandi" />
 						</Form.Item>
 						<Form.Item
 							label={"Konfirmasi Kata Sandi"}
@@ -195,7 +195,7 @@ const RegisterForm = () => {
 									message: "Konfirmasi kata sandi wajib diisi"
 								}
 							]}>
-							<Input type="password" placeholder="Masukkan kata sandi" />
+							<Input.Password type="password" placeholder="Masukkan kata sandi" />
 						</Form.Item>
 					</div>
 					<Form.Item

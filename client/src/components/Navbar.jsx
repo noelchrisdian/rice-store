@@ -66,12 +66,13 @@ const Navbar = ({ active, position }) => {
 	]
 
 	const handleClick = (e) => {
+		if (!session) return;
 		if (e.key === "change-profile") {
 			navigate(
-				User.role === "admin"
+				session?.role === "admin"
 					? "/admin/change-profile"
 					: "/account/change-profile"
-			);
+			)
 		} else if (e.key === "log-out") {
 			handleLogout();
 		}

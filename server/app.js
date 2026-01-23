@@ -28,10 +28,10 @@ app.get('/', (req, res) => {
 app.post('/midtrans-notification', notification);
 
 app
-    .use('/admin', authenticated, authorize('admin'), adminRouter)
-    .use('/customers', authenticated, authorize('customer'), customerRouter)
     .use('/', authRouter)
     .use('/', globalRouter)
+    .use('/admin', authenticated, authorize('admin'), adminRouter)
+    .use('/customers', authenticated, authorize('customer'), customerRouter)
     .use(errorHandler)
 
 app.listen(port, () => {

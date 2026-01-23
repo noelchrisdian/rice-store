@@ -1,3 +1,8 @@
+import "dayjs/locale/id";
+import "swiper/swiper.css";
+import "swiper/css/pagination";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { addItem } from "../../services/carts";
 import {
 	ArrowLeft,
@@ -8,25 +13,38 @@ import {
 	ShoppingBag,
 	Star
 } from "lucide-react";
+import { Autoplay, Pagination } from "swiper/modules";
 import { CircularLoading } from "respinner";
 import { Footer } from "../../components/Footer";
 import { getSession } from "../../utils/axios";
 import { handleCurrency } from "../../utils/price";
-import { Modal, Rate } from "antd";
+import {
+	Modal,
+	Progress,
+	Rate
+} from "antd";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 
 const CustomerProductDetail = () => {
 	const navigate = useNavigate();
-	const product = useLoaderData();
 	const session = getSession();
+	const { product, reviews } = useLoaderData();
 	const [openModal, setOpenModal] = useState(false);
 	const [modalUser, setModalUser] = useState(false);
 
 	const handleCancel = () => {
 		setOpenModal(false);
 	}
+
+	dayjs.extend(relativeTime);
+	dayjs.locale("id");
+
+	const totalReviews = reviews?.analytics?.total;
+	const handlePercentage = (data) =>
+		data > 0 ? (data * totalReviews) / 100 : 0;
 
 	const { isPending, mutateAsync } = useMutation({
 		mutationFn: (data) => addItem(data)
@@ -83,13 +101,17 @@ const CustomerProductDetail = () => {
 						<div className="mb-8">
 							<div className="flex items-center gap-3 mb-4">
 								<div className="flex items-center gap-1">
-									<Rate disabled value={5} />
+									<Rate
+										disabled
+										allowHalf
+										value={reviews?.analytics?.average}
+									/>
 								</div>
 								<span className="text-base font-bold text-foreground">
-									4.8
+									{reviews?.analytics?.average}
 								</span>
 								<span className="text-sm text-muted-foreground">
-									(324 reviews)
+									{reviews?.analytics?.total} ulasan
 								</span>
 							</div>
 							<div className="flex items-baseline gap-2">
@@ -152,6 +174,161 @@ const CustomerProductDetail = () => {
 										</p>
 									</div>
 								</div>
+							</div>
+						</div>
+					</div>
+					<div className="bg-card rounded-2xl p-5 border border-border shadow-sm mb-6">
+						<h3 className="font-font-heading text-xl font-bold text-foreground mb-4">
+							Ulasan
+						</h3>
+						<div className="lg:grid lg:grid-cols-2 lg:gap-10">
+							<div className="flex items-center gap-4 mb-6 pb-6 border-b border-border lg:border-r lg:border-b-0 lg:pr-6">
+								<div className="text-center">
+									<div className="text-5xl font-bold text-foreground mb-1">
+										{reviews?.analytics?.average}
+									</div>
+									<Rate
+										defaultValue={5}
+										disabled
+										allowHalf
+										className="mb-3!"
+									/>
+									<div className="text-sm text-muted-foreground">
+										{reviews?.analytics?.total} ulasan
+									</div>
+								</div>
+								<div className="flex-1 space-y-2">
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-foreground w-8">
+											5★
+										</span>
+										<Progress
+											percent={handlePercentage(
+												Number(reviews?.analytics?.star5)
+											)}
+											showInfo={false}
+											strokeColor={"#3D6F2E"}
+											style={{ width: "80%" }}
+										/>
+										<span className="text-sm text-muted-foreground w-10 text-right">
+											{Number(reviews?.analytics?.star5)}
+										</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-foreground w-8">
+											4★
+										</span>
+										<Progress
+											percent={handlePercentage(
+												Number(reviews?.analytics?.star4)
+											)}
+											showInfo={false}
+											strokeColor={"#3D6F2E"}
+											style={{ width: "80%" }}
+										/>
+										<span className="text-sm text-muted-foreground w-10 text-right">
+											{Number(reviews?.analytics?.star4)}
+										</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-foreground w-8">
+											3★
+										</span>
+										<Progress
+											percent={handlePercentage(
+												Number(reviews?.analytics?.star3)
+											)}
+											showInfo={false}
+											strokeColor={"#3D6F2E"}
+											style={{ width: "80%" }}
+										/>
+										<span className="text-sm text-muted-foreground w-10 text-right">
+											{Number(reviews?.analytics?.star3)}
+										</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-foreground w-8">
+											2★
+										</span>
+										<Progress
+											percent={handlePercentage(
+												Number(reviews?.analytics?.star2)
+											)}
+											showInfo={false}
+											strokeColor={"#3D6F2E"}
+											style={{ width: "80%" }}
+										/>
+										<span className="text-sm text-muted-foreground w-10 text-right">
+											{Number(reviews?.analytics?.star2)}
+										</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-foreground w-8">
+											1★
+										</span>
+										<Progress
+											percent={handlePercentage(
+												Number(reviews?.analytics?.star1)
+											)}
+											showInfo={false}
+											strokeColor={"#3D6F2E"}
+											style={{ width: "80%" }}
+										/>
+										<span className="text-sm text-muted-foreground w-10 text-right">
+											{Number(reviews?.analytics?.star1)}
+										</span>
+									</div>
+								</div>
+							</div>
+							<div className="space-y-4">
+								<Swiper
+									modules={[Autoplay, Pagination]}
+									spaceBetween={30}
+									slidesPerView={"auto"}
+									autoplay={{
+										delay: 4000,
+										disableOnInteraction: false
+									}}
+									pagination={{ clickable: true }}
+									scrollbar={{ draggable: true }}
+									grabCursor
+									loop={reviews?.reviews.length > 1}
+								>
+									{reviews?.reviews.map((review, index) => (
+										<SwiperSlide key={index}>
+											<div className="pb-4 border-border">
+												<div className="flex items-start gap-3 mb-3">
+													<img
+														src={review?.user?.avatar?.imageURL}
+														className="size-10 rounded-full object-cover"
+													/>
+													<div className="flex-1">
+														<div className="flex items-center justify-between mb-1">
+															<h4 className="font-semibold text-foreground">
+																{review?.user?.name}
+															</h4>
+															<span className="text-xs text-muted-foreground">
+																{dayjs(
+																	review?.createdAt
+																).fromNow()}
+															</span>
+														</div>
+														<div className="flex items-center gap-1 mb-2">
+															<Rate
+																disabled
+																allowHalf
+																value={review?.rating}
+															/>
+														</div>
+													</div>
+												</div>
+												<p className="text-base text-muted-foreground leading-relaxed">
+													{review?.comment}
+												</p>
+											</div>
+										</SwiperSlide>
+									))}
+								</Swiper>
 							</div>
 						</div>
 					</div>
@@ -276,8 +453,8 @@ const CustomerProductDetail = () => {
 				width={380}>
 				<div className="bg-card p-6">
 					<div className="flex flex-col items-center text-center mb-6">
-						<div className="size-16 bg-primary rounded-full flex items-center justify-center mb-4">
-							<Contact className="size-10 text-white" />
+						<div className="size-20 p-1 bg-primary rounded-full flex items-center justify-center mb-4">
+							<Contact className="size-12 text-white" />
 						</div>
 						<h2 className="font-heading text-2xl font-bold text-foreground mb-2">
 							Masuk ke Akun Anda

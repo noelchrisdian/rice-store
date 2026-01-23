@@ -22,9 +22,12 @@ const userSchema = z.object({
     address: z.string().min(5, 'Address must be at least 5 characters long')
 }).strict();
 
-const phoneNumberSchema = userSchema.omit({ name: true, email: true, password: true, confirmPassword: true, address: true });
+const emailSchema = userSchema.omit({ name: true, phoneNumber: true, password: true, confirmPassword: true, address: true });
 
-const passwordSchema = userSchema.omit({ name: true, phoneNumber: true, email: true, address: true });
+const passwordSchema = z.object({
+    password: z.string().min(5, 'Kata sandi minimal 5 karakter'),
+    confirmPassword: z.string().min(5, 'Kata sandi minimal 5 karakter')
+}).strict();
 
 const cartSchema = z.object({
     products: z.array(z.object({
@@ -42,7 +45,7 @@ export {
     cartSchema,
     inventorySchema,
     passwordSchema,
-    phoneNumberSchema,
+    emailSchema,
     productSchema,
     reviewSchema,
     userSchema

@@ -80,11 +80,11 @@ const LoginForm = () => {
 						rules={[
 							{ required: true, message: "Kata sandi wajib diisi" }
 						]}>
-						<Input type="password" placeholder="Masukkan kata sandi" />
+						<Input.Password type="password" placeholder="Masukkan kata sandi" />
 					</Form.Item>
 					<div className="flex justify-end">
 						<Link
-							to={"#"}
+							to={"/forgot-password"}
 							className="text-sm! text-primary! font-medium! hover:underline! focus:underline! focus:outline-none!">
 							Lupa kata sandi?
 						</Link>

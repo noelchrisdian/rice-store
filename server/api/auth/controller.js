@@ -1,5 +1,6 @@
 import {
     changePassword,
+    getResetToken,
     resetPassword,
     signin,
     signup,
@@ -35,6 +36,15 @@ const reset = async (req, res, next) => {
     }
 }
 
+const findToken = async (req, res, next) => {
+    try {
+        const token = await getResetToken(req);
+        success(res, token, 'Reset token fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
 const change = async (req, res, next) => {
     try {
         const user = await changePassword(req);
@@ -55,6 +65,7 @@ const update = async (req, res, next) => {
 
 export {
     change,
+    findToken,
     login,
     register,
     reset,

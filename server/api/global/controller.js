@@ -1,11 +1,12 @@
 import {
+    getIndexReviews,
     getProduct,
     getProducts,
     getReviews
 } from "../../services/global.js";
 import { success } from '../../utils/response.js';
 
-const indexProduct = async (req, res, next) => {
+const indexProducts = async (req, res, next) => {
     try {
         const products = await getProducts();
         success(res, products, 'Products fetched successfully');
@@ -23,7 +24,16 @@ const findProduct = async (req, res, next) => {
     }
 }
 
-const indexReview = async (req, res, next) => {
+const indexReviews = async (req, res, next) => {
+    try {
+        const reviews = await getIndexReviews();
+        success(res, reviews, 'Reviews fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const productReviews = async (req, res, next) => {
     try {
         const reviews = await getReviews(req);
         success(res, reviews, 'Reviews fetched successfully');
@@ -34,6 +44,7 @@ const indexReview = async (req, res, next) => {
 
 export {
     findProduct,
-    indexProduct,
-    indexReview
+    indexProducts,
+    indexReviews,
+    productReviews
 }

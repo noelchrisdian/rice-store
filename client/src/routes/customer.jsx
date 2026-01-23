@@ -9,6 +9,7 @@ import { findOrder, getCustomerOrder } from "../services/orders";
 import { getCart } from "../services/carts";
 import { getCustomer } from "../services/users";
 import { getGlobalProduct, getGlobalProducts } from "../services/products";
+import { getIndexReviews, getProductReview } from "../services/reviews";
 import { getSession } from "../utils/axios";
 import { redirect } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,7 +20,11 @@ const router = [
 		index: true,
 		loader: async () => {
 			const products = await getGlobalProducts();
-			return products.data;
+			const reviews = await getIndexReviews();
+			return {
+				initial: products.data,
+				reviews: reviews.data
+			}
 		},
 		element: <CustomerHome />
 	},
@@ -28,12 +33,15 @@ const router = [
 		loader: async ({ params }) => {
 			try {
 				const product = await getGlobalProduct(params.id);
-				return product.data;
+				const reviews = await getProductReview(params.id);
+	
+				return {
+					product: product.data,
+					reviews: reviews.data
+				}
 			} catch (error) {
-				toast.error(
-					error?.response?.data?.message || "Terjadi kesalahan di sistem"
-				);
-				return redirect("/");
+				toast.error(error?.response?.data?.message);
+				return redirect('/');
 			}
 		},
 		element: <CustomerProductDetail />
@@ -99,8 +107,8 @@ const router = [
 					} catch (error) {
 						toast.error(
 							error?.response?.data?.message ||
-								"Terjadi kesalahan di sistem"
-						);
+							"Terjadi kesalahan di sistem"
+						)
 						return redirect("/orders");
 					}
 				},

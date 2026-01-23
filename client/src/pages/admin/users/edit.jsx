@@ -97,7 +97,7 @@ const EditUserForm = () => {
 		try {
 			await mutateAsync(formData);
 			toast.success("Data Anda berhasil diubah");
-			navigate(user.role === "admin" ? "/admin/settings" : "/account");
+			navigate(user.role === "admin" ? "/admin" : "/");
 		} catch (error) {
 			switch (error?.response?.data?.message) {
 				case `User doesn't exist`:
