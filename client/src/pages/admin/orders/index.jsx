@@ -1,9 +1,13 @@
+import { CircularLoading } from "respinner";
 import {
 	ClipboardX,
 	Eye,
-	Printer,
+	FileDown,
 	Search
 } from "lucide-react";
+import { createAdminInvoice } from "../../../services/orders";
+import { handleDate } from "../../../utils/date";
+import { handleCurrency } from "../../../utils/price";
 import {
 	Input,
 	Pagination,
@@ -15,11 +19,13 @@ import {
 	useSearchParams
 } from "react-router-dom";
 import { Navbar } from "../../../components/Navbar";
-import { handleDate } from "../../../utils/date";
-import { handleCurrency } from "../../../utils/price";
+import { toast } from "sonner";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 
 const AdminOrders = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
+	const [loadingID, setLoadingID] = useState(null);
 	const orders = useLoaderData();
 	const currentPage = Number(
 		searchParams.get("page") || orders.meta.page || 1
@@ -27,6 +33,31 @@ const AdminOrders = () => {
 	const pageSize = Number(
 		searchParams.get("limit") || orders.meta.limit || 10
 	)
+
+	const { mutate } = useMutation({
+		mutationFn: async (id) => {
+			setLoadingID(id);
+			return createAdminInvoice(id);
+		},
+		onSuccess: async (blob, id) => {
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.download = `Invoice #${id}.pdf`;
+
+			document.body.appendChild(link);
+			link.click();
+
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		},
+		onSettled: () => {
+			setLoadingID(null);
+		},
+		onError: (error) => {
+			toast.error(error);
+		}
+	})
 
 	return (
 		<>
@@ -99,14 +130,14 @@ const AdminOrders = () => {
 														order?.status === "success"
 															? "bg-primary/10 text-primary"
 															: order?.status === "pending"
-															? "bg-orange-100 text-orange-700"
-															: "bg-destructive/10 text-destructive"
+																? "bg-orange-100 text-orange-700"
+																: "bg-destructive/10 text-destructive"
 													} font-medium whitespace-nowrap`}>
 													{order?.status === "success"
 														? "Berhasil"
 														: order?.status === "pending"
-														? "Pending"
-														: "Gagal"}
+															? "Pending"
+															: "Gagal"}
 												</span>
 											</div>
 											<div className="flex items-center justify-between pt-1">
@@ -121,9 +152,19 @@ const AdminOrders = () => {
 														className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 														<Eye className="size-4" />
 													</Link>
-													<Link className="px-3 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
-														<Printer className="size-4" />
-													</Link>
+													<button
+														disabled={loadingID === order?._id}
+														onClick={() => mutate(order?._id)}
+														className="px-3 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
+														{loadingID === order?._id ? (
+															<CircularLoading
+																color="#FFFFFF"
+																size={15}
+															/>
+														) : (
+															<FileDown className="size-4" />
+														)}
+													</button>
 												</div>
 											</div>
 										</div>

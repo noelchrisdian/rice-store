@@ -57,6 +57,7 @@ const orderSchema = new Schema({
             default: 'pending'
         },
         paidAt: Date,
+        expiry_time: Date,
         midtransOrderID: String,
         midtransTransactionID: String
     }

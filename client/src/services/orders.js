@@ -25,6 +25,20 @@ const getOrder = async (id) => {
     return response.data;
 }
 
+const createInvoice = async (id) => {
+    const response = await privateAPI.get(`/customers/orders/${id}/invoice`, {
+        responseType: 'blob'
+    })
+    return response.data;
+}
+
+const createAdminInvoice = async (id) => {
+    const response = await privateAPI.get(`/admin/orders/${id}/invoice`, {
+        responseType: 'blob'
+    })
+    return response.data;
+}
+
 const createOrder = async () => {
     const response = await privateAPI.post('/customers/orders');
     return response.data;
@@ -42,6 +56,8 @@ const findOrder = async (id) => {
 
 export {
     cancelOrder,
+    createAdminInvoice,
+    createInvoice,
     createOrder,
     findOrder,
     getCustomerOrder,

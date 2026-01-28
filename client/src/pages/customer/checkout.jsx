@@ -46,7 +46,7 @@ const CustomerCheckout = () => {
 		setModal(false);
 	}
 
-	const handlePayment = async () => {
+	const handlePayment = () => {
 		try {
 			window.snap.pay(data?.payment?.midtransTransactionID, {
 				onSuccess: () => {
@@ -55,8 +55,11 @@ const CustomerCheckout = () => {
 				onPending: () => {
 					window.location.href = `/orders/confirmation?order_id=${orderID}`;
 				},
-				onError: () => {
-					toast.error("Pembayaran gagal");
+				onError: (result) => {
+					toast.error(result?.status_message);
+					setTimeout(() => {
+						window.location.href = `orders/${orderID}`;
+					}, 3000)
 				},
 				onClose: () => {
 					window.location.href = `/orders/confirmation?order_id=${orderID}`;

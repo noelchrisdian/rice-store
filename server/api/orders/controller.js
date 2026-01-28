@@ -1,5 +1,6 @@
 import {
     cancelOrder,
+    createInvoice,
     createOrder,
     getOrder,
     getOrders,
@@ -44,6 +45,14 @@ const cancel = async (req, res, next) => {
     }
 }
 
+const invoice = async (req, res, next) => {
+    try {
+        await createInvoice(req, res);
+    } catch (error) {
+        next(error);
+    }
+}
+
 const notification = async (req, res, next) => {
     try {
         const order = await midtransWebhook(req);
@@ -58,5 +67,6 @@ export {
     create,
     find,
     index,
+    invoice,
     notification
 }

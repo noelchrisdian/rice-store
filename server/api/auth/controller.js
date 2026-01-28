@@ -1,7 +1,4 @@
 import {
-    changePassword,
-    getResetToken,
-    resetPassword,
     signin,
     signup,
     updateUser
@@ -27,33 +24,6 @@ const register = async (req, res, next) => {
     }
 }
 
-const reset = async (req, res, next) => {
-    try {
-        const link = await resetPassword(req);
-        success(res, link, 'Link has been sent to registered email');
-    } catch (error) {
-        next(error);
-    }
-}
-
-const findToken = async (req, res, next) => {
-    try {
-        const token = await getResetToken(req);
-        success(res, token, 'Reset token fetched successfully');
-    } catch (error) {
-        next(error);
-    }
-}
-
-const change = async (req, res, next) => {
-    try {
-        const user = await changePassword(req);
-        success(res, user, 'Password has been changed');
-    } catch (error) {
-        next(error);
-    }
-}
-
 const update = async (req, res, next) => {
     try {
         const user = await updateUser(req);
@@ -64,10 +34,7 @@ const update = async (req, res, next) => {
 }
 
 export {
-    change,
-    findToken,
     login,
     register,
-    reset,
     update
 }

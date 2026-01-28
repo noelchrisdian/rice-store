@@ -82,13 +82,6 @@ const LoginForm = () => {
 						]}>
 						<Input.Password type="password" placeholder="Masukkan kata sandi" />
 					</Form.Item>
-					<div className="flex justify-end">
-						<Link
-							to={"/forgot-password"}
-							className="text-sm! text-primary! font-medium! hover:underline! focus:underline! focus:outline-none!">
-							Lupa kata sandi?
-						</Link>
-					</div>
 					<button
 						className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:ring-2 focus:outline-none focus:ring-primary/50"
 						disabled={isPending}>

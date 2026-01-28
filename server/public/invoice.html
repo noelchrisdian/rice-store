@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice {{order.id}}</title>
+    <link rel="icon" href="{{favicon}}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+    <style type="text/tailwindcss">
+
+        @theme inline {
+        --color-background: var(--background);
+        --color-foreground: var(--foreground);
+        --color-primary: var(--primary);
+        --color-primary-foreground: var(--primary-foreground);
+        --color-secondary: var(--secondary);
+        --color-secondary-foreground: var(--secondary-foreground);
+        --color-muted: var(--muted);
+        --color-muted-foreground: var(--muted-foreground);
+        --color-accent: var(--accent);
+        --color-accent-foreground: var(--accent-foreground);
+        --color-destructive: var(--destructive);
+        --color-card: var(--card);
+        --color-card-foreground: var(--card-foreground);
+        --color-popover: var(--popover);
+        --color-popover-foreground: var(--popover-foreground);
+        --color-border: var(--border);
+        --color-input: var(--input);
+        --color-ring: var(--ring);
+        --color-chart-1: var(--chart-1);
+        --color-chart-2: var(--chart-2);
+        --color-chart-3: var(--chart-3);
+        --color-chart-4: var(--chart-4);
+        --color-chart-5: var(--chart-5);
+
+        --font-font-sans: var(--font-sans);
+        --font-font-heading: var(--font-heading);
+        --font-font-serif: var(--font-serif);
+        --font-font-mono: var(--font-mono);
+
+        --radius-sm: calc(var(--radius) - 4px);
+        --radius-md: calc(var(--radius) - 2px);
+        --radius-lg: var(--radius);
+        --radius-xl: calc(var(--radius) + 4px);
+      }
+
+      :root {
+          --background: #fdfcf8;
+        --foreground: #1a2e1a;
+        --primary: #3d6f2e;
+        --primary-foreground: #ffffff;
+        --secondary: #e8eedf;
+        --secondary-foreground: #2a3d2a;
+        --muted: #f2f5eb;
+        --muted-foreground: #6c7c6c;
+        --accent: #d5e0c5;
+        --accent-foreground: #1a2e1a;
+        --destructive: #b91c1c;
+        --card: #ffffff;
+        --card-foreground: #1a2e1a;
+        --popover: #ffffff;
+        --popover-foreground: #1a2e1a;
+        --border: #e2e8d8;
+        --input: #e2e8d8;
+        --ring: #3d6f2e;
+        --chart-1: #3d6f2e;
+        --chart-2: #90a955;
+        --chart-3: #d4a373;
+        --chart-4: #e9edc9;
+        --chart-5: #bc6c25;
+
+        --font-sans: "Manrope";
+        --font-heading: "DM Serif Display";
+        --font-serif: "Playfair Display";
+        --font-mono: "JetBrains Mono";
+
+        --radius: 0.75rem;
+      }
+    </style>
+</head>
+
+<body>
+    <div class="min-h-screen bg-background text-foreground font-sans pb-4">
+        <main class="px-4 py-6 lg:max-w-xl lg:mx-auto">
+            <div class="bg-card rounded-2xl border border-border/50 overflow-hidden p-6 mb-2">
+                <div class="text-center mb-6 pb-6 border-b border-border">
+                    <h1 class="font-heading uppercase text-3xl font-bold text-primary tracking-widest">Invoice</h1>
+                </div>
+                <div class="grid grid-cols-2 gap-6 mb-6 pb-6 border-b border-border">
+                    <div>
+                        <h3 class="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                            Dari
+                        </h3>
+                        <p class="font-semibold text-foreground mb-1">Toko Beras AD</p>
+                        <p class="text-sm text-muted-foreground leading-relaxed">
+                            Jalan Kedung Ombo A46 Magelang, Jawa Tengah 56172 <br> noel@tokoberasad.com <br>
+                            +6281229965129
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                            Untuk
+                        </h3>
+                        <p class="font-semibold text-foreground mb-1">{{customer.name}}</p>
+                        <p class="text-sm text-muted-foreground leading-relaxed">
+                            {{customer.address}}<br />{{customer.email}}<br />{{customer.phoneNumber}}
+                        </p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-6 mb-6 pb-6 border-b border-border">
+                    <div>
+                        <h3 class="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                            Tanggal Pesanan
+                        </h3>
+                        <p class="text-sm text-foreground">{{order.date}}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                            Status Pesanan
+                        </h3>
+                        <p class="text-sm text-foreground">{{order.status}}</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-xs font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
+                        Item Pesanan
+                    </h3>
+                    <div class="space-y-3">
+                        {{#order.items}}
+                        <div class="flex items-start gap-3 p-3 bg-muted rounded-xl">
+                            <img alt="{{name}}" src="{{image}}"
+                                class="size-16 rounded-lg object-cover bg-background shrink-0" />
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-sm text-foreground mb-1">{{name}}</h4>
+                                <p class="text-xs text-muted-foreground mb-2">{{weight}} kg</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3 text-xs text-muted-foreground">
+                                        <span>{{quantity}}</span><span>×</span><span>{{price}}</span>
+                                    </div>
+                                    <p class="font-semibold text-foreground">{{subtotal}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {{/order.items}}
+                    </div>
+                </div>
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-muted-foreground">Subtotal</span><span
+                            class="text-foreground">{{order.total}}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-muted-foreground">Diskon</span><span class="text-primary">Rp 0</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-border">
+                    <span class="font-heading text-xl font-bold text-foreground">Total</span><span
+                        class="font-heading text-2xl font-bold text-primary">{{order.total}}</span>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

@@ -1,4 +1,12 @@
 import {
+	Alert,
+	Form,
+	Image,
+	Input,
+	Modal,
+	Rate
+} from "antd";
+import {
 	ArrowLeft,
 	Calendar,
 	ClipboardCheck,
@@ -6,23 +14,16 @@ import {
 	ClipboardX,
 	Contact,
 	CreditCard,
+	FileDown,
 	MapPin,
-	Printer,
 	Store
 } from "lucide-react";
 import { CircularLoading } from "respinner";
+import { createInvoice, findOrder } from "../../../services/orders";
 import { createReview, reviewSchema } from "../../../services/reviews";
-import { findOrder } from "../../../services/orders";
-import {
-	Form,
-	Image,
-	Input,
-	Modal,
-	Rate
-} from "antd";
-import { Link, useLoaderData } from "react-router-dom";
 import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
+import { Link, useLoaderData } from "react-router-dom";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
@@ -102,6 +103,48 @@ const CustomerOrderDetail = () => {
 		}
 	}
 
+	const handlePayment = () => {
+		try {
+			window.snap.pay(order?.data?.payment?.midtransTransactionID, {
+				onSuccess: () => {
+					window.location.href = `/orders/confirmation?order_id=${order?.data?._id}`;
+				},
+				onPending: () => {
+					window.location.href = `/orders/confirmation?order_id=${order?.data?._id}`;
+				},
+				onError: (result) => {
+					toast.error(result?.status_message);
+					setTimeout(() => {
+						window.location.href = `orders/${order?.data?._id}`;
+					}, 3000);
+				},
+				onClose: () => {
+					window.location.href = `/orders/confirmation?order_id=${order?.data?._id}`;
+				}
+			})
+		} catch (error) {
+			toast.error(error?.response?.data?.message);
+		}
+	}
+
+	const invoice = useMutation({
+		mutationFn: (id) => createInvoice(id),
+		onSuccess: async (blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.setAttribute("download", `Invoice #${order?.data?._id}.pdf`);
+			document.body.appendChild(link);
+			link.click();
+
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		},
+		onError: (error) => {
+			toast.error(error);
+		}
+	})
+
 	useEffect(() => {
 		window.scrollTo(0, 0);
 	}, [])
@@ -113,6 +156,22 @@ const CustomerOrderDetail = () => {
 				className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5">
 				<ArrowLeft className="size-6" />
 			</Link>
+			{order?.data?.payment?.status === "pending" &&
+				new Date() <= new Date(order?.data?.payment?.expiry_time) && (
+					<Alert
+						className="mt-6! mx-4! flex! items-center! lg:max-w-3xl! lg:mx-auto!"
+						banner
+						showIcon
+						description={"Menunggu pembayaran"}
+						action={
+							<button
+								className="bg-orange-400 text-white py-1 px-3 rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500"
+								onClick={() => handlePayment()}>
+								Bayar Sekarang
+							</button>
+						}
+					/>
+				)}
 			<section className="px-4 pt-6 space-y-6 lg:max-w-3xl lg:mx-auto">
 				<div className="bg-card rounded-2xl border border-border p-4 space-y-4">
 					<div className="flex items-center justify-between">
@@ -150,13 +209,17 @@ const CustomerOrderDetail = () => {
 									className="rounded-xl! object-cover! bg-muted! border! border-border/50!"
 								/>
 								<div className="flex-1 min-w-0">
-									<p className="font-semibold text-sm text-foreground">
+									<h4 className="font-semibold text-sm text-foreground mb-1">
 										{product?.product?.name}
+									</h4>
+									<p className="text-xs text-muted-foreground mb-1">
+										{product?.product?.weightPerUnit} kg
 									</p>
-									<div className="text-xs text-muted-foreground mt-1">
-										Jumlah : {product?.quantity}
+									<div className="text-xs text-muted-foreground mb-3">
+										{product?.quantity} x{" "}
+										{handleCurrency(product?.product?.price)}
 									</div>
-									<p className="font-semibold text-foreground mt-2">
+									<p className="font-semibold text-foreground">
 										{handleCurrency(
 											product?.product?.price * product?.quantity
 										)}
@@ -171,7 +234,7 @@ const CustomerOrderDetail = () => {
 															data: product.product
 														})
 													}
-													className="bg-none text-xs text-primary cursor-pointer hover:underline focus:underline">
+													className="bg-none text-xs text-primary cursor-pointer hover:underline focus:outline-none focus:underline">
 													Beri Ulasan
 												</button>
 											</div>
@@ -223,7 +286,8 @@ const CustomerOrderDetail = () => {
 							</div>
 						</div>
 						<div className="flex items-start gap-3">
-							{setPaymentStatus(order?.data?.payment?.status) === "Berhasil" ? (
+							{setPaymentStatus(order?.data?.payment?.status) ===
+							"Berhasil" ? (
 								<ClipboardCheck className="size-7 text-primary mt-0.5 shrink-0" />
 							) : setPaymentStatus(order?.data?.payment?.status) ===
 							  "Pending" ? (
@@ -303,8 +367,14 @@ const CustomerOrderDetail = () => {
 					</div>
 				</div>
 				<div className="px-4 pb-6 space-y-3">
-					<button className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-10 cursor-pointer active:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50">
-						<Printer className="size-6" />
+					<button
+						onClick={() => invoice.mutate(order?.data?._id)}
+						className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-10 cursor-pointer active:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50">
+						{invoice.isPending ? (
+							<CircularLoading color="#FFFFFF" size={25} />
+						) : (
+							<FileDown className="size-6" />
+						)}
 					</button>
 				</div>
 			</section>

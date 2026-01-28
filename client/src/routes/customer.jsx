@@ -34,14 +34,18 @@ const router = [
 			try {
 				const product = await getGlobalProduct(params.id);
 				const reviews = await getProductReview(params.id);
-	
+
 				return {
 					product: product.data,
 					reviews: reviews.data
 				}
 			} catch (error) {
-				toast.error(error?.response?.data?.message);
-				return redirect('/');
+				toast.error(
+					error?.response?.data?.message === `Product doesn't exist`
+						? "Produk tidak ditemukan"
+						: "Terjadi kesalahan di sistem"
+				)
+				return redirect("/");
 			}
 		},
 		element: <CustomerProductDetail />
@@ -51,7 +55,7 @@ const router = [
 			const session = getSession();
 			if (!session || session.role === "admin") {
 				toast.warning("Silakan mendaftar atau masuk dengan akun Anda");
-				throw redirect("/sign-in");
+				return redirect("/sign-in");
 			}
 		},
 		children: [
@@ -106,8 +110,9 @@ const router = [
 						return order.data;
 					} catch (error) {
 						toast.error(
-							error?.response?.data?.message ||
-							"Terjadi kesalahan di sistem"
+							error?.response?.data?.message === `Order doesn't exist`
+								? "Pesanan tidak ditemukan"
+								: "Terjadi kesalahan di sistem"
 						)
 						return redirect("/orders");
 					}

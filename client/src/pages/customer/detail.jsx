@@ -382,7 +382,7 @@ const CustomerProductDetail = () => {
 				<div className="fixed bottom-0 left-0 right-0 px-5 py-4 z-20 shadow-lg lg:absolute lg:shadow-none">
 					<button
 						disabled={isPending}
-						className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-bold text-base transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] lg:max-w-lg lg:mx-auto"
+						className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-bold text-base transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
 						onClick={() => handleAddItem()}>
 						{isPending ? (
 							<CircularLoading size={26} color="#FFFFFF" />

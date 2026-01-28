@@ -173,8 +173,11 @@ const CustomerCart = () => {
 				onPending: () => {
 					window.location.href = `/orders/confirmation?order_id=${orderID}`;
 				},
-				onError: () => {
-					toast.error("Pembayaran gagal");
+				onError: (result) => {
+					toast.error(result?.status_message);
+					setTimeout(() => {
+						window.location.href = `orders/${orderID}`;
+					}, 3000);
 				},
 				onClose: () => {
 					window.location.href = `/orders/confirmation?order_id=${orderID}`;
@@ -193,7 +196,7 @@ const CustomerCart = () => {
 			<main className="bg-background text-foreground font-sans min-h-screen">
 				{cartItem.length > 0 ? (
 					<section className="lg:max-w-7xl lg:mx-auto">
-						<div className="px-6 pt-8 pb-6 lg:pt-28">
+						<div className="px-6 pt-8 pb-6 lg:pt-32">
 							<div className="">
 								<div className="space-y-4">
 									{cartItem.map((item, index) => (
@@ -319,7 +322,7 @@ const CustomerCart = () => {
 					</section>
 				) : (
 					<section className="min-h-screen flex items-center justify-center">
-						<div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+						<div className="flex-1 flex flex-col items-center justify-center pt-32 px-6 pb-20">
 							<div className="relative mb-8 flex items-center justify-center">
 								<div className="absolute size-64 rounded-full bg-secondary/30 blur-2xl" />
 								<div className="absolute size-40 rounded-full bg-accent/40 blur-xl top-10 right-10" />

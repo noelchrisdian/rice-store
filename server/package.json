@@ -14,19 +14,18 @@
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
-    "dayjs": "^1.11.18",
+    "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
-    "juice": "^11.1.0",
     "midtrans-client": "^1.4.3",
     "mongoose": "^8.19.1",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "mustache": "^4.2.0",
-    "nodemailer": "^7.0.10",
     "nodemon": "^3.1.10",
+    "puppeteer": "^24.36.0",
     "zod": "^4.1.12"
   }
 }
