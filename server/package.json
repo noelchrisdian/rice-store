@@ -25,7 +25,6 @@
     "multer-storage-cloudinary": "^4.0.0",
     "mustache": "^4.2.0",
     "nodemon": "^3.1.10",
-    "puppeteer": "^24.36.0",
     "zod": "^4.1.12"
   }
 }

@@ -9,10 +9,15 @@ import {
 import { handleDate } from "../../../utils/date";
 import { Input, Pagination } from "antd";
 import { Navbar } from "../../../components/Navbar";
+import { useDebounce } from "use-debounce";
+import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";
+import { useState } from "react";
 
 const AdminUsers = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
+	const [identity, setIdentity] = useState(searchParams.get('search') || '');
+	const [value] = useDebounce(identity, 500);
 	const users = useLoaderData();
 	const currentPage = Number(
 		searchParams.get("page") || users?.meta?.page || 1
@@ -20,6 +25,30 @@ const AdminUsers = () => {
 	const pageSize = Number(
 		searchParams.get("limit") || users?.meta?.limit || 10
 	)
+
+	useEffect(() => {
+		const url = searchParams.get('search') || '';
+
+		if (url !== identity) {
+			setIdentity(url);
+		}
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchParams])
+
+	useEffect(() => {
+		const params = new URLSearchParams(searchParams);
+
+		if (value) {
+			params.set('search', value);
+		} else {
+			params.delete('search');
+		}
+
+		params.set('page', '1');
+		setSearchParams(params);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [value])
 
 	return (
 		<>
@@ -33,12 +62,15 @@ const AdminUsers = () => {
 							<div className="relative">
 								<Search className="size-5 text-muted-foreground absolute left-3.5 top-1/2" />
 								<Input
+									allowClear
+									value={identity}
 									className="w-full! pl-11! pr-4! py-3! rounded-xl! bg-input! border-0! text-foreground! placeholder:text-muted-foreground! focus:ring-2! focus:ring-primary! lg:py-2!"
 									type="text"
 									suffix={
 										<Search className="size-5 text-muted-foreground absolute left-3.5" />
 									}
 									placeholder="Cari berdasarkan nama atau alamat email"
+									onChange={(e) => setIdentity(e.target.value)}
 								/>
 							</div>
 						</div>

@@ -1,10 +1,8 @@
-import { CircularLoading } from "respinner";
 import {
 	ClipboardX,
 	Eye,
-	FileDown
+	FileText
 } from "lucide-react";
-import { createInvoice } from "../../../services/orders";
 import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
 import {
@@ -14,13 +12,9 @@ import {
 } from "react-router-dom";
 import { Navbar } from "../../../components/Navbar";
 import { Pagination, Select } from "antd";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 
 const CustomerOrders = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [loadingID, setLoadingID] = useState(null);
 	const orders = useLoaderData();
 	const currentPage = Number(
 		searchParams.get("page") || orders.meta.page || 1
@@ -43,31 +37,6 @@ const CustomerOrders = () => {
 		{ value: "30d", label: "30 Hari Terakhir" },
 		{ value: "90d", label: "90 Hari Terakhir" }
 	]
-
-	const { mutate } = useMutation({
-		mutationFn: async (id) => {
-			setLoadingID(id);
-			return await createInvoice(id);
-		},
-		onSuccess: async (blob, id) => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = `Invoice #${id}.pdf`;
-
-			document.body.appendChild(link);
-			link.click();
-			
-			document.body.removeChild(link);
-			window.URL.revokeObjectURL(url);
-		},
-		onSettled: () => {
-			setLoadingID(null)
-		},
-		onError: (error) => {
-			toast.error(error);
-		}
-	})
 
 	return (
 		<>
@@ -194,19 +163,11 @@ const CustomerOrders = () => {
 														className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 														<Eye className="size-4" />
 													</Link>
-													<button
-														onClick={() => mutate(order._id)}
-														disabled={loadingID === order._id}
-														className="px-3 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
-														{loadingID === order._id ? (
-															<CircularLoading
-																color="#FFFFFF"
-																size={15}
-															/>
-														) : (
-															<FileDown className="size-4" />
-														)}
-													</button>
+													<Link
+														to={`/orders/${order._id}/invoice`}
+														className="px-3 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
+														<FileText className="size-4"/>
+													</Link>
 												</div>
 											</div>
 										</div>
@@ -246,7 +207,7 @@ const CustomerOrders = () => {
 				<Navbar active={"orders"} position={"bottom"} />
 			</section>
 		</>
-	);
+	)
 }
 
 export {

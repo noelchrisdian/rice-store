@@ -1,15 +1,9 @@
 import dayjs from 'dayjs';
-import fs from 'fs/promises';
-import id from "dayjs/locale/id.js";
 import midtransClient from 'midtrans-client';
 import mongoose from "mongoose";
-import Mustache from 'mustache';
-import path from 'path';
-import puppeteer from 'puppeteer';
 import { BadRequest } from "../errors/badRequest.js";
 import { cartModel as Carts } from "../api/carts/model.js";
 import { Forbidden } from '../errors/forbidden.js';
-import { handleCurrency } from '../../client/src/utils/price.js';
 import { inventoryModel as Inventories } from '../api/inventories/model.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
@@ -85,77 +79,6 @@ const getOrder = async (req) => {
     }
 
     return order;
-}
-
-const setPaymentStatus = (data) => {
-    if (["settlement", "capture"].includes(data)) {
-        return "Berhasil";
-    } else if (["deny", "cancel", "expire", "failure"].includes(data)) {
-        return "Gagal";
-    } else if (data === "pending") {
-        return "Pending";
-    }
-}
-
-const handleDate = (date) => {
-    return dayjs(date).locale(id).format('DD MMMM YYYY')
-}
-
-const createInvoice = async (req, res) => {
-    const { id } = req.params;
-    const order = await Orders.findById(id)
-        .populate('products.product', 'name image price weightPerUnit')
-        .populate('user', 'name phoneNumber email address')
-    
-    if (!order) {
-        throw new NotFound(`Order doesn't exist`);
-    }
-
-    const logo = await fs.readFile(path.join(process.cwd(), 'public', 'Logo.svg'));
-    const base64 = `data:image/svg+xml;base64,${logo.toString('base64')}`;
-
-    const template = await fs.readFile(path.join(process.cwd(), 'public', 'invoice.html'), 'utf-8')
-    const html = Mustache.render(template, {
-        favicon: base64,
-        order: {
-            id: order._id,
-            items: order.products.map((item) => ({
-                name: item.product.name,
-                image: item.product.image.imageURL,
-                weight: item.product.weightPerUnit,
-                quantity: item.quantity,
-                price: handleCurrency(item.product.price),
-                subtotal: handleCurrency(item.quantity * item.product.price)
-            })),
-            status: setPaymentStatus(order.payment.status),
-            date: handleDate(order.createdAt),
-            total: handleCurrency(order.totalPrice),
-        },
-        customer: {
-            name: order.user.name,
-            phoneNumber: order.user.phoneNumber,
-            address: order.user.address,
-            email: order.user.email
-        }
-    })
-
-    const browser = await puppeteer.launch({ headless: 'new' });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-
-    const buffer = await page.pdf({
-        format: 'A4',
-        printBackground: true
-    })
-
-    await browser.close();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-        "Content-Disposition",
-        `inline; filename="Invoice.pdf"`
-    )
-    
-    res.send(buffer);
 }
 
 const createOrder = async (req) => {
@@ -380,7 +303,6 @@ const midtransWebhook = async (req) => {
 
 export {
     cancelOrder,
-    createInvoice,
     createOrder,
     getOrder,
     getOrders,

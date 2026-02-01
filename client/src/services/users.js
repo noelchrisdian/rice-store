@@ -13,9 +13,9 @@ const changeProfileSchema = z.object({
     message: 'Kata sandi wajib sama'
 })
 
-const getUsers = async ({ limit, page }) => {
+const getUsers = async ({ limit, page, search }) => {
     const response = await privateAPI.get('/admin/users/', {
-        params: { limit, page }
+        params: { limit, page, search }
     })
     return response.data;
 }

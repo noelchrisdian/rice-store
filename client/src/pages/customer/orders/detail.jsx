@@ -14,16 +14,16 @@ import {
 	ClipboardX,
 	Contact,
 	CreditCard,
-	FileDown,
+	FileText,
 	MapPin,
 	Store
 } from "lucide-react";
 import { CircularLoading } from "respinner";
-import { createInvoice, findOrder } from "../../../services/orders";
+import { findOrder } from "../../../services/orders";
 import { createReview, reviewSchema } from "../../../services/reviews";
 import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
-import { Link, useLoaderData } from "react-router-dom";
+import { Link, useRouteLoaderData } from "react-router-dom";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
@@ -33,7 +33,7 @@ import {
 } from "@tanstack/react-query";
 
 const CustomerOrderDetail = () => {
-	const initial = useLoaderData();
+	const initial = useRouteLoaderData('order-detail');
 	const queryClient = useQueryClient();
 	const [form] = Form.useForm();
 	const [modal, setModal] = useState({
@@ -126,24 +126,6 @@ const CustomerOrderDetail = () => {
 			toast.error(error?.response?.data?.message);
 		}
 	}
-
-	const invoice = useMutation({
-		mutationFn: (id) => createInvoice(id),
-		onSuccess: async (blob) => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			link.href = url;
-			link.setAttribute("download", `Invoice #${order?.data?._id}.pdf`);
-			document.body.appendChild(link);
-			link.click();
-
-			document.body.removeChild(link);
-			window.URL.revokeObjectURL(url);
-		},
-		onError: (error) => {
-			toast.error(error);
-		}
-	})
 
 	useEffect(() => {
 		window.scrollTo(0, 0);
@@ -367,15 +349,11 @@ const CustomerOrderDetail = () => {
 					</div>
 				</div>
 				<div className="px-4 pb-6 space-y-3">
-					<button
-						onClick={() => invoice.mutate(order?.data?._id)}
+					<Link
+						to={`/orders/${order?.data?._id}/invoice`}
 						className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-10 cursor-pointer active:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50">
-						{invoice.isPending ? (
-							<CircularLoading color="#FFFFFF" size={25} />
-						) : (
-							<FileDown className="size-6" />
-						)}
-					</button>
+						<FileText />
+					</Link>
 				</div>
 			</section>
 			<Modal

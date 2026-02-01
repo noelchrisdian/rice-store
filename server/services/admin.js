@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import mongoose from 'mongoose';
 import { NotFound } from '../errors/notFound.js';
 import { orderModel as Orders } from '../api/orders/model.js';
@@ -5,31 +6,86 @@ import { productModel as Products } from '../api/products/model.js';
 import { reviewModel as Reviews } from '../api/reviews/model.js';
 import { userModel as Users } from '../api/users/model.js';
 
+const escape = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 const getOrders = async (req) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const [orders, total] = await Promise.all([
-        Orders.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .populate('user', 'name')
-            .lean(),
-        Orders.countDocuments()
+    const filter = {};
+    const { range, search, status } = req.query;
+
+    if (status) {
+        filter.status = status;
+    }
+
+    if (range && range !== '') {
+        let startDate;
+        const endDate = dayjs().endOf('day').toDate();
+
+        switch (range) {
+            case 'today':
+                startDate = dayjs().startOf('day').toDate()
+                break;
+            case '7d':
+                startDate = dayjs().subtract(7, 'day').startOf('day').toDate();
+                break;
+            case '30d':
+                startDate = dayjs().subtract(30, 'day').startOf('day').toDate();
+                break;
+            case '90d':
+                startDate = dayjs().subtract(90, 'day').startOf('day').toDate();
+                break;
+            default:
+                startDate = null;
+                break;
+        }
+
+        filter.createdAt = { $gte: startDate, $lte: endDate };
+    }
+
+    const pipeline = [
+        { $match: filter },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'user',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        ...(search ? [{ $match: { 'user.name': { $regex: escape(search.trim()), $options: 'i' } } }] : [])
+    ]
+
+    const [orders, totalAggregate] = await Promise.all([
+        Orders.aggregate([
+            ...pipeline,
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ]),
+        Orders.aggregate([
+            ...pipeline,
+            { $count: 'total' }
+        ])
     ])
 
-    const totalPages = Math.ceil(total / limit);
+    const total = totalAggregate[0]?.total || 0;
+
     return {
         orders,
         meta: {
             total,
             page,
             limit,
-            totalPages
+            totalPages: Math.ceil(total / limit)
         }
     }
+    
 }
 
 const getOrder = async (req) => {
@@ -132,14 +188,26 @@ const getUsers = async (req) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    const { search } = req.query;
+    const filter = {};
+    filter.role = 'customer';
+
+    if (search) {
+        filter.$or = [
+            { name: { $regex: escape(search), $options: 'i' } },
+            { email: { $regex: escape(search), $options: 'i' } },
+            { phoneNumber: { $regex: escape(search), $options: 'i' } }
+        ]
+    }
+
     const [users, total] = await Promise.all([
-        Users.find({ role: 'customer' })
+        Users.find(filter)
             .select('name phoneNumber email address createdAt')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
             .lean(),
-        Users.countDocuments({ role: 'customer' })
+        Users.countDocuments(filter)
     ])
 
     const totalPages = Math.ceil(total / limit);

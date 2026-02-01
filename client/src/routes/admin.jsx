@@ -16,7 +16,9 @@ import { getOrder, getOrders } from "../services/orders";
 import { getProduct, getProducts } from "../services/products";
 import { getReviews } from "../services/reviews";
 import { getSession } from "../utils/axios";
+import { OrderInvoice } from "../pages/customer/orders/invoice";
 import { redirect } from "react-router-dom";
+import { toast } from "sonner";
 import { UserSettings } from "../pages/settings";
 
 const router = [
@@ -140,23 +142,36 @@ const router = [
 					const url = new URL(request.url);
 					const limit = Number(url.searchParams.get("limit") || 10);
 					const page = Number(url.searchParams.get("page") || 1);
+					const search = url.searchParams.get('search');
+					const status = url.searchParams.get('status');
+					const range = url.searchParams.get('range');
 
-					const orders = await getOrders({ limit, page });
+					const orders = await getOrders({ limit, page, range, search, status });
 					return orders.data;
 				},
 				element: <AdminOrders />
 			},
 			{
-				path: "/admin/orders/:id",
+				id: 'admin-order-detail',
 				loader: async ({ params }) => {
-					if (!params.id) {
-						throw redirect("/admin/orders");
+					try {
+						const order = await getOrder(params.id);
+						return order.data;
+					} catch (error) {
+						toast.error(error?.response?.data?.message === `Order doesn't exist` ? 'Pesanan tidak ditemukan' : 'Terjadi kesalahan di sistem')
+						return redirect('/admin/orders');
 					}
-
-					const order = await getOrder(params.id);
-					return order.data;
 				},
-				element: <AdminDetailOrder />
+				children: [
+					{
+						path: "/admin/orders/:id",
+						element: <AdminDetailOrder />
+					},
+					{
+						path: "/admin/orders/:id/invoice",
+						element: <OrderInvoice role={'admin'}  />
+					}
+				],
 			},
 			{
 				path: "/admin/users",
@@ -164,8 +179,9 @@ const router = [
 					const url = new URL(request.url);
 					const limit = Number(url.searchParams.get("limit") || 10);
 					const page = Number(url.searchParams.get("page") || 1);
+					const search = url.searchParams.get('search');
 
-					const users = await getUsers({ limit, page });
+					const users = await getUsers({ limit, page, search });
 					return users.data;
 				},
 				element: <AdminUsers />

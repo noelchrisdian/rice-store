@@ -6,21 +6,17 @@ import {
 	ClipboardX,
 	Contact,
 	CreditCard,
-	FileDown,
+	FileText,
 	MapPin,
 	Store
 } from "lucide-react";
-import { CircularLoading } from "respinner";
-import { createAdminInvoice } from "../../../services/orders";
-import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
+import { handleDate } from "../../../utils/date";
 import { Image } from "antd";
-import { Link, useLoaderData } from "react-router-dom";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+import { Link, useRouteLoaderData } from "react-router-dom";
 
 const AdminDetailOrder = () => {
-	const order = useLoaderData();
+	const order = useRouteLoaderData('admin-order-detail');
 
 	const setPaymentStatus = (data) => {
 		if (["settlement", "capture"].includes(data)) {
@@ -31,24 +27,6 @@ const AdminDetailOrder = () => {
 			return "Pending";
 		}
 	}
-
-	const { isPending, mutate } = useMutation({
-		mutationFn: (id) => createAdminInvoice(id),
-		onSuccess: async (blob) => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			link.href = url;
-			link.setAttribute("download", `Invoice #${order?._id}.pdf`);
-			document.body.appendChild(link);
-			link.click();
-
-			document.body.removeChild(link);
-			window.URL.revokeObjectURL(url);
-		},
-		onError: (error) => {
-			toast.error(error);
-		}
-	})
 
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen pt-10 pb-2">
@@ -103,7 +81,7 @@ const AdminDetailOrder = () => {
 									</div>
 									<p className="font-semibold text-foreground mt-2">
 										{handleCurrency(
-											product?.product?.price * product?.quantity
+											product?.product?.price * product?.quantity,
 										)}
 									</p>
 								</div>
@@ -234,13 +212,9 @@ const AdminDetailOrder = () => {
 					</div>
 				</div>
 				<div className="px-4 pb-6 space-y-3">
-					<button disabled={isPending} onClick={() => mutate(order?._id)} className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-10 cursor-pointer active:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50">
-						{isPending ? (
-							<CircularLoading color="#FFFFFF" size={30} />
-						) : (
-							<FileDown className="size-6" />
-						)}
-					</button>
+					<Link to={`/admin/orders/${order?._id}/invoice`} className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-10 cursor-pointer active:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50">
+						<FileText className="size-6" />
+					</Link>
 				</div>
 			</section>
 		</main>

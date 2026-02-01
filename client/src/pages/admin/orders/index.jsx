@@ -1,11 +1,9 @@
-import { CircularLoading } from "respinner";
 import {
 	ClipboardX,
 	Eye,
-	FileDown,
+	FileText,
 	Search
 } from "lucide-react";
-import { createAdminInvoice } from "../../../services/orders";
 import { handleDate } from "../../../utils/date";
 import { handleCurrency } from "../../../utils/price";
 import {
@@ -19,13 +17,14 @@ import {
 	useSearchParams
 } from "react-router-dom";
 import { Navbar } from "../../../components/Navbar";
-import { toast } from "sonner";
+import { useDebounce } from 'use-debounce';
+import { useEffect } from "react";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 
 const AdminOrders = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [loadingID, setLoadingID] = useState(null);
+	const [name, setName] = useState(searchParams.get('search') || '');
+	const [value] = useDebounce(name, 500);
 	const orders = useLoaderData();
 	const currentPage = Number(
 		searchParams.get("page") || orders.meta.page || 1
@@ -34,30 +33,33 @@ const AdminOrders = () => {
 		searchParams.get("limit") || orders.meta.limit || 10
 	)
 
-	const { mutate } = useMutation({
-		mutationFn: async (id) => {
-			setLoadingID(id);
-			return createAdminInvoice(id);
-		},
-		onSuccess: async (blob, id) => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			link.href = url;
-			link.download = `Invoice #${id}.pdf`;
+	const currentStatus = searchParams.get('status') || null;
+	const currentRange = searchParams.get('range') || null;
 
-			document.body.appendChild(link);
-			link.click();
+	useEffect(() => {
+		const url = searchParams.get('search') || '';
 
-			document.body.removeChild(link);
-			window.URL.revokeObjectURL(url);
-		},
-		onSettled: () => {
-			setLoadingID(null);
-		},
-		onError: (error) => {
-			toast.error(error);
+		if (url !== name) {
+			setName(url);
 		}
-	})
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchParams])
+
+	useEffect(() => {
+		const params = new URLSearchParams(searchParams);
+
+		if (value) {
+			params.set("search", value);
+		} else {
+			params.delete("search");
+		}
+
+		params.set("page", "1");
+		setSearchParams(params);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [value])
 
 	return (
 		<>
@@ -70,12 +72,15 @@ const AdminOrders = () => {
 						<div className="space-y-3 pb-3 lg:pt-10 lg:pb-1">
 							<div className="relative">
 								<Input
+									allowClear
+									value={name}
 									type="text"
 									className="w-full! pl-11! pr-4! py-3! rounded-xl! bg-input! border-0! text-foreground! placeholder:text-muted-foreground! lg:py-1.5!"
 									suffix={
 										<Search className="size-5 text-muted-foreground absolute left-3.5" />
 									}
 									placeholder="Cari berdasarkan nama pelanggan"
+									onChange={(e) => setName(e.target.value)}
 								/>
 							</div>
 						</div>
@@ -83,26 +88,52 @@ const AdminOrders = () => {
 							<div className="flex-1">
 								<Select
 									className="w-full!"
-									placeholder={"Pilih Status Pesanan"}
+									placeholder={"Status Pesanan"}
 									allowClear
+									value={currentStatus}
 									options={[
 										{ value: "success", label: "Sukses" },
 										{ value: "pending", label: "Pending" },
-										{ value: "cancelled", label: "Batal" }
+										{ value: "failed", label: "Batal" }
 									]}
+									onChange={(value) => {
+										const params = new URLSearchParams(searchParams);
+
+										if (value) {
+											params.set('status', value);
+										} else {
+											params.delete('status');
+										}
+
+										params.set('page', '1')
+										setSearchParams(params);
+									}}
 								/>
 							</div>
 							<div className="flex-1">
 								<Select
 									className="w-full!"
-									placeholder={"Pilih Rentang Waktu"}
+									placeholder={"Rentang Waktu"}
 									allowClear
+									value={currentRange}
 									options={[
 										{ value: "today", label: "Hari Ini" },
 										{ value: "7d", label: "7 Hari Terakhir" },
 										{ value: "30d", label: "30 Hari Terakhir" },
 										{ value: "90d", label: "90 Hari Terakhir" }
 									]}
+									onChange={(value) => {
+										const params = new URLSearchParams(searchParams);
+
+										if (value) {
+											params.set('range', value);
+										} else {
+											params.delete('range')
+										}
+
+										params.set('page', '1');
+										setSearchParams(params);
+									}}
 								/>
 							</div>
 						</div>
@@ -152,19 +183,11 @@ const AdminOrders = () => {
 														className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
 														<Eye className="size-4" />
 													</Link>
-													<button
-														disabled={loadingID === order?._id}
-														onClick={() => mutate(order?._id)}
+													<Link
+														to={`/admin/orders/${order?._id}/invoice`}
 														className="px-3 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50">
-														{loadingID === order?._id ? (
-															<CircularLoading
-																color="#FFFFFF"
-																size={15}
-															/>
-														) : (
-															<FileDown className="size-4" />
-														)}
-													</button>
+														<FileText className="size-4" />
+													</Link>
 												</div>
 											</div>
 										</div>
@@ -187,7 +210,7 @@ const AdminOrders = () => {
 							/>
 						</>
 					) : (
-						<section className="flex-1 flex items-center justify-center py-16">
+						<section className="absolute inset-0 flex items-center justify-center py-16">
 							<div className="text-center px-6 max-w-md mx-auto">
 								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
 									<ClipboardX className="size-12 text-muted-foreground lg:size-16" />

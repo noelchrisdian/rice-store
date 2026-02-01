@@ -11,6 +11,7 @@ import { getCustomer } from "../services/users";
 import { getGlobalProduct, getGlobalProducts } from "../services/products";
 import { getIndexReviews, getProductReview } from "../services/reviews";
 import { getSession } from "../utils/axios";
+import { OrderInvoice } from "../pages/customer/orders/invoice";
 import { redirect } from "react-router-dom";
 import { toast } from "sonner";
 import { UserSettings } from "../pages/settings";
@@ -103,7 +104,7 @@ const router = [
 				element: <CustomerOrders />
 			},
 			{
-				path: "/orders/:id",
+				id: 'order-detail',
 				loader: async ({ params }) => {
 					try {
 						const order = await findOrder(params.id);
@@ -111,13 +112,22 @@ const router = [
 					} catch (error) {
 						toast.error(
 							error?.response?.data?.message === `Order doesn't exist`
-								? "Pesanan tidak ditemukan"
-								: "Terjadi kesalahan di sistem"
+							? "Pesanan tidak ditemukan"
+							: "Terjadi kesalahan di sistem"
 						)
 						return redirect("/orders");
 					}
 				},
-				element: <CustomerOrderDetail />
+				children: [
+					{
+						path: "/orders/:id",
+						element: <CustomerOrderDetail />
+					},
+					{
+						path: "orders/:id/invoice",
+						element: <OrderInvoice role={'customer'} />
+					}
+				]
 			},
 			{
 				path: "/orders/confirmation",
