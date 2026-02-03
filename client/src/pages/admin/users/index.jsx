@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { handleDate } from "../../../utils/date";
 import { Input, Pagination } from "antd";
-import { Navbar } from "../../../components/Navbar";
+import { Navbar } from "../../../components/navbar";
 import { useDebounce } from "use-debounce";
 import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";

@@ -6,7 +6,7 @@ import {
 	useNavigate
 } from "react-router-dom";
 import { LogOutIcon, UserPen } from "lucide-react";
-import { Navbar } from "../components/Navbar";
+import { Navbar } from '../components/navbar';
 
 const UserSettings = () => {
     const user = useLoaderData();

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Autoplay, Pagination } from "swiper/modules";
 import { CircularLoading } from "respinner";
-import { Footer } from "../../components/Footer";
+import { Footer } from "../../components/footer";
 import { getSession } from "../../utils/axios";
 import { handleCurrency } from "../../utils/price";
 import {

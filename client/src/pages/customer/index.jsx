@@ -7,11 +7,11 @@ import {
 	Sprout,
 	ThumbsUp
 } from "lucide-react";
-import { Footer } from "../../components/Footer";
+import { Footer } from "../../components/footer";
 import { getGlobalProducts } from "../../services/products";
 import { handleCurrency } from "../../utils/price";
 import { Link, useLoaderData } from "react-router-dom";
-import { Navbar } from "../../components/Navbar";
+import { Navbar } from "../../components/navbar";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Rate } from "antd";
 import { Swiper, SwiperSlide } from "swiper/react";

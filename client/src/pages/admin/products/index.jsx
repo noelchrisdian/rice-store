@@ -13,7 +13,7 @@ import {
 	useNavigate,
 	useRevalidator
 } from "react-router-dom";
-import { Navbar } from "../../../components/Navbar";
+import { Navbar } from '../../../components/navbar';
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";

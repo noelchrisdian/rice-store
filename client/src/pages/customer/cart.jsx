@@ -11,7 +11,7 @@ import { getCart } from "../../services/carts";
 import { handleCurrency } from "../../utils/price";
 import { Link, useLoaderData } from "react-router-dom";
 import { Modal } from "antd";
-import { Navbar } from "../../components/Navbar";
+import { Navbar } from "../../components/navbar";
 import { toast } from "sonner";
 import { updateItem } from "../../services/carts";
 import { useEffect, useState } from "react";

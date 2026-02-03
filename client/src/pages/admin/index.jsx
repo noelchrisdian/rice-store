@@ -5,7 +5,7 @@ import {
 	TriangleAlert,
 	User
 } from "lucide-react";
-import { Navbar } from "../../components/Navbar";
+import { Navbar } from '../../components/navbar';
 
 const AdminHome = () => {
 	return (

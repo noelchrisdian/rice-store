@@ -16,7 +16,7 @@ import {
 	useLoaderData,
 	useSearchParams
 } from "react-router-dom";
-import { Navbar } from "../../../components/Navbar";
+import { Navbar } from '../../../components/navbar';
 import { useDebounce } from 'use-debounce';
 import { useEffect } from "react";
 import { useState } from "react";
