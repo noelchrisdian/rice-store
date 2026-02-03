@@ -5,6 +5,7 @@ import { authenticated, authorize } from './middlewares/auth.js';
 import { connectDB } from './utils/db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notification } from './api/orders/controller.js';
+import { rateLimit } from 'express-rate-limit';
 import { router as adminRouter } from './api/admin/router.js';
 import { router as authRouter } from './api/auth/router.js';
 import { router as customerRouter } from './api/customers/router.js';
@@ -13,9 +14,24 @@ import { router as globalRouter } from './api/global/router.js';
 const app = express();
 const port = process.env.PORT || 3000;
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 300,
+    statusCode: 429,
+    message: {
+        status: 'failed',
+        data: null,
+        message: 'Terlalu banyak request, silakan coba lagi nanti'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    ipv6Subnet: 64
+})
+
 connectDB();
 
 app
+    .set('trust proxy', 1)
     .use(json())
     .use(urlencoded({ extended: true }))
     .use(express.static('public'))
@@ -28,6 +44,7 @@ app.get('/', (req, res) => {
 app.post('/midtrans-notification', notification);
 
 app
+    .use(limiter)
     .use('/', authRouter)
     .use('/', globalRouter)
     .use('/admin', authenticated, authorize('admin'), adminRouter)

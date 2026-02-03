@@ -93,15 +93,20 @@ const RegisterForm = () => {
 			toast.success("Akun berhasil dibuat");
 			navigate("/sign-in");
 		} catch (error) {
-			toast.error(
-				`${
-					error?.response?.data?.message === "Phone number existed"
-						? "Akun sudah terdaftar"
-						: error?.response?.data?.message === `Passwords don't match`
-						? "Kata sandi harus sama"
-						: "Terjadi kesalahan di sistem"
-				}`
-			)
+			switch (error?.response?.data?.message) {
+				case "Phone number existed":
+					toast.error("Akun sudah terdaftar");
+					break;
+				case `Passwords don't match`:
+					toast.error("Kata sandi harus sama");
+					break;
+				case "Terlalu banyak request, silakan coba lagi nanti":
+					toast.error(error?.response?.data?.message);
+					break;
+				default:
+					toast.error("Terjadi kesalahan di sistem");
+					break;
+			}
 		}
 	}
 

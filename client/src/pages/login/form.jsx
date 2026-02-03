@@ -43,14 +43,17 @@ const LoginForm = () => {
 			}
 		} catch (error) {
 			switch (error?.response?.data?.message) {
-				case 'Phone number is not registered':
-					toast.error('Akun tidak ditemukan');
+				case "Phone number is not registered":
+					toast.error("Akun tidak ditemukan");
 					break;
-				case 'Incorrect password':
-					toast.error('Kata sandi salah');
+				case "Incorrect password":
+					toast.error("Kata sandi salah");
+					break;
+				case "Terlalu banyak request, silakan coba lagi nanti":
+					toast.error(error?.response?.data?.message);
 					break;
 				default:
-					toast.error('Terjadi kesalahan di sistem');
+					toast.error("Terjadi kesalahan di sistem");
 					break;
 			}
 		}

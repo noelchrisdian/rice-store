@@ -58,6 +58,7 @@ const CustomerCart = () => {
 			return;
 		}
 
+		const previousItem = [...cartItem];
 		const newQuantity = data.quantity + 1;
 		setCartItem((prev) =>
 			prev.map((item) =>
@@ -79,7 +80,13 @@ const CustomerCart = () => {
 				]
 			})
 		} catch (error) {
-			toast.error(error?.response?.data?.message);
+			setCartItem(previousItem);
+
+			if (error?.response?.data?.message === 'Terlalu banyak request, silakan coba lagi nanti') {
+				toast.error(error?.response?.data?.message);
+			} else {
+				toast.error('Terjadi kesalahan di sistem');
+			}
 		} finally {
 			setLoadingItem((prev) => ({
 				...prev,
@@ -94,6 +101,7 @@ const CustomerCart = () => {
 			return;
 		}
 
+		const previousItem = [...cartItem];
 		const newQuantity = data.quantity - 1;
 		setCartItem((prev) =>
 			prev.map((item) =>
@@ -115,7 +123,16 @@ const CustomerCart = () => {
 				]
 			})
 		} catch (error) {
-			toast.error(error?.response?.data?.message);
+			setCartItem(previousItem);
+
+			if (
+				error?.response?.data?.message ===
+				"Terlalu banyak request, silakan coba lagi nanti"
+			) {
+				toast.error(error?.response?.data?.message);
+			} else {
+				toast.error("Terjadi kesalahan di sistem");
+			}
 		} finally {
 			setLoadingItem((prev) => ({
 				...prev,
