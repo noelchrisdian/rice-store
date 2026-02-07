@@ -1,3 +1,4 @@
+import { CircularLoading } from "respinner";
 import {
 	CalendarDays,
 	Mail,
@@ -6,8 +7,10 @@ import {
 	Search,
 	UserRoundX
 } from "lucide-react";
+import { getUsers } from "../../../services/users";
 import { handleDate } from "../../../utils/date";
 import { Input, Pagination } from "antd";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Navbar } from "../../../components/navbar";
 import { useDebounce } from "use-debounce";
 import { useEffect } from "react";
@@ -16,18 +19,26 @@ import { useState } from "react";
 
 const AdminUsers = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [identity, setIdentity] = useState(searchParams.get('search') || '');
+	const [identity, setIdentity] = useState(searchParams.get("search") || "");
 	const [value] = useDebounce(identity, 500);
-	const users = useLoaderData();
-	const currentPage = Number(
-		searchParams.get("page") || users?.meta?.page || 1
-	)
-	const pageSize = Number(
-		searchParams.get("limit") || users?.meta?.limit || 10
-	)
+	const initial = useLoaderData();
+	const currentPage = Number(searchParams.get("page") || 1);
+	const pageSize = Number(searchParams.get("limit") || 10);
+
+	const { data: users, isFetching } = useQuery({
+		queryKey: [
+			"users",
+			{ limit: pageSize, page: currentPage, search: value }
+		],
+		queryFn: () =>
+			getUsers({ limit: pageSize, page: currentPage, search: value }),
+		initialData: initial,
+		placeholderData: keepPreviousData,
+		refetchInterval: 2 * 60 * 1000
+	})
 
 	useEffect(() => {
-		const url = searchParams.get('search') || '';
+		const url = searchParams.get("search") || "";
 
 		if (url !== identity) {
 			setIdentity(url);
@@ -40,12 +51,12 @@ const AdminUsers = () => {
 		const params = new URLSearchParams(searchParams);
 
 		if (value) {
-			params.set('search', value);
+			params.set("search", value);
 		} else {
-			params.delete('search');
+			params.delete("search");
 		}
 
-		params.set('page', '1');
+		params.set("page", "1");
 		setSearchParams(params);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [value])
@@ -75,10 +86,14 @@ const AdminUsers = () => {
 							</div>
 						</div>
 					</div>
-					{users?.users.length > 0 ? (
+					{isFetching ? (
+						<section className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
+							<CircularLoading color="#3D6F2E" size={90} />
+						</section>
+					) : users?.data?.users.length > 0 ? (
 						<>
 							<div className="space-y-3 pb-4">
-								{users?.users.map((user, index) => (
+								{users?.data?.users.map((user, index) => (
 									<div
 										className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden"
 										key={index}>
@@ -130,16 +145,18 @@ const AdminUsers = () => {
 							/>
 						</>
 					) : (
-						<section className="absolute inset-0 flex items-center justify-center">
-							<div className="text-center px-6 max-w-md mx-auto">
-								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
-									<UserRoundX className="size-12 text-muted-foreground lg:size-16" />
+						!isFetching && (
+							<section className="absolute inset-0 flex items-center justify-center">
+								<div className="text-center px-6 max-w-md mx-auto">
+									<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
+										<UserRoundX className="size-12 text-muted-foreground lg:size-16" />
+									</div>
+									<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
+										Pengguna Tidak Ditemukan
+									</h3>
 								</div>
-								<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
-									Pengguna Tidak Ditemukan
-								</h3>
-							</div>
-						</section>
+							</section>
+						)
 					)}
 				</section>
 			</main>

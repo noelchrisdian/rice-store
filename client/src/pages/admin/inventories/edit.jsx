@@ -8,12 +8,13 @@ import {
 import { toast } from "sonner";
 import { updateInventory, inventorySchema } from "../../../services/inventories";
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const EditInventoryForm = () => {
+	const { inventory, product } = useLoaderData();
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
-	const { inventory, product } = useLoaderData();
+	const queryClient = useQueryClient();
 
 	const initialValues = {
 		quantity: inventory?.quantity ?? 0,
@@ -22,7 +23,8 @@ const EditInventoryForm = () => {
 
 	const { isPending, mutateAsync } = useMutation({
 		mutationFn: ({ data, id, productID }) =>
-			updateInventory(data, id, productID)
+			updateInventory(data, id, productID),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inventories', product._id] })
 	})
 
 	const onFinish = async (data) => {
@@ -68,7 +70,7 @@ const EditInventoryForm = () => {
 					break;
 			}
 		}
-	};
+	}
 
 	return (
 		<div className="px-5 py-24 lg:py-20">

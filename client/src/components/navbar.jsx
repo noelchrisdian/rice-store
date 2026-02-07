@@ -7,20 +7,23 @@ import {
 	Package,
 	Settings,
 	ShoppingBag,
-	User,
 	Users,
 	UserPen
 } from "lucide-react";
 import { Dropdown } from "antd";
+import { getCustomer } from "../services/users";
 import { getSession } from "../utils/axios";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Navbar = ({ active, position }) => {
 	const navigate = useNavigate();
 	const session = getSession();
+	const queryClient = useQueryClient();
 
 	const handleLogout = () => {
 		secureLocalStorage.removeItem("SESSION_KEY");
+		queryClient.clear();
 		navigate("/");
 	}
 
@@ -77,6 +80,16 @@ const Navbar = ({ active, position }) => {
 			handleLogout();
 		}
 	}
+
+	const { data: user } = useQuery({
+		queryKey: ["user-detail", session?.role],
+		queryFn: () => {
+			if (session?.role === 'admin') return null;
+			return getCustomer();
+		},
+		enabled: !!session && session?.role !== 'admin',
+		retry: false
+	})
 
 	return (
 		<>
@@ -211,14 +224,14 @@ const Navbar = ({ active, position }) => {
 								trigger={["hover"]}
 								menu={{ items, onClick: handleClick }}>
 								<img
-									src={session?.avatar?.imageURL}
+									src={user?.data?.avatar?.imageURL}
 									className="w-7 h-7 rounded-full object-cover"
 								/>
 							</Dropdown>
 						) : active === "account" ? (
 							<Link className="flex items-center gap-2 p-0.5 rounded-full shadow-sm transition-all bg-primary text-primary-foreground focus:outline-none focus:ring-1 focus:ring-primary/20">
 								<img
-									src={session?.avatar?.imageURL}
+									src={user?.data?.avatar?.imageURL}
 									className="w-7 h-7 rounded-full object-cover"
 								/>
 							</Link>
@@ -227,7 +240,7 @@ const Navbar = ({ active, position }) => {
 								to={"/account"}
 								className="flex items-center justify-center size-12 text-primary transition-colors rounded-full active:bg-secondary/50">
 								<img
-									src={session?.avatar?.imageURL}
+									src={user?.data?.avatar?.imageURL}
 									className="w-7 h-7 rounded-full object-cover"
 								/>
 							</Link>

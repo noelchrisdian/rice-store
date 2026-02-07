@@ -7,13 +7,16 @@ import {
 } from "react-router-dom";
 import { LogOutIcon, UserPen } from "lucide-react";
 import { Navbar } from '../components/navbar';
+import { useQueryClient } from "@tanstack/react-query";
 
 const UserSettings = () => {
     const user = useLoaderData();
-    const navigate = useNavigate();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
     const handleLogout = () => {
-        secureLocalStorage.removeItem('SESSION_KEY');
+		secureLocalStorage.removeItem('SESSION_KEY');
+		queryClient.clear();
         navigate('/');
     }
 
@@ -26,9 +29,9 @@ const UserSettings = () => {
 							<div className="size-24 rounded-full overflow-hidden mb-4 border-4 border-primary/20">
 								<Image
 									src={user?.avatar?.imageURL}
-									width={95}
-									height={95}
-									className="w-full! object-cover!"
+									width={88}
+									height={88}
+									className="w-full! object-cover! object-center!"
 								/>
 							</div>
 							<h2

@@ -9,12 +9,13 @@ import {
 } from "antd";
 import { toast } from "sonner";
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 const EditUserForm = () => {
 	const navigate = useNavigate();
 	const user = useLoaderData();
+	const queryClient = useQueryClient();
 	const [form] = Form.useForm();
 	const [file, setFile] = useState(null);
 	const [preview, setPreview] = useState(user?.avatar?.imageURL);
@@ -59,7 +60,11 @@ const EditUserForm = () => {
 	}
 
 	const { isPending, mutateAsync } = useMutation({
-		mutationFn: (data) => updateUser(data)
+		mutationFn: (data) => updateUser(data),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ['user-detail'] });
+			await queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
+		}
 	})
 
 	const onFinish = async (data) => {

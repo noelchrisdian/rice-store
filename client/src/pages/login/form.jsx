@@ -1,4 +1,5 @@
 import secureLocalStorage from "react-secure-storage";
+import { CircularLoading } from 'respinner';
 import { Form, Input } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { login, loginSchema } from "../../services/auth";
@@ -34,8 +35,9 @@ const LoginForm = () => {
 
 		try {
 			const response = await mutateAsync(result.data);
-			secureLocalStorage.setItem("SESSION_KEY", response.data);
-			toast.success(`Halo, ${response.data?.name}`);
+			const { name, role, token } = response.data;
+			secureLocalStorage.setItem("SESSION_KEY", { role, token });
+			toast.success(`Halo, ${name}`);
 			if (response.data?.role === "admin") {
 				navigate("/admin");
 			} else {
@@ -86,9 +88,9 @@ const LoginForm = () => {
 						<Input.Password type="password" placeholder="Masukkan kata sandi" />
 					</Form.Item>
 					<button
-						className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:ring-2 focus:outline-none focus:ring-primary/50"
+						className="w-full flex justify-center bg-primary text-primary-foreground font-bold py-3.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:ring-2 focus:outline-none focus:ring-primary/50"
 						disabled={isPending}>
-						Masuk
+						{isPending ? <CircularLoading size={20} color="#FFFFFF" /> : 'Masuk'}
 					</button>
 				</Form>
 			</div>

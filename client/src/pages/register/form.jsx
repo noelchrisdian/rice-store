@@ -1,3 +1,4 @@
+import { CircularLoading } from 'respinner';
 import {
 	Form,
 	Image,
@@ -216,9 +217,9 @@ const RegisterForm = () => {
 						<Input.TextArea placeholder="Jalan Mrica 3 T26, Lembah Hijau" />
 					</Form.Item>
 					<button
-						className="w-full bg-primary text-primary-foreground font-bold py-3.5 mt-2.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
+						className="w-full flex justify-center bg-primary text-primary-foreground font-bold py-3.5 mt-2.5 rounded-xl transition-transform shadow-primary/30 shadow-lg cursor-pointer text-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
 						disabled={isPending}>
-						Daftar
+						{isPending ? <CircularLoading size={20} color='#FFFFFF' /> : 'Daftar'}
 					</button>
 				</Form>
 			</div>

@@ -1,11 +1,11 @@
 import { AddInventoryForm } from "../pages/admin/inventories/add";
 import { AddProductForm } from "../pages/admin/products/add";
-import { AdminDetailOrder } from "../pages/admin/orders/detail";
-import { AdminDetailProduct } from "../pages/admin/products/detail";
+import { AdminDetailOrder } from "../pages/admin/orders/detail/detail";
+import { AdminDetailProduct } from "../pages/admin/products/detail/detail";
 import { AdminHome } from "../pages/admin";
-import { AdminOrders } from "../pages/admin/orders";
+import { AdminOrders } from "../pages/admin/orders/index";
 import { AdminProducts } from "../pages/admin/products/index";
-import { AdminUsers } from "../pages/admin/users";
+import { AdminUsers } from "../pages/admin/users/index";
 import { EditInventoryForm } from "../pages/admin/inventories/edit";
 import { EditProductForm } from "../pages/admin/products/edit";
 import { EditUserForm } from "../pages/admin/users/edit";
@@ -102,36 +102,37 @@ const router = [
 			{
 				path: "/admin/products/:id",
 				loader: async ({ params, request }) => {
-					if (!params.id) {
-						throw redirect("/admin/products");
-					}
-
-					const url = new URL(request.url);
-
-					const inventoryLimit = Number(
-						url.searchParams.get("inventoryLimit") || 10
-					)
-					const inventoryPage = Number(
-						url.searchParams.get("inventoryPage") || 1
-					)
-
-					const reviewLimit = Number(
-						url.searchParams.get("reviewLimit") || 10
-					)
-					const reviewPage = Number(
-						url.searchParams.get("reviewPage") || 1
-					)
-
-					const [product, inventories, reviews] = await Promise.all([
-						getProduct(params.id),
-						getInventories(params.id, { inventoryLimit, inventoryPage }),
-						getReviews(params.id, { reviewLimit, reviewPage })
-					])
-
-					return {
-						product: product.data,
-						inventories: inventories.data,
-						reviews: reviews.data
+					try {
+						const url = new URL(request.url);
+	
+						const inventoryLimit = Number(
+							url.searchParams.get("inventoryLimit") || 10
+						)
+						const inventoryPage = Number(
+							url.searchParams.get("inventoryPage") || 1
+						)
+	
+						const reviewLimit = Number(
+							url.searchParams.get("reviewLimit") || 10
+						)
+						const reviewPage = Number(
+							url.searchParams.get("reviewPage") || 1
+						)
+	
+						const [product, inventories, reviews] = await Promise.all([
+							getProduct(params.id),
+							getInventories(params.id, { inventoryLimit, inventoryPage }),
+							getReviews(params.id, { reviewLimit, reviewPage })
+						])
+	
+						return {
+							product: product.data,
+							inventories: inventories.data,
+							reviews: reviews.data
+						}
+					} catch (error) {
+						toast.error(error?.response?.data?.message === 'Product not found' ? 'Produk tidak ditemukan' : 'Terjadi kesalahan di sistem');
+						return redirect('/admin/products');
 					}
 				},
 				element: <AdminDetailProduct />
@@ -142,24 +143,34 @@ const router = [
 					const url = new URL(request.url);
 					const limit = Number(url.searchParams.get("limit") || 10);
 					const page = Number(url.searchParams.get("page") || 1);
-					const search = url.searchParams.get('search');
-					const status = url.searchParams.get('status');
-					const range = url.searchParams.get('range');
+					const search = url.searchParams.get("search");
+					const status = url.searchParams.get("status");
+					const range = url.searchParams.get("range");
 
-					const orders = await getOrders({ limit, page, range, search, status });
+					const orders = await getOrders({
+						limit,
+						page,
+						range,
+						search,
+						status
+					})
 					return orders.data;
 				},
 				element: <AdminOrders />
 			},
 			{
-				id: 'admin-order-detail',
+				id: "admin-order-detail",
 				loader: async ({ params }) => {
 					try {
 						const order = await getOrder(params.id);
 						return order.data;
 					} catch (error) {
-						toast.error(error?.response?.data?.message === `Order doesn't exist` ? 'Pesanan tidak ditemukan' : 'Terjadi kesalahan di sistem')
-						return redirect('/admin/orders');
+						toast.error(
+							error?.response?.data?.message === `Order doesn't exist`
+								? "Pesanan tidak ditemukan"
+								: "Terjadi kesalahan di sistem"
+						)
+						return redirect("/admin/orders");
 					}
 				},
 				children: [
@@ -169,9 +180,9 @@ const router = [
 					},
 					{
 						path: "/admin/orders/:id/invoice",
-						element: <OrderInvoice role={'admin'}  />
+						element: <OrderInvoice role={"admin"} />
 					}
-				],
+				]
 			},
 			{
 				path: "/admin/users",
@@ -179,7 +190,7 @@ const router = [
 					const url = new URL(request.url);
 					const limit = Number(url.searchParams.get("limit") || 10);
 					const page = Number(url.searchParams.get("page") || 1);
-					const search = url.searchParams.get('search');
+					const search = url.searchParams.get("search");
 
 					const users = await getUsers({ limit, page, search });
 					return users.data;

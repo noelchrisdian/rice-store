@@ -7,15 +7,17 @@ import {
 } from "antd";
 import { toast } from "sonner";
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const AddInventoryForm = () => {
 	const [form] = Form.useForm();
 	const navigate = useNavigate();
 	const product = useLoaderData();
+	const queryClient = useQueryClient();
 
 	const { isPending, mutateAsync } = useMutation({
-		mutationFn: ({ data, productID }) => addInventory(data, productID)
+		mutationFn: ({ data, productID }) => addInventory(data, productID),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inventories', product._id] })
 	})
 
 	const onFinish = async (data) => {

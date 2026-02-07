@@ -1,6 +1,7 @@
 import { ArrowLeft, Printer } from "lucide-react";
 import { handleCurrency } from "../../../utils/price";
 import { handleDate } from "../../../utils/date";
+import { setPaymentStatus } from "../../../utils/payment";
 import { useNavigate } from "react-router-dom";
 import { useRouteLoaderData } from "react-router-dom";
 
@@ -8,18 +9,7 @@ const OrderInvoice = ({ role }) => {
 	const adminOrder = useRouteLoaderData('admin-order-detail')
 	const customerOrder = useRouteLoaderData("order-detail");
 	const navigate = useNavigate();
-
 	const order = role === 'admin' ? adminOrder : customerOrder;
-
-	const setPaymentStatus = (data) => {
-		if (["settlement", "capture"].includes(data)) {
-			return "Berhasil";
-		} else if (["deny", "cancel", "expire", "failure"].includes(data)) {
-			return "Gagal";
-		} else if (data === "pending") {
-			return "Pending";
-		}
-	}
 
 	return (
 		<main className="min-h-screen bg-background text-foreground font-sans pb-4 relative">

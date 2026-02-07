@@ -1,14 +1,14 @@
 import {
-    CircleAlert,
-    CircleCheck,
-    History
+	CircleAlert,
+	CircleCheck,
+	History
 } from "lucide-react";
 import { CircularLoading } from "respinner";
 import { cancelOrder, findOrder } from "../../services/orders";
 import {
-    Link,
-    useNavigate,
-    useSearchParams
+	Link,
+	useNavigate,
+	useSearchParams
 } from "react-router-dom";
 import { Modal } from "antd";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ const CustomerCheckout = () => {
 			toast.warning("ID Pesanan tidak ditemukan");
 			navigate("/");
 		}
-	}, [navigate, orderID]);
+	}, [navigate, orderID])
 
 	const { data } = useQuery({
 		queryKey: ["orderID", orderID],
@@ -49,21 +49,18 @@ const CustomerCheckout = () => {
 	const handlePayment = () => {
 		try {
 			window.snap.pay(data?.payment?.midtransTransactionID, {
-				onSuccess: () => {
-					window.location.href = `/orders/confirmation?order_id=${orderID}`;
-				},
-				onPending: () => {
-					window.location.href = `/orders/confirmation?order_id=${orderID}`;
-				},
+				onSuccess: () =>
+					navigate(`/orders/confirmation?order_id=${orderID}`),
+				onPending: () =>
+					navigate(`/orders/confirmation?order_id=${orderID}`),
 				onError: (result) => {
 					toast.error(result?.status_message);
-					setTimeout(() => {
-						window.location.href = `orders/${orderID}`;
-					}, 3000)
+					setTimeout(
+						() => navigate(`/orders/confirmation?order_id=${orderID}`),
+						3000
+					)
 				},
-				onClose: () => {
-					window.location.href = `/orders/confirmation?order_id=${orderID}`;
-				}
+				onClose: () => navigate(`/orders/confirmation?order_id=${orderID}`)
 			})
 		} catch (error) {
 			toast.error(error?.response?.data?.message);
@@ -72,8 +69,8 @@ const CustomerCheckout = () => {
 
 	const handleCancel = async () => {
 		try {
-            await mutateAsync(orderID);
-            setModal(false);
+			await mutateAsync(orderID);
+			setModal(false);
 			navigate(`/orders/${orderID}`);
 		} catch (error) {
 			toast.error(error?.response?.data?.message);
@@ -173,8 +170,8 @@ const CustomerCheckout = () => {
 					</div>
 
 					<div className="space-y-3">
-                        <button
-                            disabled={isPending}
+						<button
+							disabled={isPending}
 							className="w-full h-14 bg-destructive text-primary-foreground rounded-2xl font-bold text-base transition-transform shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
 							onClick={() => handleCancel()}>
 							{isPending ? (
@@ -196,5 +193,5 @@ const CustomerCheckout = () => {
 }
 
 export {
-    CustomerCheckout
+	CustomerCheckout
 }

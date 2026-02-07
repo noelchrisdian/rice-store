@@ -1,9 +1,9 @@
-import { CustomerCart } from "../pages/customer/cart";
+import { CustomerCart } from "../pages/customer/cart/cart";
 import { CustomerCheckout } from "../pages/customer/checkout";
-import { CustomerHome } from "../pages/customer";
-import { CustomerOrders } from "../pages/customer/orders";
-import { CustomerOrderDetail } from "../pages/customer/orders/detail";
-import { CustomerProductDetail } from "../pages/customer/detail";
+import { CustomerHome } from "../pages/customer/home/index";
+import { CustomerOrders } from "../pages/customer/orders/index";
+import { CustomerOrderDetail } from "../pages/customer/orders/detail/detail";
+import { CustomerProductDetail } from "../pages/customer/product/detail";
 import { EditUserForm } from "../pages/admin/users/edit";
 import { findOrder, getCustomerOrder } from "../services/orders";
 import { getCart } from "../services/carts";
@@ -104,7 +104,7 @@ const router = [
 				element: <CustomerOrders />
 			},
 			{
-				id: 'order-detail',
+				id: "order-detail",
 				loader: async ({ params }) => {
 					try {
 						const order = await findOrder(params.id);
@@ -112,8 +112,8 @@ const router = [
 					} catch (error) {
 						toast.error(
 							error?.response?.data?.message === `Order doesn't exist`
-							? "Pesanan tidak ditemukan"
-							: "Terjadi kesalahan di sistem"
+								? "Pesanan tidak ditemukan"
+								: "Terjadi kesalahan di sistem"
 						)
 						return redirect("/orders");
 					}
@@ -125,7 +125,7 @@ const router = [
 					},
 					{
 						path: "orders/:id/invoice",
-						element: <OrderInvoice role={'customer'} />
+						element: <OrderInvoice role={"customer"} />
 					}
 				]
 			},
