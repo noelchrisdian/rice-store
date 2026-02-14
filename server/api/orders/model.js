@@ -39,32 +39,43 @@ const orderSchema = new Schema({
         type: Number,
         required: true
     },
-    status: {
-        type: String,
-        enum: ['pending', 'success', 'failed'],
-        default: 'pending',
-        index: true
-    },
     payment: {
         method: {
             type: String,
-            enum: ['midtrans', 'cash'],
+            enum: ['midtrans'],
             default: 'midtrans'
         },
         status: {
             type: String,
-            enum: ['pending', 'settlement', 'deny', 'cancel', 'expire', 'failure', 'refund', 'partial_refund', 'capture'],
+            enum: ['pending', 'settlement', 'deny', 'cancel', 'expire', 'failure', 'capture'],
             default: 'pending'
         },
         paidAt: Date,
         expiry_time: Date,
         midtransOrderID: String,
         midtransTransactionID: String
+    },
+    shipping: {
+        status: {
+            type: String, 
+            enum: ['processing', 'shipped', 'delivered', 'pending'],
+            default: 'pending'
+        },
+        courier: String,
+        trackingNumber: String,
+        shippedAt: Date,
+        deliveredAt: Date,
+        proofImage: {
+            imageURL: String,
+            imagePublicID: String
+        }
     }
 }, { timestamps: true })
 
-orderSchema.index({ user: 1, createdAt: -1 });
-orderSchema.index({ status: 1, createdAt: -1 });
+orderSchema
+    .index({ user: 1, createdAt: -1 })
+    .index({ 'payment.status': 1, createdAt: -1 })
+    .index({ 'shipping.status': 1, createdAt: -1 })
 
 const orderModel = model('Order', orderSchema);
 

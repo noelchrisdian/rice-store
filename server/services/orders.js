@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { BadRequest } from "../errors/badRequest.js";
 import { cartModel as Carts } from "../api/carts/model.js";
 import { Forbidden } from '../errors/forbidden.js';
+import { getIO } from '../utils/socket.js';
 import { inventoryModel as Inventories } from '../api/inventories/model.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
@@ -18,7 +19,20 @@ const getOrders = async (req) => {
     const { range, status } = req.query;
 
     if (status) {
-        filter.status = status;
+        switch (status) {
+            case 'pending':
+                filter['payment.status'] = 'pending';
+                break;
+            case 'failed':
+                filter['payment.status'] = { $in: ['deny', 'cancel', 'failure', 'expire'] };
+                break;
+            case 'processing':
+            case 'shipped':
+            case 'delivered':
+                filter['payment.status'] = { $in: ['settlement', 'capture'] };
+                filter['shipping.status'] = status;
+                break;
+        }
     }
 
     if (range && range !== '') {
@@ -155,13 +169,15 @@ const createOrder = async (req) => {
             }),
             reservedStock,
             totalPrice: cart.products.reduce((acc, item) => acc + item.product.price * item.quantity, 0),
-            status: 'pending',
             payment: {
                 method: 'midtrans',
                 status: 'pending',
                 expiry_time: new Date(Date.now() + 24 * 60 * 60 * 1000)
+            },
+            shipping: {
+                status: 'pending'
             }
-        }], { session });
+        }], { session })
 
         await Carts.updateOne(
             { _id: cart._id },
@@ -204,6 +220,12 @@ const createOrder = async (req) => {
             }
         )
 
+        const io = getIO();
+        io.to('admin').emit('orders:event', {
+            orderID: order._id,
+            type: 'CREATED'
+        })
+
         return {
             orderID: order._id,
             snap: transaction
@@ -217,41 +239,10 @@ const createOrder = async (req) => {
     }
 }
 
-const cancelOrder = async (req) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        const { id } = req.params;
-        const order = await Orders.findById(id).session(session);
-        if (!order) throw new NotFound('Order not found');
-        if (order.status !== 'pending') throw new BadRequest(`Order can't be cancelled`);
-        if (!order.user._id.equals(req.user.id)) throw new Forbidden('User not authorized');
-
-        for (const item of order.reservedStock) {
-            const inventory = await Inventories.findById(item.inventory).session(session);
-            inventory.remaining += item.quantity;
-            await inventory.save({ session });
-        }
-
-        order.reservedStock = [];
-        order.status = 'failed';
-        order.payment.status = 'cancel';
-        await order.save({ session });
-
-        await session.commitTransaction();
-        return order;
-    } catch (error) {
-        await session.abortTransaction();
-        throw error;
-    } finally {
-        session.endSession();
-    }
-}
-
 const midtransWebhook = async (req) => {
     const session = await mongoose.startSession();
     session.startTransaction();
+    let event;
 
     try {
         const client = new midtransClient.Snap({
@@ -272,23 +263,37 @@ const midtransWebhook = async (req) => {
         }
 
         if (transaction_status === 'settlement' || (transaction_status === 'capture' && fraud_status === 'accept')) {
-            order.status = 'success';
             order.payment.status = transaction_status;
             order.payment.paidAt = new Date();
+            order.shipping.status = 'processing';
+            event = 'PAID';
         } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
             for (const item of order.reservedStock) {
                 const inventory = await Inventories.findById(item.inventory).session(session);
+                if (!inventory) throw new NotFound('Inventory not found');
                 inventory.remaining += item.quantity;
+                if (inventory.remaining > 0) {
+                    inventory.status = 'available';
+                }
+
                 await inventory.save({ session });
             }
 
             order.reservedStock = [];
-            order.status = 'failed';
             order.payment.status = transaction_status;
             order.payment.midtransTransactionID = transaction_id;
+            order.shipping.status = null;
+            event = 'CANCELLED';
         }
+
         await order.save({ session });
         await session.commitTransaction();
+
+        const io = getIO();
+        io.to('admin').emit('orders:event', {
+            orderID: order._id,
+            type: event
+        })
 
         return order;
     } catch (error) {
@@ -296,6 +301,45 @@ const midtransWebhook = async (req) => {
         console.error(`Webhook error : ${error}`);
 
         return;
+    } finally {
+        session.endSession();
+    }
+}
+
+const cancelOrder = async (req) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { id } = req.params;
+        const order = await Orders.findById(id).session(session);
+        if (!order) throw new NotFound('Order not found');
+        if (!order.user.equals(req.user.id)) throw new Forbidden('User not authorized');
+        if (order.payment.status !== 'pending') throw new BadRequest(`Only pending orders can be cancelled`);
+
+        for (const item of order.reservedStock) {
+            const inventory = await Inventories.findById(item.inventory).session(session);
+            if (!inventory) throw new NotFound('Inventory not found');
+            inventory.remaining += item.quantity;
+            await inventory.save({ session });
+        }
+
+        order.reservedStock = [];
+        order.payment.status = 'cancel';
+        order.shipping.status = null;
+        await order.save({ session });
+        await session.commitTransaction();
+
+        const io = getIO();
+        io.to('admin').emit('orders:event', {
+            orderID: order._id,
+            type: 'CANCELLED'
+        })
+
+        return order;
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
     } finally {
         session.endSession();
     }

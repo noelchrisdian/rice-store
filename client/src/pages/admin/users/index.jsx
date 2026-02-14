@@ -1,4 +1,3 @@
-import { CircularLoading } from "respinner";
 import {
 	CalendarDays,
 	Mail,
@@ -11,6 +10,7 @@ import { getUsers } from "../../../services/users";
 import { handleDate } from "../../../utils/date";
 import { Input, Pagination } from "antd";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
 import { useDebounce } from "use-debounce";
 import { useEffect } from "react";
@@ -87,9 +87,7 @@ const AdminUsers = () => {
 						</div>
 					</div>
 					{isFetching ? (
-						<section className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
-							<CircularLoading color="#3D6F2E" size={90} />
-						</section>
+						<Loader color={'#3D6F2E'} size={90} />
 					) : users?.data?.users.length > 0 ? (
 						<>
 							<div className="space-y-3 pb-4">

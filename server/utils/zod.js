@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+const escape = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 const productSchema = z.object({
     name: z.string().min(5, 'Product name must be at least 5 characters long'),
     price: z.coerce.number().positive('Price must be positive number'),
@@ -41,11 +45,25 @@ const reviewSchema = z.object({
     comment: z.string()
 }).strict();
 
+const orderShippedSchema = z.object({
+    courier: z.string(),
+    trackingNumber: z.string(5, 'Nomor resi minimal 5 karakter'),
+    shippedAt: z.coerce.date()
+}).strict();
+
+const orderDeliveredSchema = z.object({
+    status: z.string(),
+    deliveredAt: z.coerce.date()
+}).strict();
+
 export {
     cartSchema,
+    escape,
     inventorySchema,
     passwordSchema,
     emailSchema,
+    orderDeliveredSchema,
+    orderShippedSchema,
     productSchema,
     reviewSchema,
     userSchema

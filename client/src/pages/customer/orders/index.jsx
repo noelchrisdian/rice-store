@@ -17,9 +17,11 @@ const CustomerOrders = () => {
 	const currentRange = searchParams.get("range") || null;
 
 	const statusOptions = [
-		{ value: "success", label: "Berhasil" },
-		{ value: "pending", label: "Pending" },
-		{ value: "failed", label: "Gagal" }
+		{ value: "pending", label: "Belum Lunas" },
+		{ value: "failed", label: "Dibatalkan" },
+		{ value: "shipped", label: "Dikirim" },
+		{ value: "processing", label: "Diproses" },
+		{ value: "delivered", label: "Telah Diterima" }
 	]
 
 	const rangeOptions = [

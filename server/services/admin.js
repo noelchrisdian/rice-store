@@ -1,14 +1,19 @@
 import dayjs from 'dayjs';
 import mongoose from 'mongoose';
+import { BadRequest } from '../errors/badRequest.js';
+import {
+    escape,
+    orderDeliveredSchema,
+    orderShippedSchema
+} from '../utils/zod.js';
 import { NotFound } from '../errors/notFound.js';
 import { orderModel as Orders } from '../api/orders/model.js';
+import { ParseError } from '../errors/parseError.js';
 import { productModel as Products } from '../api/products/model.js';
 import { reviewModel as Reviews } from '../api/reviews/model.js';
+import { StatusCodes } from 'http-status-codes';
 import { userModel as Users } from '../api/users/model.js';
-
-const escape = (string) => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+import { v2 as cloudinary } from 'cloudinary';
 
 const getOrders = async (req) => {
     const page = parseInt(req.query.page) || 1;
@@ -19,9 +24,22 @@ const getOrders = async (req) => {
     const { range, search, status } = req.query;
 
     if (status) {
-        filter.status = status;
+        switch (status) {
+            case 'pending':
+                filter['payment.status'] = 'pending';
+                break;
+            case 'failed':
+                filter['payment.status'] = { $in: ['deny', 'cancel', 'failure', 'expire'] };
+                break;
+            case 'processing':
+            case 'shipped':
+            case 'delivered':
+                filter['payment.status'] = { $in: ['settlement', 'capture'] };
+                filter['shipping.status'] = status;
+                break;
+        }
     }
-
+    
     if (range && range !== '') {
         let startDate;
         const endDate = dayjs().endOf('day').toDate();
@@ -85,7 +103,6 @@ const getOrders = async (req) => {
             totalPages: Math.ceil(total / limit)
         }
     }
-    
 }
 
 const getOrder = async (req) => {
@@ -100,6 +117,116 @@ const getOrder = async (req) => {
     }
 
     return order;
+}
+
+const updateOrderShipped = async (req) => {
+    if (!req.file) throw new BadRequest('Image is required');
+
+    const imageURL = req.file?.path;
+    const imagePublicID = req.file?.filename;
+
+    const { id } = req.params;
+    const order = await Orders.findById(id);
+    if (!order) throw new NotFound(`Order doesn't exist`);
+
+    if (order.shipping.status === null || order.shipping.status !== 'processing') {
+        throw new BadRequest(`Only orders with status processing can be marked as shipped`);
+    }
+
+    const parse = await orderShippedSchema.safeParseAsync(req.body);
+    if (!parse.success) {
+        if (imagePublicID) await cloudinary.uploader.destroy(imagePublicID);
+
+        const errors = parse.error.issues.map((error) => error.message);
+        throw new ParseError(`Invalid data type`, StatusCodes.BAD_REQUEST, errors);
+    }
+
+    return await Orders.findOneAndUpdate(
+        { _id: id },
+        {
+            $set: {
+                "shipping.status": 'shipped',
+                "shipping.courier": parse.data.courier,
+                "shipping.trackingNumber": parse.data.trackingNumber,
+                "shipping.shippedAt": parse.data.shippedAt,
+                "shipping.proofImage": {
+                    imageURL,
+                    imagePublicID
+                }
+            }
+        },
+        { new: true }
+    )
+}
+
+const updateOrderShippedInfo = async (req) => {
+    const { id } = req.params;
+    const order = await Orders.findById(id);
+    if (!order) throw new NotFound(`Order doesn't exist`);
+
+    if (order.shipping.status !== 'shipped') {
+        throw new BadRequest('Shipping info can only be edited for shipped orders');
+    }
+
+    const parse = await orderShippedSchema.safeParseAsync(req.body);
+    if (!parse.success) {
+        const errors = parse.error.issues.map((error) => error.message);
+        throw new ParseError(`Invalid data type`, StatusCodes.BAD_REQUEST, errors);
+    }
+
+    return await Orders.findOneAndUpdate(
+        { _id: id },
+        {
+            $set: {
+                "shipping.courier": parse.data.courier,
+                "shipping.trackingNumber": parse.data.trackingNumber,
+                "shipping.shippedAt": parse.data.shippedAt
+            }
+        },
+        { new: true }
+    )
+}
+
+const updateOrderDelivered = async (req) => {
+    if (!req.file) throw new BadRequest('Image is required');
+
+    const imageURL = req.file?.path;
+    const imagePublicID = req.file?.filename;
+
+    const { id } = req.params;
+    const order = await Orders.findById(id);
+    if (!order) throw new NotFound(`Order doesn't exist`);
+
+    if (order.shipping.status === null || order.shipping.status !== 'shipped') {
+        throw new BadRequest(`Only orders with status shipped can be marked as delivered`);
+    }
+
+    const parse = await orderDeliveredSchema.safeParseAsync(req.body);
+    if (!parse.success) {
+        if (imagePublicID) await cloudinary.uploader.destroy(imagePublicID);
+
+        const errors = parse.error.issues.map((error) => error.message);
+        throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors);
+    }
+
+    const oldPublicID = order.shipping.proofImage.imagePublicID;
+    const updated = await Orders.findOneAndUpdate(
+        { _id: id },
+        {
+            $set: {
+                "shipping.status": 'delivered',
+                "shipping.deliveredAt": parse.data.deliveredAt,
+                "shipping.proofImage": {
+                    imageURL,
+                    imagePublicID
+                }
+            }
+        },
+        { new: true }
+    )
+    if (updated && oldPublicID) await cloudinary.uploader.destroy(oldPublicID);
+
+    return updated;
 }
 
 const deleteReview = async (req) => {
@@ -238,5 +365,8 @@ export {
     getOrders,
     getReviews,
     getUser,
-    getUsers
+    getUsers,
+    updateOrderDelivered,
+    updateOrderShipped,
+    updateOrderShippedInfo
 }

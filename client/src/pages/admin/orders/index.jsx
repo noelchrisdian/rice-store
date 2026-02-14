@@ -1,10 +1,16 @@
-import { CircularLoading } from "respinner";
 import { ClipboardX } from "lucide-react";
 import { FilterSection } from "./filter";
 import { getOrders } from "../../../services/orders";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { Loader } from "../../../components/loader";
+import {
+	keepPreviousData,
+	useQuery,
+	useQueryClient
+} from "@tanstack/react-query";
 import { Navbar } from "../../../components/navbar";
 import { OrderSection } from "./orders";
+import { socket } from "../../../utils/socket";
+import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";
@@ -15,6 +21,7 @@ const AdminOrders = () => {
 	const [name, setName] = useState(searchParams.get("search") || "");
 	const [value] = useDebounce(name, 500);
 	const initial = useLoaderData();
+	const queryClient = useQueryClient();
 	const currentPage = Number(searchParams.get("page") || 1);
 	const pageSize = Number(searchParams.get("limit") || 10);
 
@@ -70,6 +77,27 @@ const AdminOrders = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [value])
 
+	useEffect(() => {
+		const handler = (data) => {
+			switch (data.type) {
+				case "CANCELLED":
+				case "PAID":
+					queryClient.invalidateQueries({ queryKey: ["orders"] });
+					break;
+				case "CREATED":
+					toast.success("Ada pesanan baru!");
+					queryClient.invalidateQueries({ queryKey: ["orders"] });
+			}
+		}
+
+		socket.emit("join:admin");
+		socket.on("orders:event", handler);
+
+		return () => {
+			socket.off("orders:event", handler);
+		}
+	}, [queryClient])
+
 	return (
 		<>
 			<section className="hidden lg:block">
@@ -86,9 +114,7 @@ const AdminOrders = () => {
 						setSearchParams={setSearchParams}
 					/>
 					{isFetching ? (
-						<section className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
-							<CircularLoading color="#3D6F2E" size={90} />
-						</section>
+						<Loader color={"#3D6F2E"} size={90} />
 					) : orders?.data?.orders?.length > 0 ? (
 						<OrderSection
 							limit={pageSize}
@@ -97,17 +123,19 @@ const AdminOrders = () => {
 							searchParams={searchParams}
 							setSearchParams={setSearchParams}
 						/>
-					) : !isFetching && (
-						<section className="absolute inset-0 flex items-center justify-center py-16">
-							<div className="text-center px-6 max-w-md mx-auto">
-								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
-									<ClipboardX className="size-12 text-muted-foreground lg:size-16" />
+					) : (
+						!isFetching && (
+							<section className="absolute inset-0 flex items-center justify-center py-16">
+								<div className="text-center px-6 max-w-md mx-auto">
+									<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
+										<ClipboardX className="size-12 text-muted-foreground lg:size-16" />
+									</div>
+									<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
+										Pesanan Tidak Ditemukan
+									</h3>
 								</div>
-								<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
-									Pesanan Tidak Ditemukan
-								</h3>
-							</div>
-						</section>
+							</section>
+						)
 					)}
 				</section>
 			</main>

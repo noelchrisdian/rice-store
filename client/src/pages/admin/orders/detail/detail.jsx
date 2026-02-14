@@ -5,7 +5,7 @@ import { ItemSection } from "./item";
 import { Link, useRouteLoaderData } from "react-router-dom";
 import { PaymentSection } from "./payment";
 import { SellerSection } from "./seller";
-import { setPaymentStatus } from "../../../../utils/payment";
+import { setOrderStatus } from "../../../../utils/order";
 
 const AdminDetailOrder = () => {
 	const order = useRouteLoaderData("admin-order-detail");
@@ -25,7 +25,7 @@ const AdminDetailOrder = () => {
 								Status Pesanan
 							</p>
 							<p className="font-semibold text-foreground mt-1">
-								{setPaymentStatus(order?.payment?.status)}
+								{setOrderStatus(order?.payment?.status, order?.shipping?.status)}
 							</p>
 						</div>
 						<div className="">

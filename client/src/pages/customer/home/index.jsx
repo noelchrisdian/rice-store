@@ -12,14 +12,13 @@ import { useQuery } from "@tanstack/react-query";
 const CustomerHome = () => {
 	const { initial, reviews } = useLoaderData();
 	const { data: products } = useQuery({
-		queryKey: ["index-product"],
+		queryKey: ["index-products"],
 		queryFn: async () => {
 			const result = await getGlobalProducts();
 			return result.data;
 		},
 		initialData: initial,
-		refetchInterval: 2 * 60 * 1000,
-		refetchOnWindowFocus: true
+		refetchInterval: 2 * 60 * 1000
 	})
 
 	return (

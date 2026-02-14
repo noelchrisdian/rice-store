@@ -1,8 +1,8 @@
-import { CircularLoading } from "respinner";
 import { CircleAlert, Plus } from "lucide-react";
 import { deleteProduct, getProducts } from "../../../services/products";
 import { Modal } from "antd";
 import { Link, useLoaderData } from "react-router-dom";
+import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
 import { ProductSection } from "./products";
 import { toast } from "sonner";
@@ -73,9 +73,7 @@ const AdminProducts = () => {
 				</section>
 				<section className="space-y-3 px-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:px-8">
 					{isFetching ? (
-						<section className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
-							<CircularLoading color="#3D6F2E" size={90} />
-						</section>
+						<Loader color={'#3D6F2E'} size={90} />
 					) : (
 						<ProductSection
 							products={products.data}
@@ -114,7 +112,7 @@ const AdminProducts = () => {
 				<Navbar active={"products"} position={"bottom"} />
 			</section>
 		</>
-	);
+	)
 }
 
 export {

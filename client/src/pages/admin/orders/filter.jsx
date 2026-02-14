@@ -34,9 +34,11 @@ const FilterSection = ({
 						allowClear
 						value={currentStatus}
 						options={[
-							{ value: "success", label: "Sukses" },
-							{ value: "pending", label: "Pending" },
-							{ value: "failed", label: "Batal" }
+							{ value: "pending", label: "Belum Lunas" },
+							{ value: "failed", label: "Dibatalkan" },
+							{ value: "shipped", label: "Dikirim" },
+							{ value: "processing", label: "Diproses" },
+							{ value: "delivered", label: "Telah Diterima" }
 						]}
 						onChange={(value) => {
 							const params = new URLSearchParams(searchParams);

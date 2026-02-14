@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const EmptySection = () => {
 	return (
 		<section className="min-h-screen flex items-center justify-center">
-			<div className="flex-1 flex flex-col items-center justify-center pt-32 px-6 pb-20">
+			<div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
 				<div className="relative mb-8 flex items-center justify-center">
 					<div className="absolute size-64 rounded-full bg-secondary/30 blur-2xl" />
 					<div className="absolute size-40 rounded-full bg-accent/40 blur-xl top-10 right-10" />

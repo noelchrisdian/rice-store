@@ -10,7 +10,7 @@ const ItemSection = ({ order, setModal }) => {
 			<div className="space-y-4">
 				{order?.products.map((product, index) => (
 					<div
-						className="flex items-center gap-3 pb-4 border-b border-border"
+						className="flex items-center gap-3 pb-4 border-b border-border last:border-b-0"
 						key={index}>
 						<Image
 							src={product?.product?.image?.imageURL}
@@ -34,20 +34,21 @@ const ItemSection = ({ order, setModal }) => {
 									product?.product?.price * product?.quantity
 								)}
 							</p>
-							{order?.status === "success" && !product?.reviewed && (
-								<div className="flex justify-end">
-									<button
-										onClick={() =>
-											setModal({
-												open: true,
-												data: product.product
-											})
-										}
-										className="bg-none text-xs text-primary cursor-pointer hover:underline focus:outline-none focus:underline">
-										Beri Ulasan
-									</button>
-								</div>
-							)}
+							{order?.shipping?.status === "delivered" &&
+								!product?.reviewed && (
+									<div className="flex justify-end">
+										<button
+											onClick={() =>
+												setModal({
+													open: true,
+													data: product.product
+												})
+											}
+											className="bg-none text-xs text-primary cursor-pointer hover:underline focus:outline-none focus:underline">
+											Beri Ulasan
+										</button>
+									</div>
+								)}
 						</div>
 					</div>
 				))}

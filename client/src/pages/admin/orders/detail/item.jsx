@@ -10,7 +10,7 @@ const ItemSection = ({ order }) => {
 			<div className="space-y-4">
 				{order?.products.map((product) => (
 					<div
-						className="flex items-center gap-3 pb-4 border-b border-border"
+						className="flex items-center gap-3 pb-4 border-b border-border last:border-b-0"
 						key={product?.product?._id}>
 						<Image
 							src={product?.product?.image?.imageURL}

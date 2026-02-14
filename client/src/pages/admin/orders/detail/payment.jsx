@@ -6,8 +6,8 @@ import {
     ClipboardX
 } from "lucide-react";
 import { handleCurrency } from "../../../../utils/price";
-import { handleDate } from "../../../../utils/date";
-import { setPaymentStatus } from "../../../../utils/payment";
+import { handleDatetime } from "../../../../utils/date";
+import { setPaymentStatus } from "../../../../utils/order";
 
 const PaymentSection = ({ order }) => {
 	return (
@@ -50,7 +50,7 @@ const PaymentSection = ({ order }) => {
 						</div>
 					</div>
 					<div className="flex items-start gap-3">
-						{setPaymentStatus(order?.payment?.status) === "Berhasil" ? (
+						{setPaymentStatus(order?.payment?.status) === "Lunas" ? (
 							<ClipboardCheck className="size-7 text-primary mt-0.5 shrink-0" />
 						) : setPaymentStatus(order?.payment?.status) === "Pending" ? (
 							<ClipboardClock className="size-7 text-primary mt-0.5 shrink-0" />
@@ -73,7 +73,7 @@ const PaymentSection = ({ order }) => {
 								Tanggal Pembayaran
 							</p>
 							<p className="text-sm text-foreground">
-								{handleDate(order?.payment?.paidAt)}
+								{handleDatetime(order?.payment?.paidAt)}
 							</p>
 						</div>
 					</div>

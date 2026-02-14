@@ -1,4 +1,3 @@
-import { upload } from '../../utils/multer.js';
 import {
     create,
     find,
@@ -9,6 +8,7 @@ import {
 import { indexReviews, removeReview } from '../admin/controller.js';
 import { router as inventoryRouter } from '../inventories/router.js';
 import { Router } from 'express';
+import { upload } from '../../utils/multer.js';
 
 const router = Router();
 

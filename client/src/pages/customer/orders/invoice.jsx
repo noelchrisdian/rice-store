@@ -1,7 +1,7 @@
 import { ArrowLeft, Printer } from "lucide-react";
 import { handleCurrency } from "../../../utils/price";
 import { handleDate } from "../../../utils/date";
-import { setPaymentStatus } from "../../../utils/payment";
+import { setPaymentStatus } from "../../../utils/order";
 import { useNavigate } from "react-router-dom";
 import { useRouteLoaderData } from "react-router-dom";
 
@@ -71,7 +71,7 @@ const OrderInvoice = ({ role }) => {
 						</div>
 						<div>
 							<h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-								Status Pesanan
+								Status Pembayaran
 							</h3>
 							<p className="text-sm text-foreground">
 								{setPaymentStatus(order?.payment?.status)}

@@ -168,7 +168,10 @@ const CustomerCart = () => {
 
 	const { isPending, mutateAsync } = useMutation({
 		mutationFn: () => createOrder(),
-		onSuccess: () => queryClient.invalidateQueries(["orders"])
+		onSuccess: () => {
+			queryClient.invalidateQueries(["orders"]);
+			queryClient.invalidateQueries(["index-products"]);
+		}
 	})
 
 	const handleCreateOrder = async () => {

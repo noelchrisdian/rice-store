@@ -4,7 +4,10 @@ import {
     getOrders,
     getReviews,
     getUser,
-    getUsers
+    getUsers,
+    updateOrderDelivered,
+    updateOrderShipped,
+    updateOrderShippedInfo
 } from "../../services/admin.js"
 import { success } from "../../utils/response.js";
 
@@ -21,6 +24,33 @@ const findOrder = async (req, res, next) => {
     try {
         const order = await getOrder(req);
         success(res, order, 'Order fetched successfully')
+    } catch (error) {
+        next(error);
+    }
+}
+
+const updateShipped = async (req, res, next) => {
+    try {
+        const order = await updateOrderShipped(req);
+        success(res, order, 'Order updated successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const updateShippedInfo = async (req, res, next) => {
+    try {
+        const order = await updateOrderShippedInfo(req);
+        success(res, order, 'Order updated successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const updateDelivered = async (req, res, next) => {
+    try {
+        const order = await updateOrderDelivered(req);
+        success(res, order, 'Order updated successfully');
     } catch (error) {
         next(error);
     }
@@ -68,5 +98,8 @@ export {
     indexOrders,
     indexReviews,
     indexUsers,
-    removeReview
+    removeReview,
+    updateDelivered,
+    updateShipped,
+    updateShippedInfo
 }

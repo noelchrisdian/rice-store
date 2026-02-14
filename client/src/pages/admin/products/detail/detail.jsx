@@ -3,7 +3,6 @@ import {
 	CircleAlert,
 	SquarePen
 } from "lucide-react";
-import { CircularLoading } from "respinner";
 import { deleteReview, getReviews } from "../../../../services/reviews";
 import { getInventories } from "../../../../services/inventories";
 import { InventorySection } from "./inventory";
@@ -12,6 +11,7 @@ import {
 	useLoaderData,
 	useSearchParams
 } from "react-router-dom";
+import { Loader } from "../../../../components/loader";
 import { Modal } from "antd";
 import { ProductSection } from "./product";
 import { ReviewSection } from "./review";
@@ -113,9 +113,7 @@ const AdminDetailProduct = () => {
 				<div className="">
 					<ProductSection product={product} />
 					{isFetchingInventory ? (
-						<section className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
-							<CircularLoading color="#3D6F2E" size={90} />
-						</section>
+						<Loader color={"#3D6F2E"} size={90} />
 					) : (
 						<InventorySection
 							inventories={inventories?.data}
@@ -128,9 +126,7 @@ const AdminDetailProduct = () => {
 					)}
 				</div>
 				{isFetchingReview ? (
-					<section className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
-						<CircularLoading color="#3D6F2E" size={90} />
-					</section>
+					<Loader color={"#3D6F2E"} size={90} />
 				) : (
 					<ReviewSection
 						limit={pageSizeReview}

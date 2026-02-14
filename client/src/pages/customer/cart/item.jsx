@@ -80,7 +80,7 @@ const ItemSection = ({
 					</div>
 				</div>
 			</div>
-			<div className="px-6 pb-24">
+			<div className="px-6 pb-16">
 				<div className="bg-card rounded-2xl border border-border/50 pt-5 px-5 pb-2 shadow-sm sticky top-2/4">
 					<h3 className="font-font-heading text-xl font-semibold mb-6">
 						Rincian Pesanan

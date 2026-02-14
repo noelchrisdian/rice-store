@@ -14,7 +14,7 @@ import { PaymentSection } from "./payment";
 import { PendingAlert } from "./alert";
 import { ReviewForm } from "./form";
 import { SellerSection } from "../../../admin/orders/detail/seller";
-import { setPaymentStatus } from "../../../../utils/payment";
+import { setOrderStatus } from "../../../../utils/order";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
@@ -50,7 +50,7 @@ const CustomerOrderDetail = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["order_detail", initial?._id]
-			});
+			})
 			toast.success("Ulasan Anda berhasil disimpan");
 			form.resetFields();
 		},
@@ -132,7 +132,7 @@ const CustomerOrderDetail = () => {
 								Status Pesanan
 							</p>
 							<p className="font-semibold text-foreground mt-1">
-								{setPaymentStatus(order?.data?.payment?.status)}
+								{setOrderStatus(order?.data?.payment?.status, order?.data?.shipping?.status)}
 							</p>
 						</div>
 						<div className="">
@@ -140,7 +140,7 @@ const CustomerOrderDetail = () => {
 								Tanggal Pesanan
 							</p>
 							<p className="text-sm text-foreground mt-1">
-								{handleDate(order?.createdAt)}
+								{handleDate(order?.data?.createdAt)}
 							</p>
 						</div>
 					</div>

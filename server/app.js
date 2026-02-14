@@ -3,7 +3,9 @@ import cors from 'cors';
 import express, { json, urlencoded } from 'express';
 import { authenticated, authorize } from './middlewares/auth.js';
 import { connectDB } from './utils/db.js';
+import { createServer } from 'http';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { init } from './utils/socket.js';
 import { notification } from './api/orders/controller.js';
 import { rateLimit } from 'express-rate-limit';
 import { router as adminRouter } from './api/admin/router.js';
@@ -13,6 +15,9 @@ import { router as globalRouter } from './api/global/router.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const server = createServer(app);
+init(server);
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -51,6 +56,6 @@ app
     .use('/customers', authenticated, authorize('customer'), customerRouter)
     .use(errorHandler)
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`)
 })
