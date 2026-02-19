@@ -40,10 +40,10 @@ const ReviewSection = ({
 							</p>
 						</div>
 						<div className="flex-1 space-y-2">
-							{stars.map((star) => {
+							{stars.map((star, index) => {
 								const count = Number(analytics?.[`star${star}`] || 0);
 								return (
-									<div className="flex items-center gap-2">
+									<div className="flex items-center gap-2" key={index}>
 										<span className="text-xs text-muted-foreground w-8">
 											{star}★
 										</span>

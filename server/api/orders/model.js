@@ -62,6 +62,7 @@ const orderSchema = new Schema({
             default: 'pending'
         },
         courier: String,
+        fee: Number,
         trackingNumber: String,
         shippedAt: Date,
         deliveredAt: Date,

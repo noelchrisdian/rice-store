@@ -1,6 +1,7 @@
 import { ArrowLeft, FileText } from "lucide-react";
 import { CustomerSection } from "../../../admin/orders/detail/customer";
 import { createReview, reviewSchema } from "../../../../services/reviews";
+import { DeliverySection } from "./delivery";
 import { findOrder } from "../../../../services/orders";
 import { Form, Modal } from "antd";
 import { handleDate } from "../../../../utils/date";
@@ -13,7 +14,7 @@ import {
 import { PaymentSection } from "./payment";
 import { PendingAlert } from "./alert";
 import { ReviewForm } from "./form";
-import { SellerSection } from "../../../admin/orders/detail/seller";
+import { SellerSection } from "./seller";
 import { setOrderStatus } from "../../../../utils/order";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -148,6 +149,7 @@ const CustomerOrderDetail = () => {
 				<ItemSection order={order?.data} setModal={setModal} />
 				<PaymentSection order={order?.data} />
 				<CustomerSection order={order?.data} />
+				<DeliverySection order={order?.data} />
 				<SellerSection />
 				<div className="px-4 pb-6 space-y-3">
 					<Link

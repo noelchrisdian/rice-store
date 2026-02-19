@@ -6,7 +6,7 @@ const PendingAlert = ({ handlePayment, order }) => {
 			{order?.payment?.status === "pending" &&
 				new Date() <= new Date(order?.payment?.expiry_time) && (
 					<Alert
-						className="mt-6! mx-4! flex! items-center! lg:max-w-3xl! lg:mx-auto!"
+						className="mt-6! mx-4! flex! items-center! rounded-lg! lg:max-w-185! lg:mx-auto!"
 						banner
 						showIcon
 						description={"Menunggu pembayaran"}

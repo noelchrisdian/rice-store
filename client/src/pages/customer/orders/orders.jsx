@@ -15,6 +15,7 @@ const OrderSection = ({
 	const styles = {
 		"Dibatalkan": "bg-destructive/10 text-desctructive",
 		"Telah Diterima": "bg-primary/10 text-primary",
+		"Dikirim": "bg-blue-100 text-blue-700",
 		"default": "bg-orange-100 text-orange-700"
 	}
 

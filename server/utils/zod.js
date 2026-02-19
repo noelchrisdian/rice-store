@@ -29,8 +29,8 @@ const userSchema = z.object({
 const emailSchema = userSchema.omit({ name: true, phoneNumber: true, password: true, confirmPassword: true, address: true });
 
 const passwordSchema = z.object({
-    password: z.string().min(5, 'Kata sandi minimal 5 karakter'),
-    confirmPassword: z.string().min(5, 'Kata sandi minimal 5 karakter')
+    password: z.string().min(5, 'Password must be at least 5 characters long'),
+    confirmPassword: z.string().min(5, 'Password must be at least 5 characters long')
 }).strict();
 
 const cartSchema = z.object({
@@ -47,23 +47,23 @@ const reviewSchema = z.object({
 
 const orderShippedSchema = z.object({
     courier: z.string(),
-    trackingNumber: z.string(5, 'Nomor resi minimal 5 karakter'),
+    fee: z.coerce.number().min(0, `Shipping fee couldn't be negative number`),
+    trackingNumber: z.string().min(5, 'Tracking number must be at least 5 characters long'),
     shippedAt: z.coerce.date()
 }).strict();
 
 const orderDeliveredSchema = z.object({
-    status: z.string(),
     deliveredAt: z.coerce.date()
 }).strict();
 
 export {
     cartSchema,
+    emailSchema,
     escape,
     inventorySchema,
-    passwordSchema,
-    emailSchema,
     orderDeliveredSchema,
     orderShippedSchema,
+    passwordSchema,
     productSchema,
     reviewSchema,
     userSchema

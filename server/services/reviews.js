@@ -24,7 +24,7 @@ const createReview = async (req) => {
         if (!order) {
             throw new NotFound(`Order doesn't exist`);
         }
-        if (order.status !== 'success') {
+        if (order.shipping.status !== 'delivered') {
             throw new Forbidden(`Order is not completed yet`);
         }
 

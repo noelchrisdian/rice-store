@@ -147,6 +147,7 @@ const updateOrderShipped = async (req) => {
             $set: {
                 "shipping.status": 'shipped',
                 "shipping.courier": parse.data.courier,
+                "shipping.fee": parse.data.fee,
                 "shipping.trackingNumber": parse.data.trackingNumber,
                 "shipping.shippedAt": parse.data.shippedAt,
                 "shipping.proofImage": {
@@ -179,6 +180,7 @@ const updateOrderShippedInfo = async (req) => {
         {
             $set: {
                 "shipping.courier": parse.data.courier,
+                "shipping.fee": parse.data.fee,
                 "shipping.trackingNumber": parse.data.trackingNumber,
                 "shipping.shippedAt": parse.data.shippedAt
             }

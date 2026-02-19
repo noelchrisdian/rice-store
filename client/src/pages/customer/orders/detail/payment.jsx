@@ -6,7 +6,7 @@ import {
 	CreditCard
 } from "lucide-react";
 import { handleCurrency } from "../../../../utils/price";
-import { handleDate } from "../../../../utils/date";
+import { handleDatetime } from "../../../../utils/date";
 import { setPaymentStatus } from "../../../../utils/order";
 
 const PaymentSection = ({ order }) => {
@@ -73,7 +73,7 @@ const PaymentSection = ({ order }) => {
 								Tanggal Pembayaran
 							</p>
 							<p className="text-sm text-foreground">
-								{handleDate(order?.payment?.paidAt)}
+								{handleDatetime(order?.payment?.paidAt)}
 							</p>
 						</div>
 					</div>

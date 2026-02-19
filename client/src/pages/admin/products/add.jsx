@@ -1,4 +1,5 @@
 import { addProduct, productSchema } from "../../../services/products";
+import { beforeUpload } from "../../../utils/upload";
 import { CircularLoading } from "respinner";
 import {
 	Form,
@@ -16,30 +17,6 @@ const AddProductForm = () => {
 	const [file, setFile] = useState(null);
 	const [preview, setPreview] = useState(null);
 	const navigate = useNavigate();
-
-	const beforeUpload = (file) => {
-		const typesAllowed = [
-			"image/jpeg",
-			"image/jpg",
-			"image/png",
-			"image/webp"
-		]
-		const fileType = typesAllowed.includes(file.type);
-		if (!fileType) {
-			toast.error("File tidak valid");
-		}
-
-		const fileSize = file.size / 1024 / 1024 <= 4;
-		if (!fileSize) {
-			toast.error("Ukuran file maksimal 4 MB");
-		}
-
-		if (!fileType || !fileSize) {
-			return Upload.LIST_IGNORE;
-		}
-
-		return false;
-	}
 
 	const handleChange = ({ fileList }) => {
 		const file = fileList[fileList.length - 1]?.originFileObj || null;
