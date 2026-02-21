@@ -1,7 +1,8 @@
-import { ArrowLeft, FileText } from "lucide-react";
+import { BackButton } from "../../../../components/back";
 import { CustomerSection } from "../../../admin/orders/detail/customer";
 import { createReview, reviewSchema } from "../../../../services/reviews";
 import { DeliverySection } from "./delivery";
+import { FileText } from "lucide-react";
 import { findOrder } from "../../../../services/orders";
 import { Form, Modal } from "antd";
 import { handleDate } from "../../../../utils/date";
@@ -119,11 +120,7 @@ const CustomerOrderDetail = () => {
 
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen pt-10 pb-2">
-			<Link
-				to={"/orders"}
-				className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5">
-				<ArrowLeft className="size-6" />
-			</Link>
+			<BackButton type={"link"} path={"/orders"} />
 			<PendingAlert handlePayment={handlePayment} order={order?.data} />
 			<section className="px-4 pt-6 space-y-6 lg:max-w-3xl lg:mx-auto">
 				<div className="bg-card rounded-2xl border border-border p-4 space-y-4">

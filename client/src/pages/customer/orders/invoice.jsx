@@ -1,23 +1,18 @@
-import { ArrowLeft, Printer } from "lucide-react";
+import { BackButton } from "../../../components/back";
 import { handleCurrency } from "../../../utils/price";
 import { handleDate } from "../../../utils/date";
+import { Printer } from "lucide-react";
 import { setPaymentStatus } from "../../../utils/order";
-import { useNavigate } from "react-router-dom";
 import { useRouteLoaderData } from "react-router-dom";
 
 const OrderInvoice = ({ role }) => {
 	const adminOrder = useRouteLoaderData('admin-order-detail')
 	const customerOrder = useRouteLoaderData("order-detail");
-	const navigate = useNavigate();
 	const order = role === 'admin' ? adminOrder : customerOrder;
 
 	return (
 		<main className="min-h-screen bg-background text-foreground font-sans pb-4 relative">
-			<button
-				onClick={() => navigate(-1)}
-				className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg cursor-pointer transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5 print:hidden">
-				<ArrowLeft className="size-6" />
-			</button>
+			<BackButton type={"button"} path={-1} />
 			<button
 				className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center z-10 cursor-pointer active:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50 print:hidden"
 				onClick={() => window.print()}>

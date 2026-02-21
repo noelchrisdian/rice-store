@@ -1,17 +1,17 @@
 import { CircleAlert, Plus } from "lucide-react";
 import { deleteProduct, getProducts } from "../../../services/products";
-import { Modal } from "antd";
-import { Link, useLoaderData } from "react-router-dom";
-import { Loader } from "../../../components/loader";
-import { Navbar } from "../../../components/navbar";
-import { ProductSection } from "./products";
-import { toast } from "sonner";
 import {
 	keepPreviousData,
 	useMutation,
 	useQuery,
 	useQueryClient
 } from "@tanstack/react-query";
+import { Link, useLoaderData } from "react-router-dom";
+import { Loader } from "../../../components/loader";
+import { Modal } from "antd";
+import { Navbar } from "../../../components/navbar";
+import { ProductSection } from "./products";
+import { toast } from "sonner";
 import { useState } from "react";
 
 const AdminProducts = () => {
@@ -60,7 +60,7 @@ const AdminProducts = () => {
 			<section className="hidden lg:block">
 				<Navbar active={"products"} position={"top"} />
 			</section>
-			<main className="bg-background text-foreground font-sans min-h-screen pt-10 pb-32 lg:py-20">
+			<main className="bg-background text-foreground font-sans min-h-screen pt-6 pb-28 lg:pt-20 lg:pb-10">
 				<section className="flex items-center justify-end pb-6 pr-4 lg:pb-12 lg:pr-8">
 					<Link
 						to={"/admin/products/add-product"}

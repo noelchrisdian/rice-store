@@ -2,10 +2,15 @@ import {
     findOrder,
     findUser,
     indexOrders,
+    indexRecentOrders,
+    indexRecentProducts,
+    indexRecentUsers,
+    indexTodayOrders,
     indexUsers,
     updateDelivered,
     updateShipped,
-    updateShippedInfo
+    updateShippedInfo,
+    userStats
 } from './controller.js';
 import { Router } from 'express';
 import { router as productRouter } from '../products/router.js';
@@ -20,6 +25,11 @@ router
     .patch('/orders/:id/delivered', upload.single('image'), updateDelivered)
     .patch('/orders/:id/shipped', upload.single('image'), updateShipped)
     .patch('/orders/:id/edit-shipping', updateShippedInfo)
+    .get('/recent-orders', indexRecentOrders)
+    .get('/recent-products', indexRecentProducts)
+    .get('/recent-users', indexRecentUsers)
+    .get('/user-stats', userStats)
+    .get('/today-orders', indexTodayOrders)
     .get('/users', indexUsers)
     .get('/user', findUser)
     .use('/products', productRouter)

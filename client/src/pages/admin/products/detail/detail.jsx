@@ -1,8 +1,5 @@
-import {
-	ArrowLeft,
-	CircleAlert,
-	SquarePen
-} from "lucide-react";
+import { BackButton } from "../../../../components/back";
+import { CircleAlert, SquarePen } from "lucide-react";
 import { deleteReview, getReviews } from "../../../../services/reviews";
 import { getInventories } from "../../../../services/inventories";
 import { InventorySection } from "./inventory";
@@ -86,7 +83,7 @@ const AdminDetailProduct = () => {
 			const response = await mutateAsync({ id, reviewID });
 			toast.success(
 				`Ulasan dari ${response?.data?.user?.name} berhasil dihapus`
-			);
+			)
 		} catch (error) {
 			toast.error(error?.response?.data?.message);
 		}
@@ -96,11 +93,7 @@ const AdminDetailProduct = () => {
 
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen py-10 lg:py-20">
-			<Link
-				to={"/admin/products"}
-				className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5">
-				<ArrowLeft className="size-6" />
-			</Link>
+			<BackButton type={"link"} path={"/admin/products"} />
 			<section className="flex items-center justify-end pb-6 pr-4 lg:pr-6">
 				<Link
 					to={`/admin/products/edit-product/${product._id}`}

@@ -1,12 +1,12 @@
 import { ClipboardX } from "lucide-react";
 import { FilterSection } from "./filter";
 import { getOrders } from "../../../services/orders";
-import { Loader } from "../../../components/loader";
 import {
 	keepPreviousData,
 	useQuery,
 	useQueryClient
 } from "@tanstack/react-query";
+import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
 import { OrderSection } from "./orders";
 import { socket } from "../../../utils/socket";
@@ -104,7 +104,7 @@ const AdminOrders = () => {
 				<Navbar active={"orders"} position={"top"} />
 			</section>
 			<main className="bg-background font-sans text-foreground min-h-screen">
-				<section className="pt-6 pb-28 px-6 lg:py-20 lg:max-w-5xl lg:mx-auto">
+				<section className="pt-6 pb-28 px-6 lg:pt-20 lg:pb-10 lg:max-w-5xl lg:mx-auto">
 					<FilterSection
 						currentStatus={currentStatus}
 						currentRange={currentRange}

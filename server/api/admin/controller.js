@@ -8,13 +8,65 @@ import {
     updateOrderDelivered,
     updateOrderShipped,
     updateOrderShippedInfo
-} from "../../services/admin.js"
+} from "../../services/admin.js";
+import {
+    getRecentOrders,
+    getRecentProducts,
+    getRecentUsers,
+    getTodayOrders,
+    getUserStats
+} from "../../services/dashboard.js";
 import { success } from "../../utils/response.js";
 
 const indexOrders = async (req, res, next) => {
     try {
         const result = await getOrders(req);
         success(res, result, 'Orders fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const indexRecentOrders = async (req, res, next) => {
+    try {
+        const orders = await getRecentOrders();
+        success(res, orders, 'Orders fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const indexRecentProducts = async (req, res, next) => {
+    try {
+        const products = await getRecentProducts();
+        success(res, products, 'Products fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const indexRecentUsers = async (req, res, next) => {
+    try {
+        const users = await getRecentUsers();
+        success(res, users, 'Users fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const userStats = async (req, res, next) => {
+    try {
+        const user = await getUserStats();
+        success(res, user, 'User fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const indexTodayOrders = async(req, res, next) => {
+    try {
+        const orders = await getTodayOrders();
+        success(res, orders, 'Orders fetched successfully');
     } catch (error) {
         next(error);
     }
@@ -97,9 +149,14 @@ export {
     findUser,
     indexOrders,
     indexReviews,
+    indexRecentOrders,
+    indexRecentProducts,
+    indexRecentUsers,
+    indexTodayOrders,
     indexUsers,
     removeReview,
     updateDelivered,
     updateShipped,
-    updateShippedInfo
+    updateShippedInfo,
+    userStats
 }

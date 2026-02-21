@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { BackButton } from "../../../components/back";
 import { beforeUpload } from "../../../utils/upload";
 import { changeProfileSchema, updateUser } from "../../../services/users";
 import { Form } from "antd";
@@ -99,11 +99,7 @@ const EditUserForm = () => {
 	return (
 		<>
 			{user.role === "customer" && (
-				<button
-					className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg cursor-pointer transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5"
-					onClick={() => navigate("/")}>
-					<ArrowLeft className="size-6 cursor-pointer" />
-				</button>
+				<BackButton type={"button"} path={"/"} />
 			)}
 			<div className="px-5 py-20 lg:py-20">
 				<UserForm

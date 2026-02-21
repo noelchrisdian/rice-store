@@ -1,6 +1,6 @@
 import { addItem } from "../../../services/carts";
+import { BackButton } from "../../../components/back";
 import {
-	ArrowLeft,
 	CircleCheck,
 	Contact,
 	ShoppingBag
@@ -62,12 +62,7 @@ const CustomerProductDetail = () => {
 
 	return (
 		<main className="relative bg-background min-h-screen text-foreground font-sans">
-			<button
-				className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5"
-				onClick={() => navigate(-1)}>
-				<ArrowLeft className="size-6" />
-			</button>
-
+			<BackButton type={"button"} path={-1} />
 			<section className="lg:max-w-7xl lg:mx-auto lg:relative">
 				<section className="w-full aspect-square bg-secondary p-4 rounded-3xl lg:max-w-md lg:mt-4">
 					<img

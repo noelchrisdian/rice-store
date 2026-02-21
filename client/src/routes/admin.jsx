@@ -2,7 +2,7 @@ import { AddInventoryForm } from "../pages/admin/inventories/add";
 import { AddProductForm } from "../pages/admin/products/add";
 import { AdminDetailOrder } from "../pages/admin/orders/detail/detail";
 import { AdminDetailProduct } from "../pages/admin/products/detail/detail";
-import { AdminHome } from "../pages/admin";
+import { AdminHome } from "../pages/admin/home/index";
 import { AdminOrders } from "../pages/admin/orders/index";
 import { AdminProducts } from "../pages/admin/products/index";
 import { AdminUsers } from "../pages/admin/users/index";

@@ -67,7 +67,7 @@ const AdminUsers = () => {
 				<Navbar active={"users"} position={"top"} />
 			</section>
 			<main className="bg-background font-sans text-foreground min-h-screen">
-				<section className="pt-6 pb-28 px-6 lg:pt-20 lg:max-w-5xl lg:mx-auto">
+				<section className="pt-6 pb-28 px-6 lg:pt-20 lg:pb-10 lg:max-w-5xl lg:mx-auto">
 					<div className="mb-6">
 						<div className="pt-4 lg:pt-10 lg:pb-1">
 							<div className="relative">
