@@ -129,7 +129,7 @@ const AdminDetailOrder = () => {
 
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen pt-10 pb-2">
-			<BackButton type={"link"} path={"/admin/orders"} />
+			<BackButton type={"link"} path={-1} />
 			<StatusAlert order={order} setModal={setModal} />
 			<section className="px-4 pt-6 space-y-6 lg:max-w-3xl lg:mx-auto">
 				<div className="bg-card rounded-2xl border border-border p-4 space-y-4">
@@ -158,7 +158,7 @@ const AdminDetailOrder = () => {
 				<ItemSection order={order} />
 				<PaymentSection order={order} />
 				<CustomerSection order={order} />
-				{order?.shipping.courier && (
+				{(order?.shipping?.status === "shipped" || order?.shipping?.status === "delivered") && (
 					<DeliverySection order={order} setModal={setModal} />
 				)}
 				<div className="px-4 pb-6 space-y-3">

@@ -9,7 +9,8 @@ const getTodayOrders = async () => {
     const orders = await Orders.aggregate([
         {
             $match: {
-                createdAt: { $gte: start, $lte: end }
+                createdAt: { $gte: start, $lte: end },
+                "payment.status": { $in: ['capture', 'settlement'] }
             }
         },
         {

@@ -146,7 +146,9 @@ const CustomerOrderDetail = () => {
 				<ItemSection order={order?.data} setModal={setModal} />
 				<PaymentSection order={order?.data} />
 				<CustomerSection order={order?.data} />
-				<DeliverySection order={order?.data} />
+				{(order?.data?.shipping?.status === "shipped" || order?.data?.shipping?.status === "delivered") && (
+					<DeliverySection order={order?.data} />
+				)}
 				<SellerSection />
 				<div className="px-4 pb-6 space-y-3">
 					<Link

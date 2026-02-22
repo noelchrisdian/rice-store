@@ -15,6 +15,7 @@ import {
 } from "../../../services/dashboard";
 import { handleCurrency } from "../../../utils/price";
 import { Link, useNavigate } from "react-router-dom";
+import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
 import { OrderSection } from "./order";
 import { ProductSection } from "./product";
@@ -34,38 +35,45 @@ const AdminHome = () => {
 		navigate("/");
 	}
 
-	const { data: todayOrders } = useQuery({
+	const { data: todayOrders, isFetching: fetchingOrders } = useQuery({
 		queryKey: ["orders", "today"],
 		queryFn: () => getTodayOrders(),
 		staleTime: 2 * 60 * 1000,
 		refetchInterval: 0
 	})
 
-	const { data: recentOrders } = useQuery({
+	const { data: recentOrders, isFetching: fetchingRecentOrders } = useQuery({
 		queryKey: ["orders", "recent"],
 		queryFn: () => getRecentOrders(),
 		staleTime: 2 * 60 * 1000,
 		refetchInterval: 0
 	})
 
-	const { data: recentProducts } = useQuery({
+	const { data: recentProducts, isFetching: fetchingProducts } = useQuery({
 		queryKey: ["products"],
 		queryFn: () => getRecentProducts()
 	})
 
-	const { data: recentUsers } = useQuery({
+	const { data: recentUsers, isFetching: fetchingUsers } = useQuery({
 		queryKey: ["users", "recent"],
 		queryFn: () => getRecentUsers(),
 		staleTime: 5 * 60 * 1000,
 		refetchInterval: 5 * 60 * 1000
 	})
 
-	const { data: userStats } = useQuery({
+	const { data: userStats, isFetching: fetchingUserStats } = useQuery({
 		queryKey: ["users", "stats"],
 		queryFn: () => getUserStats(),
 		staleTime: 5 * 60 * 1000,
 		refetchInterval: 5 * 60 * 1000
 	})
+
+	const fetchingData =
+		fetchingOrders ||
+		fetchingRecentOrders ||
+		fetchingProducts ||
+		fetchingUsers ||
+		fetchingUserStats
 
 	useEffect(() => {
 		const handler = (data) => {
@@ -86,7 +94,7 @@ const AdminHome = () => {
 		return () => {
 			socket.off("orders:event", handler);
 		}
-	}, [queryClient]);
+	}, [queryClient])
 
 	return (
 		<>
@@ -123,44 +131,50 @@ const AdminHome = () => {
 							</div>
 						</div>
 					</div>
-					<div className="grid grid-cols-2 gap-3 mb-3 px-4">
-						<div className="bg-card rounded-2xl border border-border/50 shadow-sm p-4">
-							<div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
-								<ClipboardList className="size-6 text-primary" />
+					{fetchingData ? (
+						<Loader color={"#3D6F2E"} size={90} />
+					) : (
+						<>
+							<div className="grid grid-cols-2 gap-3 mb-3 px-4">
+								<div className="bg-card rounded-2xl border border-border/50 shadow-sm p-4">
+									<div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
+										<ClipboardList className="size-6 text-primary" />
+									</div>
+									<p className="font-font-heading text-2xl font-bold text-foreground mb-1">
+										{todayOrders?.data?.orders || 0}
+									</p>
+									<p className="text-sm text-muted-foreground">
+										Pesanan Hari Ini
+									</p>
+								</div>
+								<div className="bg-card rounded-2xl border border-border/50 shadow-sm p-4">
+									<div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
+										<BanknoteArrowDown className="size-6 text-primary" />
+									</div>
+									<p className="font-font-heading text-2xl font-bold text-foreground mb-1">
+										{handleCurrency(todayOrders?.data?.income || 0)}
+									</p>
+									<p className="text-sm text-muted-foreground">
+										Pendapatan Hari Ini
+									</p>
+								</div>
 							</div>
-							<p className="font-font-heading text-2xl font-bold text-foreground mb-1">
-								{todayOrders?.data?.orders || 0}
-							</p>
-							<p className="text-sm text-muted-foreground">
-								Pesanan Hari Ini
-							</p>
-						</div>
-						<div className="bg-card rounded-2xl border border-border/50 shadow-sm p-4">
-							<div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
-								<BanknoteArrowDown className="size-6 text-primary" />
+							<div className="lg:grid lg:grid-cols-3">
+								<div className="px-4 mb-3 lg:pl-4 lg:pr-2">
+									<ProductSection recentProducts={recentProducts} />
+								</div>
+								<div className="grid grid-cols-1 gap-3 px-4 mb-3 lg:px-2">
+									<OrderSection recentOrders={recentOrders} />
+								</div>
+								<div className="px-4 mb-3 lg:pl-2 lg:pr-4">
+									<UserSection
+										recentUsers={recentUsers}
+										userStats={userStats}
+									/>
+								</div>
 							</div>
-							<p className="font-font-heading text-2xl font-bold text-foreground mb-1">
-								{handleCurrency(todayOrders?.data?.income || 0)}
-							</p>
-							<p className="text-sm text-muted-foreground">
-								Pendapatan Hari Ini
-							</p>
-						</div>
-					</div>
-					<div className="lg:grid lg:grid-cols-3">
-						<div className="px-4 mb-3 lg:pl-4 lg:pr-2">
-							<ProductSection recentProducts={recentProducts} />
-						</div>
-						<div className="grid grid-cols-1 gap-3 px-4 mb-3 lg:px-2">
-							<OrderSection recentOrders={recentOrders} />
-						</div>
-						<div className="px-4 mb-3 lg:pl-2 lg:pr-4">
-							<UserSection
-								recentUsers={recentUsers}
-								userStats={userStats}
-							/>
-						</div>
-					</div>
+						</>
+					)}
 				</div>
 			</main>
 			<section className="lg:hidden">
