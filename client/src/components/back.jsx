@@ -9,7 +9,7 @@ const BackButton = ({ type, path }) => {
 		<>
 			{type === "button" ? (
 				<button
-					className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg cursor-pointer transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5"
+					className="fixed top-4 left-4 z-10 p-2 bg-primary text-primary-foreground rounded-full shadow-lg cursor-pointer transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 lg:top-6 lg:left-5 print:hidden"
 					onClick={() => navigate(path)}>
 					<ArrowLeft className="size-6" />
 				</button>
