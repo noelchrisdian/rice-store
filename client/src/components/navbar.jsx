@@ -10,6 +10,7 @@ import {
 	Users
 } from "lucide-react";
 import { Dropdown } from "antd";
+import { getCart } from "../services/carts";
 import { getCustomer } from "../services/users";
 import { getSession } from "../utils/axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -76,6 +77,16 @@ const Navbar = ({ active, position }) => {
 		}
 	}
 
+	const { data: cartNavbar } = useQuery({
+		queryKey: ["user-cart"],
+		queryFn: async () => {
+			if (session?.role === "admin") return null;
+			const result = await getCart();
+			return result.data;
+		},
+		enabled: !!session && session?.role !== "admin"
+	})
+
 	const { data: user } = useQuery({
 		queryKey: ["user-detail", session?.role],
 		queryFn: () => {
@@ -85,6 +96,8 @@ const Navbar = ({ active, position }) => {
 		enabled: !!session && session?.role !== "admin",
 		retry: false
 	})
+
+	const cartItems = cartNavbar?.products.length;
 
 	return (
 		<>
@@ -108,14 +121,36 @@ const Navbar = ({ active, position }) => {
 						)}
 						{active === "cart" ? (
 							<Link className="flex items-center gap-2 px-4 py-2 rounded-full shadow-sm transition-all bg-primary text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
-								<ShoppingBag className="size-6" />
+								{cartItems > 0 ? (
+									<div className="relative">
+										<div className="absolute flex justify-center items-center -top-1 -right-1 w-4 h-4 p-2 rounded-full bg-primary-foreground">
+											<span className="text-primary text-[9.5px]">
+												{cartItems}
+											</span>
+										</div>
+										<ShoppingBag className="size-6" />
+									</div>
+								) : (
+									<ShoppingBag className="size-6" />
+								)}
 								<span className="text-sm font-medium">Keranjang</span>
 							</Link>
 						) : (
 							<Link
 								to={"/cart"}
 								className="flex items-center justify-center size-12 text-primary transition-colors rounded-full active:bg-secondary/50">
-								<ShoppingBag className="size-6" />
+								{cartItems > 0 ? (
+									<div className="relative">
+										<div className="absolute flex justify-center items-center -top-1 -right-1 w-4 h-4 p-2 rounded-full bg-primary">
+											<span className="text-primary-foreground text-[9.5px]">
+												{cartItems}
+											</span>
+										</div>
+										<ShoppingBag className="size-6" />
+									</div>
+								) : (
+									<ShoppingBag className="size-6" />
+								)}
 							</Link>
 						)}
 						{active === "orders" ? (

@@ -24,7 +24,7 @@ const ReviewSection = ({
 		<section className="px-3 lg:pr-6">
 			<div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden p-4">
 				<div className="mb-4 p-4 bg-muted rounded-xl">
-					<div className="flex items-center gap-4 mb-4 lg:gap-8">
+					<div className="flex items-center justify-center gap-4 mb-4 lg:gap-8">
 						<div className="text-center">
 							<p className="font-heading text-4xl font-bold text-primary mb-1">
 								{analytics?.average}
@@ -43,7 +43,7 @@ const ReviewSection = ({
 							{stars.map((star, index) => {
 								const count = Number(analytics?.[`star${star}`] || 0);
 								return (
-									<div className="flex items-center gap-2" key={index}>
+									<div className="flex justify-center items-center gap-2" key={index}>
 										<span className="text-xs text-muted-foreground w-8">
 											{star}★
 										</span>

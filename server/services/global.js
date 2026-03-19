@@ -12,7 +12,9 @@ const getProducts = async () => {
 
 const getProduct = async (req) => {
     const { id } = req.params;
-    const product = await Products.findById(id).select('name price image description').lean();
+    const product = await Products.findById(id)
+        .select('name price inventories weightPerUnit image description')
+        .populate('inventories', 'remaining')
     if (!product) {
         throw new NotFound(`Product doesn't exist`);
     }

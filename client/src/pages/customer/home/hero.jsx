@@ -14,7 +14,7 @@ const HeroSection = () => {
 					</h1>
 					<p className="text-muted-foreground text-lg leading-relaxed">
 						Kualitas beras terbaik yang terjaga kemurniannya, solusi
-						praktis kebutuhan harian beras Anda.
+						praktis kebutuhan harian beras Anda
 					</p>
 				</div>
 				<div className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-xl shadow-primary/10">

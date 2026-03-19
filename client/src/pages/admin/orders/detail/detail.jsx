@@ -23,8 +23,8 @@ import { setOrderStatus } from "../../../../utils/order";
 import { StatusAlert } from "./alert";
 import { StatusForm } from "./form";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 
 const AdminDetailOrder = () => {
 	const order = useRouteLoaderData("admin-order-detail");
@@ -126,6 +126,10 @@ const AdminDetailOrder = () => {
 			)
 		}
 	}
+
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [])
 
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen pt-10 pb-2">

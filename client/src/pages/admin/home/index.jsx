@@ -123,7 +123,7 @@ const AdminHome = () => {
 										<Pencil className="size-4" />
 									</Link>
 									<button
-										className="size-8 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 active:bg-white/30"
+										className="size-8 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 active:bg-white/30"
 										onClick={() => handleLogout()}>
 										<LogOut className="size-4" />
 									</button>

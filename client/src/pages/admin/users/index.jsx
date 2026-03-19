@@ -45,7 +45,7 @@ const AdminUsers = () => {
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchParams])
+	}, [searchParams.get("search")])
 
 	useEffect(() => {
 		const params = new URLSearchParams(searchParams);
@@ -57,7 +57,8 @@ const AdminUsers = () => {
 		}
 
 		params.set("page", "1");
-		setSearchParams(params);
+		setSearchParams(params, { replace: true });
+
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [value])
 

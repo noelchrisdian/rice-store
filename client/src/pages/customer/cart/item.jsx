@@ -1,6 +1,7 @@
 import { CircleMinus, CirclePlus } from "lucide-react";
 import { CircularLoading } from "respinner";
 import { handleCurrency } from "../../../utils/price";
+import { Link } from "react-router-dom";
 
 const ItemSection = ({
 	cartItem,
@@ -21,12 +22,12 @@ const ItemSection = ({
 								className="bg-card rounded-2xl border border-border/50 p-4 shadow-sm"
 								key={index}>
 								<div className="flex gap-4">
-									<div className="w-24 h-24 rounded-xl bg-secondary overflow-hidden shrink-0">
+									<Link to={`/products/${item?.product?._id}`} className="w-24 h-24 rounded-xl bg-secondary overflow-hidden shrink-0">
 										<img
 											src={item?.product?.image?.imageURL}
 											className="w-full h-full object-cover"
 										/>
-									</div>
+									</Link>
 									<div className="flex-1 flex flex-col">
 										<div className="flex justify-between items-start mb-2">
 											<div className="">
@@ -80,7 +81,7 @@ const ItemSection = ({
 					</div>
 				</div>
 			</div>
-			<div className="px-6 pb-16">
+			<div className="px-6 pb-25">
 				<div className="bg-card rounded-2xl border border-border/50 pt-5 px-5 pb-2 shadow-sm sticky top-2/4">
 					<h3 className="font-font-heading text-xl font-semibold mb-6">
 						Rincian Pesanan

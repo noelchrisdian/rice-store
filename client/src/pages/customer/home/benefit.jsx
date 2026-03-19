@@ -24,7 +24,7 @@ const BenefitSection = () => {
 						<h3 className="font-bold text-lg">100% Organik</h3>
 						<p className="text-muted-foreground text-sm">
 							Beras kami ditanam tanpa pestisida berbahaya, menjamin
-							kemurnian dan keamanan bagi keluarga Anda.
+							kemurnian dan keamanan bagi keluarga Anda
 						</p>
 					</div>
 				</div>

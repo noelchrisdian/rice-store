@@ -87,6 +87,7 @@ const getOrder = async (req) => {
     const order = await Orders.findById(id)
         .populate('products.product', 'name image price weightPerUnit')
         .populate('user', 'name phoneNumber email address')
+        .lean()
 
     if (!order) {
         throw new NotFound(`Order doesn't exist`);

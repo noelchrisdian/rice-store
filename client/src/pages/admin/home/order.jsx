@@ -5,11 +5,11 @@ import { setOrderStatus } from "../../../utils/order";
 
 const OrderSection = ({ recentOrders }) => {
 	const styles = {
-		"Dibatalkan": "bg-destructive/10 text-desctructive",
+		"Dibatalkan": "bg-destructive/10 text-destructive",
 		"Telah Diterima": "bg-primary/10 text-primary",
 		"Dikirim": "bg-blue-100 text-blue-700",
 		"default": "bg-orange-100 text-orange-700"
-	}
+	}	
 
 	return (
 		<div className="bg-card rounded-2xl border border-border/50 shadow-sm p-5">

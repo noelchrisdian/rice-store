@@ -2,6 +2,7 @@ import { ClipboardX } from "lucide-react";
 import { FilterSection } from "./filter";
 import { Navbar } from "../../../components/navbar";
 import { OrderSection } from "./orders";
+import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 
 const CustomerOrders = () => {
@@ -30,6 +31,10 @@ const CustomerOrders = () => {
 		{ value: "30d", label: "30 Hari Terakhir" },
 		{ value: "90d", label: "90 Hari Terakhir" }
 	]
+
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [])
 
 	return (
 		<>

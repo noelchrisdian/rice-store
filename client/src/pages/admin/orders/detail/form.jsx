@@ -19,7 +19,7 @@ const StatusForm = ({
 	return (
 		<div className="bg-card">
 			<div className="space-y-6 p-2 max-h-[80vh] overflow-y-auto">
-				<h1 className="font-semibold text-2xl border-border border-b pb-2">
+				<h1 className="font-semibold text-2xl">
 					{modal.type === "UPDATE_SHIPPED_INFO"
 						? "Ubah Info Pengiriman"
 						: "Ubah Status Pesanan"}

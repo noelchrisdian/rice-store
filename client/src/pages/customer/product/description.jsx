@@ -30,7 +30,7 @@ const DescriptionSection = ({ product, reviews }) => {
 					<span className="text-4xl font-bold text-primary">
 						{handleCurrency(product?.price)}
 					</span>
-					<span className="text-lg text-muted-foreground">/ 5kg</span>
+					<span className="text-lg text-muted-foreground">/ {product.weightPerUnit} kg</span>
 				</div>
 			</div>
 			<div className="bg-card rounded-2xl p-5 border border-border shadow-sm mb-6">
