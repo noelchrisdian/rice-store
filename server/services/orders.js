@@ -104,36 +104,37 @@ const createOrder = async (req) => {
         const cart = await Carts.findOne({ user: req.user.id })
             .populate({
                 path: 'products.product',
-                populate: {
-                    path: 'inventories',
-                    select: 'remaining'
-                }
+                select: 'name price stock weightPerUnit'
             })
             .session(session);
+        if (!cart || cart.products.length === 0) throw new BadRequest('Cart not found or empty');
 
-        if (!cart || cart.products.length === 0) {
-            throw new BadRequest('Cart not found or empty');
+        const productIDs = cart.products.map((product) => product.product._id);
+        const inventories = await Inventories
+            .find({
+                product: { $in: productIDs },
+                remaining: { $gt: 0 },
+                status: 'available'
+            })
+            .sort({ receivedAt: 1 })
+            .session(session)
+        const inventoriesMap = {};
+        for (const inventory of inventories) {
+            const key = inventory.product.toString();
+            if (!inventoriesMap[key]) inventoriesMap[key] = [];
+            inventoriesMap[key].push(inventory);
         }
 
-        const reservedStock = [];
-
+        const reservedStocks = [];
         for (const product of cart.products) {
-            const inventories = await Inventories
-                .find({
-                    product: product.product._id,
-                    remaining: { $gt: 0 },
-                    status: 'available'
-                })
-                .sort({ receivedAt: 1 })
-                .session(session)
-
+            const id = product.product._id.toString();
+            const productInventories = inventoriesMap[id] || [];
             let requiredKg = product.quantity * product.product.weightPerUnit;
+            const totalStock = productInventories.reduce((acc, inventory) => acc + inventory.remaining, 0);
 
-            if (requiredKg > (product.product.stock * product.product.weightPerUnit)) {
-                throw new BadRequest(`Stok tidak mencukupi untuk ${product.product.name}`);
-            }
-
-            for (const inventory of inventories) {
+            if (requiredKg > totalStock) throw new BadRequest(`Stok tidak mencukupi untuk ${product.product.name}`)
+            
+            for (const inventory of productInventories) {
                 if (requiredKg <= 0) break;
 
                 const take = Math.min(inventory.remaining, requiredKg);
@@ -153,7 +154,7 @@ const createOrder = async (req) => {
                 }
 
                 requiredKg -= take;
-                reservedStock.push({
+                reservedStocks.push({
                     inventory: inventory._id,
                     quantity: take
                 })
@@ -168,7 +169,7 @@ const createOrder = async (req) => {
                     quantity: item.quantity
                 }
             }),
-            reservedStock,
+            reservedStocks,
             totalPrice: cart.products.reduce((acc, item) => acc + item.product.price * item.quantity, 0),
             payment: {
                 method: 'midtrans',
@@ -186,9 +187,7 @@ const createOrder = async (req) => {
             { session }
         )
 
-        await session.commitTransaction();
-
-        const user = await Users.findById(req.user.id);
+        const user = await Users.findById(req.user.id).session(session);
         if (!user) {
             throw new NotFound(`User not found`);
         }
@@ -210,7 +209,13 @@ const createOrder = async (req) => {
             }
         }
 
-        const transaction = await snap.createTransaction(parameter);
+        let transaction;
+        try {
+            transaction = await snap.createTransaction(parameter);
+        } catch (error) {
+            console.error(`Snap error : ${error}`);
+            throw new BadRequest('Gagal terhubung ke layanan pembayaran, silakan hubungi administrator untuk bantuan lebih lanjut');
+        }
         await Orders.updateOne(
             { _id: order._id },
             {
@@ -218,8 +223,11 @@ const createOrder = async (req) => {
                     "payment.midtransOrderID": String(order._id),
                     "payment.midtransTransactionID": transaction?.token
                 }
-            }
+            },
+            { session }
         )
+
+        await session.commitTransaction();
 
         const io = getIO();
         io.to('admin').emit('orders:event', {
@@ -269,18 +277,21 @@ const midtransWebhook = async (req) => {
             order.shipping.status = 'processing';
             event = 'PAID';
         } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
-            for (const item of order.reservedStock) {
-                const inventory = await Inventories.findById(item.inventory).session(session);
-                if (!inventory) throw new NotFound('Inventory not found');
-                inventory.remaining += item.quantity;
-                if (inventory.remaining > 0) {
-                    inventory.status = 'available';
+            if (order.payment.status === 'pending') {
+                for (const item of order.reservedStocks) {
+                    const inventory = await Inventories.findById(item.inventory).session(session);
+                    if (!inventory) throw new NotFound('Inventory not found');
+                    inventory.remaining += item.quantity;
+                    if (inventory.remaining > 0) {
+                        inventory.status = 'available';
+                    }
+    
+                    await inventory.save({ session });
                 }
 
-                await inventory.save({ session });
+                order.reservedStocks = [];
             }
 
-            order.reservedStock = [];
             order.payment.status = transaction_status;
             order.payment.midtransTransactionID = transaction_id;
             order.shipping.status = null;
@@ -300,8 +311,7 @@ const midtransWebhook = async (req) => {
     } catch (error) {
         await session.abortTransaction();
         console.error(`Webhook error : ${error}`);
-
-        return;
+        throw error;
     } finally {
         session.endSession();
     }
@@ -318,14 +328,17 @@ const cancelOrder = async (req) => {
         if (!order.user.equals(req.user.id)) throw new Forbidden('User not authorized');
         if (order.payment.status !== 'pending') throw new BadRequest(`Only pending orders can be cancelled`);
 
-        for (const item of order.reservedStock) {
+        for (const item of order.reservedStocks) {
             const inventory = await Inventories.findById(item.inventory).session(session);
             if (!inventory) throw new NotFound('Inventory not found');
             inventory.remaining += item.quantity;
+            if (inventory.remaining > 0) {
+                inventory.status = 'available';
+            }
             await inventory.save({ session });
         }
 
-        order.reservedStock = [];
+        order.reservedStocks = [];
         order.payment.status = 'cancel';
         order.shipping.status = null;
         await order.save({ session });

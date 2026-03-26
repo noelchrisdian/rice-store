@@ -6,7 +6,6 @@ import {
 	useQuery,
 	useQueryClient
 } from "@tanstack/react-query";
-import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
 import { OrderSection } from "./orders";
 import { socket } from "../../../utils/socket";
@@ -22,13 +21,12 @@ const AdminOrders = () => {
 	const [value] = useDebounce(name, 500);
 	const initial = useLoaderData();
 	const queryClient = useQueryClient();
-	const currentPage = Number(searchParams.get("page") || 1);
 	const pageSize = Number(searchParams.get("limit") || 10);
-
-	const currentStatus = searchParams.get("status") || null;
+	const currentPage = Number(searchParams.get("page") || 1);
 	const currentRange = searchParams.get("range") || null;
+	const currentStatus = searchParams.get("status") || null;
 
-	const { data: orders, isFetching } = useQuery({
+	const { data: orders } = useQuery({
 		queryKey: [
 			"orders",
 			{
@@ -39,14 +37,16 @@ const AdminOrders = () => {
 				range: currentRange
 			}
 		],
-		queryFn: () =>
-			getOrders({
+		queryFn: async () => {
+			const result = await getOrders({
 				limit: pageSize,
 				page: currentPage,
 				search: value,
 				status: currentStatus,
 				range: currentRange
-			}),
+			})
+			return result.data;
+		},
 		initialData: initial,
 		placeholderData: keepPreviousData,
 		refetchInterval: 2 * 60 * 1000
@@ -60,7 +60,7 @@ const AdminOrders = () => {
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchParams.get("search")]);
+	}, [searchParams.get("search")])
 
 	useEffect(() => {
 		const params = new URLSearchParams(searchParams);
@@ -98,6 +98,10 @@ const AdminOrders = () => {
 		}
 	}, [queryClient])
 
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [])
+
 	return (
 		<>
 			<section className="hidden lg:block">
@@ -113,29 +117,25 @@ const AdminOrders = () => {
 						setName={setName}
 						setSearchParams={setSearchParams}
 					/>
-					{isFetching ? (
-						<Loader color={"#3D6F2E"} size={90} />
-					) : orders?.data?.orders?.length > 0 ? (
+					{orders?.orders?.length > 0 ? (
 						<OrderSection
 							limit={pageSize}
-							orders={orders?.data}
+							orders={orders}
 							page={currentPage}
 							searchParams={searchParams}
 							setSearchParams={setSearchParams}
 						/>
 					) : (
-						!isFetching && (
-							<section className="absolute inset-0 flex items-center justify-center py-16">
-								<div className="text-center px-6 max-w-md mx-auto">
-									<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
-										<ClipboardX className="size-12 text-muted-foreground lg:size-16" />
-									</div>
-									<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
-										Pesanan Tidak Ditemukan
-									</h3>
+						<section className="absolute inset-0 flex items-center justify-center py-16">
+							<div className="text-center px-6 max-w-md mx-auto">
+								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
+									<ClipboardX className="size-12 text-muted-foreground lg:size-16" />
 								</div>
-							</section>
-						)
+								<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
+									Pesanan Tidak Ditemukan
+								</h3>
+							</div>
+						</section>
 					)}
 				</section>
 			</main>

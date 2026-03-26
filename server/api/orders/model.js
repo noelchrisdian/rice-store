@@ -23,7 +23,7 @@ const orderSchema = new Schema({
             default: false
         }
     }],
-    reservedStock: [{
+    reservedStocks: [{
         inventory: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Inventory',
@@ -34,7 +34,7 @@ const orderSchema = new Schema({
             required: true,
             min: 1
         }
-    }], 
+    }],
     totalPrice: {
         type: Number,
         required: true
@@ -57,7 +57,7 @@ const orderSchema = new Schema({
     },
     shipping: {
         status: {
-            type: String, 
+            type: String,
             enum: ['processing', 'shipped', 'delivered', 'pending'],
             default: 'pending'
         },

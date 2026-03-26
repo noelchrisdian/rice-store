@@ -7,7 +7,6 @@ import {
 	useQueryClient
 } from "@tanstack/react-query";
 import { Link, useLoaderData } from "react-router-dom";
-import { Loader } from "../../../components/loader";
 import { Modal } from "antd";
 import { Navbar } from "../../../components/navbar";
 import { ProductSection } from "./products";
@@ -25,9 +24,9 @@ const AdminProducts = () => {
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] })
 	})
 
-	const { data: products, isFetching } = useQuery({
+	const { data: products } = useQuery({
 		queryKey: ['products'],
-		queryFn: getProducts,
+		queryFn: () => getProducts(),
 		initialData: initial,
 		placeholderData: keepPreviousData,
 		refetchInterval: 2 * 60 * 1000
@@ -72,14 +71,12 @@ const AdminProducts = () => {
 					</Link>
 				</section>
 				<section className="space-y-3 px-4 lg:grid lg:grid-cols-3 lg:gap-4 lg:px-8">
-					{isFetching ? (
-						<Loader color={'#3D6F2E'} size={90} />
-					) : (
+					{
 						<ProductSection
 							products={products.data}
 							handleOpenModal={handleOpenModal}
 						/>
-					)}
+					}
 				</section>
 				<Modal
 					open={openModal}

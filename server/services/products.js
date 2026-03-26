@@ -34,37 +34,35 @@ const createProduct = async (req) => {
     const imageURL = req.file?.path;
     const imagePublicID = req.file?.filename;
 
-    const parse = await productSchema.safeParseAsync(req.body);
-    if (!parse.success) {
+    try {
+        const parse = await productSchema.safeParseAsync(req.body);
+        if (!parse.success) {
+            const errors = parse.error.issues.map((error) => error.message);
+            throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
+        }
+    
+        const check = await Products.findOne({ name: parse.data.name });
+        if (check) throw new BadRequest('Product existed');
+        
+        return await Products.create({
+            name: parse.data?.name,
+            price: parse.data?.price,
+            image: {
+                imageURL,
+                imagePublicID
+            },
+            description: parse.data?.description,
+            unit: 'package',
+            weightPerUnit: parse.data?.weightPerUnit, 
+            inventories: []
+        })
+    } catch (error) {
         if (imagePublicID) {
             await cloudinary.uploader.destroy(imagePublicID);
         }
-
-        const errors = parse.error.issues.map((error) => error.message);
-        throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
+        throw error;
     }
 
-    const check = await Products.findOne({ name: parse.data.name });
-    if (check) {
-        if (imagePublicID) {
-            await cloudinary.uploader.destroy(imagePublicID);
-        }
-
-        throw new BadRequest('Product existed');
-    }
-
-    return await Products.create({
-        name: parse.data?.name,
-        price: parse.data?.price,
-        image: {
-            imageURL,
-            imagePublicID
-        },
-        description: parse.data?.description,
-        unit: 'package',
-        weightPerUnit: parse.data?.weightPerUnit, 
-        inventories: []
-    })
 }
 
 const updateProduct = async (req) => {
@@ -112,7 +110,7 @@ const deleteProduct = async (req) => {
     session.startTransaction();
 
     try {
-        const product = await Products.findOne({ _id: id }).session(session);
+        const product = await Products.findOneAndDelete({ _id: id }).session(session);
         if (!product) {
             throw new NotFound(`Product doesn't exist`);
         }
@@ -120,7 +118,6 @@ const deleteProduct = async (req) => {
         const imagePublicID = product.image.imagePublicID;
         await cloudinary.uploader.destroy(imagePublicID);
         await Inventories.deleteMany({ product: product._id }).session(session);
-        await product.deleteOne({ session });
 
         await session.commitTransaction();
         return product;

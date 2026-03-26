@@ -10,7 +10,6 @@ import { getUsers } from "../../../services/users";
 import { handleDate } from "../../../utils/date";
 import { Input, Pagination } from "antd";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
 import { useDebounce } from "use-debounce";
 import { useEffect } from "react";
@@ -25,31 +24,31 @@ const AdminUsers = () => {
 	const currentPage = Number(searchParams.get("page") || 1);
 	const pageSize = Number(searchParams.get("limit") || 10);
 
-	const { data: users, isFetching } = useQuery({
+	const { data: users } = useQuery({
 		queryKey: [
 			"users",
 			{ limit: pageSize, page: currentPage, search: value }
 		],
-		queryFn: () =>
-			getUsers({ limit: pageSize, page: currentPage, search: value }),
+		queryFn: async () => {
+			const result = await getUsers({
+				limit: pageSize,
+				page: currentPage,
+				search: value
+			})
+			return result.data;
+		},
 		initialData: initial,
 		placeholderData: keepPreviousData,
 		refetchInterval: 2 * 60 * 1000
 	})
 
 	useEffect(() => {
-		const url = searchParams.get("search") || "";
-
-		if (url !== identity) {
-			setIdentity(url);
-		}
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchParams.get("search")])
-
-	useEffect(() => {
 		const params = new URLSearchParams(searchParams);
+		const currentSearch = params.get("search") || "";
 
+		if (value === currentSearch) {
+			return;
+		}
 		if (value) {
 			params.set("search", value);
 		} else {
@@ -60,7 +59,17 @@ const AdminUsers = () => {
 		setSearchParams(params, { replace: true });
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [value])
+	}, [value, setSearchParams])
+
+	useEffect(() => {
+		const url = searchParams.get("search") || "";
+
+		if (url !== identity) {
+			setIdentity(url);
+		}
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchParams.get("search")])
 
 	return (
 		<>
@@ -87,12 +96,10 @@ const AdminUsers = () => {
 							</div>
 						</div>
 					</div>
-					{isFetching ? (
-						<Loader color={'#3D6F2E'} size={90} />
-					) : users?.data?.users.length > 0 ? (
+					{users?.users.length > 0 ? (
 						<>
 							<div className="space-y-3 pb-4">
-								{users?.data?.users.map((user, index) => (
+								{users?.users.map((user, index) => (
 									<div
 										className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden"
 										key={index}>
@@ -144,18 +151,16 @@ const AdminUsers = () => {
 							/>
 						</>
 					) : (
-						!isFetching && (
-							<section className="absolute inset-0 flex items-center justify-center">
-								<div className="text-center px-6 max-w-md mx-auto">
-									<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
-										<UserRoundX className="size-12 text-muted-foreground lg:size-16" />
-									</div>
-									<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
-										Pengguna Tidak Ditemukan
-									</h3>
+						<section className="absolute inset-0 flex items-center justify-center">
+							<div className="text-center px-6 max-w-md mx-auto">
+								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
+									<UserRoundX className="size-12 text-muted-foreground lg:size-16" />
 								</div>
-							</section>
-						)
+								<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
+									Pengguna Tidak Ditemukan
+								</h3>
+							</div>
+						</section>
 					)}
 				</section>
 			</main>

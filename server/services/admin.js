@@ -322,10 +322,11 @@ const getUsers = async (req) => {
     filter.role = 'customer';
 
     if (search) {
+        const keyword = escape(search.trim());
+
         filter.$or = [
-            { name: { $regex: escape(search), $options: 'i' } },
-            { email: { $regex: escape(search), $options: 'i' } },
-            { phoneNumber: { $regex: escape(search), $options: 'i' } }
+            { name: { $regex: keyword, $options: 'i' } },
+            { email: { $regex: keyword, $options: 'i' } }
         ]
     }
 
