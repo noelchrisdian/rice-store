@@ -50,8 +50,14 @@ const signup = async (req) => {
             throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors);
         }
 
-        const check = await Users.findOne({ phoneNumber: parse.data.phoneNumber });
-        if (check) throw new BadRequest('Phone number existed');
+        const check = await Users.findOne({
+            $or: [
+                { phoneNumber: parse.data.phoneNumber },
+                { email: parse.data.email }
+            ]
+        })
+        const message = check.email === parse.data.email ? "Email existed" : "Phone number existed";
+        if (check) throw new BadRequest(message);
 
         if (parse.data.password !== parse.data.confirmPassword) throw new BadRequest(`Passwords don't match`);
 

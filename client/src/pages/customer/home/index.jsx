@@ -1,6 +1,7 @@
 import { BenefitSection } from "./benefit";
 import { Footer } from "../../../components/footer";
 import { getGlobalProducts } from "../../../services/products";
+import { getSession } from "../../../utils/axios";
 import { HeroSection } from "./hero";
 import { Navbar } from "../../../components/navbar";
 import { ProductSection } from "./product";
@@ -17,9 +18,9 @@ const CustomerHome = () => {
 			const result = await getGlobalProducts();
 			return result.data;
 		},
-		initialData: initial,
-		refetchInterval: 2 * 60 * 1000
+		initialData: initial
 	})
+	const session = getSession();
 
 	return (
 		<>
@@ -31,7 +32,9 @@ const CustomerHome = () => {
 				<BenefitSection />
 				<ProductSection products={products} />
 				<ReviewSection reviews={reviews} />
-				<RegisterSection />
+				{!session?.role && session?.role !== 'customer' && (
+					<RegisterSection />
+				)}
 				<Footer />
 			</main>
 			<section className="lg:hidden">

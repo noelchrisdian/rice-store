@@ -73,7 +73,10 @@ const RegisterForm = () => {
 		} catch (error) {
 			switch (error?.response?.data?.message) {
 				case "Phone number existed":
-					toast.error("Akun sudah terdaftar");
+					toast.error("Nomor handphone sudah terdaftar");
+					break;
+				case "Email existed":
+					toast.error("Email sudah terdaftar")
 					break;
 				case `Passwords don't match`:
 					toast.error("Kata sandi harus sama");

@@ -19,7 +19,7 @@ const HeroSection = () => {
 				</div>
 				<div className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-xl shadow-primary/10">
 					<img
-						src="/Hero.jpeg"
+						src="/Hero.jpg"
 						alt=""
 						className="w-full h-full object-cover object-bottom"
 					/>

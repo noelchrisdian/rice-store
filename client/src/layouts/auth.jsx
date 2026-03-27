@@ -4,7 +4,7 @@ import { Sprout } from "lucide-react";
 const AuthLayout = () => {
 	return (
 		<div className="bg-background font-sans text-foreground flex flex-col min-h-screen lg:grid lg:grid-cols-2">
-			<div className="flex-1 px-6 pt-20 pb-12 lg:bg-primary lg:flex lg:flex-col lg:items-center lg:justify-center">
+			<div className="flex-1 px-6 pt-10 pb-6 lg:bg-primary lg:flex lg:flex-col lg:items-center lg:justify-center">
 				<div className="w-full mx-auto max-w-sm">
 					<div className="flex flex-col items-center justify-center mb-8 mt-4">
 						<Link to={'/'}>

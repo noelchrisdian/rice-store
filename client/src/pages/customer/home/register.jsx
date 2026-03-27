@@ -3,7 +3,7 @@ import { Sprout } from "lucide-react";
 
 const RegisterSection = () => {
 	return (
-		<section className="px-4 pb-8">
+		<section className="px-4 pb-10">
 			<div className="bg-primary rounded-3xl p-6 relative overflow-hidden text-primary-foreground">
 				<div className="absolute top-0 right-0 -mr-12 -mt-12 size-32 bg-white/10 rounded-full" />
 				<div className="absolute bottom-0 left-0 -ml-8 -mb-8 size-24 bg-white/10 rounded-full" />

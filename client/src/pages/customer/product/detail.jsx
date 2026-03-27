@@ -60,12 +60,11 @@ const CustomerProductDetail = () => {
 			<BackButton type={"button"} path={-1} />
 			<section className="lg:max-w-352 lg:mx-auto lg:relative">
 				<div className="lg:grid lg:grid-cols-2">
-					<div className="w-fit aspect-square bg-secondary p-4 rounded-3xl lg:max-w-md lg:mt-20 lg:ml-4">
+					<div className="w-full aspect-square bg-secondary p-4 rounded-3xl lg:max-w-md lg:mt-20 lg:ml-4">
 						<Image
 							alt={product?.name}
 							src={product?.image?.imageURL}
-							width={380}
-							className="object-cover! rounded-2xl!"
+							className="w-full! object-cover! rounded-2xl!"
 						/>
 					</div>
 					<div className="hidden lg:block lg:justify-self-center lg:self-end">

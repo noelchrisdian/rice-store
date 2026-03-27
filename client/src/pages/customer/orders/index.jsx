@@ -42,7 +42,7 @@ const CustomerOrders = () => {
 				<Navbar active={"orders"} position={"top"} />
 			</section>
 			<main className="bg-background font-sans text-foreground min-h-screen">
-				<section className="pt-6 pb-28 px-6 lg:py-20 lg:max-w-5xl lg:mx-auto">
+				<section className="pt-8 pb-24 px-6 lg:py-20 lg:max-w-5xl lg:mx-auto">
 					<FilterSection
 						range={currentRange}
 						rangeOptions={rangeOptions}

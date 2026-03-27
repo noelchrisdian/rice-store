@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
 	return (
-		<footer className="absolute left-0 right-0 bg-foreground text-secondary py-10 px-6 rounded-t-3xl mt-4 pb-25 lg:pb-4">
+		<footer className="absolute left-0 right-0 bg-foreground text-secondary py-10 px-6 pb-25 lg:pb-4">
 			<div className="space-y-6">
 				<div className="flex items-center justify-center gap-4">
 					<Sprout className="text-primary size-6" />
