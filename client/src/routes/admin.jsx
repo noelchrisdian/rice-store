@@ -19,7 +19,6 @@ import { getSession } from "../utils/axios";
 import { OrderInvoice } from "../pages/customer/orders/invoice";
 import { redirect } from "react-router-dom";
 import { toast } from "sonner";
-import { UserSettings } from "../pages/settings";
 
 const router = [
 	{
@@ -104,35 +103,42 @@ const router = [
 				loader: async ({ params, request }) => {
 					try {
 						const url = new URL(request.url);
-	
+
 						const inventoryLimit = Number(
 							url.searchParams.get("inventoryLimit") || 10
 						)
 						const inventoryPage = Number(
 							url.searchParams.get("inventoryPage") || 1
 						)
-	
+
 						const reviewLimit = Number(
 							url.searchParams.get("reviewLimit") || 10
 						)
 						const reviewPage = Number(
 							url.searchParams.get("reviewPage") || 1
 						)
-	
+
 						const [product, inventories, reviews] = await Promise.all([
 							getProduct(params.id),
-							getInventories(params.id, { inventoryLimit, inventoryPage }),
+							getInventories(params.id, {
+								inventoryLimit,
+								inventoryPage
+							}),
 							getReviews(params.id, { reviewLimit, reviewPage })
 						])
-	
+
 						return {
 							product: product.data,
 							inventories: inventories.data,
 							reviews: reviews.data
 						}
 					} catch (error) {
-						toast.error(error?.response?.data?.message === 'Product not found' ? 'Produk tidak ditemukan' : 'Terjadi kesalahan di sistem');
-						return redirect('/admin/products');
+						toast.error(
+							error?.response?.data?.message === "Product not found"
+								? "Produk tidak ditemukan"
+								: "Terjadi kesalahan di sistem"
+						)
+						return redirect("/admin/products");
 					}
 				},
 				element: <AdminDetailProduct />
@@ -196,14 +202,6 @@ const router = [
 					return users.data;
 				},
 				element: <AdminUsers />
-			},
-			{
-				path: "/admin/settings",
-				loader: async () => {
-					const user = await getAdmin();
-					return user.data;
-				},
-				element: <UserSettings />
 			}
 		]
 	}

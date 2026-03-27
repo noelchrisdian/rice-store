@@ -6,7 +6,7 @@ import {
 	useNavigate
 } from "react-router-dom";
 import { LogOutIcon, UserPen } from "lucide-react";
-import { Navbar } from '../components/navbar';
+import { Navbar } from '../../components/navbar';
 import { useQueryClient } from "@tanstack/react-query";
 
 const UserSettings = () => {

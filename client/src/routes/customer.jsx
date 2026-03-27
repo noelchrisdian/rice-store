@@ -14,7 +14,7 @@ import { getSession } from "../utils/axios";
 import { OrderInvoice } from "../pages/customer/orders/invoice";
 import { redirect } from "react-router-dom";
 import { toast } from "sonner";
-import { UserSettings } from "../pages/settings";
+import { UserSettings } from "../pages/customer/settings";
 
 const router = [
 	{
