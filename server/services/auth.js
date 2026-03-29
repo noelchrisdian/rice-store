@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { BadRequest } from '../errors/badRequest.js';
+import { cloudinaryUploader } from '../utils/multer.js';
 import { NotFound } from '../errors/notFound.js';
 import { ParseError } from '../errors/parseError.js';
 import { StatusCodes } from 'http-status-codes';
@@ -40,8 +41,7 @@ const signin = async (req) => {
 }
 
 const signup = async (req) => {
-    const imageURL = req.file?.path || process.env.DEFAULT_AVATAR_URL;
-    const imagePublicID = req.file?.filename || process.env.DEFAULT_AVATAR_PUBLIC_ID;
+    let uploadImage;
 
     try {
         const parse = await userSchema.safeParseAsync(req.body);
@@ -56,10 +56,21 @@ const signup = async (req) => {
                 { email: parse.data.email }
             ]
         })
-        const message = check.email === parse.data.email ? "Email existed" : "Phone number existed";
-        if (check) throw new BadRequest(message);
+        if (check) {
+            if (check.email === parse.data.email) {
+                throw new BadRequest('Email existed');
+            }
+
+            if (check.phoneNumber === parse.data.phoneNumber) {
+                throw new BadRequest('Phone number existed');
+            }
+        }
 
         if (parse.data.password !== parse.data.confirmPassword) throw new BadRequest(`Passwords don't match`);
+
+        if (req.file) {
+            uploadImage = await cloudinaryUploader(req.file.buffer, 'avatar');
+        }
 
         return Users.create({
             name: parse.data.name,
@@ -68,22 +79,21 @@ const signup = async (req) => {
             password: parse.data.password,
             role: 'customer',
             avatar: {
-                imageURL,
-                imagePublicID
+                imageURL: uploadImage?.secure_url || process.env.DEFAULT_AVATAR_URL,
+                imagePublicID: uploadImage?.public_id || process.env.DEFAULT_AVATAR_PUBLIC_ID
             },
             address: parse.data.address
         })
     } catch (error) {
-        if (req.file?.filename) {
-            await cloudinary.uploader.destroy(req.file?.filename);
+        if (uploadImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadImage.public_id);
         }
         throw error;
     }
 }
 
 const updateUser = async (req) => {
-    const imageURL = req.file?.path;
-    const imagePublicID = req.file?.filename;
+    let uploadImage;
 
     try {
         const user = await Users.findOne({ _id: req.user.id });
@@ -96,41 +106,42 @@ const updateUser = async (req) => {
         }
 
         if (parse.data.email && parse.data.email !== user.email) {
-            const exist = await Users.findOne({ email: parse.data.email });
+            const exist = await Users.findOne({ email: parse.data.email, _id: { $ne: user._id } });
             if (exist) throw new BadRequest(`Email already in use`);
         }
 
         if (parse.data.phoneNumber && parse.data.phoneNumber !== user.phoneNumber) {
-            const exist = await Users.findOne({ phoneNumber: parse.data.phoneNumber });
+            const exist = await Users.findOne({ phoneNumber: parse.data.phoneNumber, _id: { $ne: user._id } });
             if (exist) throw new BadRequest(`Phone number already in use`);
         }
 
-        user.name = parse.data.name;
-        user.phoneNumber = parse.data.phoneNumber;
-        user.email = parse.data.email;
-        user.address = parse.data.address;
+        if (parse.data.name) user.name = parse.data.name;
+        if (parse.data.phoneNumber) user.phoneNumber = parse.data.phoneNumber;
+        if (parse.data.email) user.email = parse.data.email;
+        if (parse.data.address) user.address = parse.data.address;
 
-        if (parse.data.password && parse.data.confirmPassword) {
+        if (parse.data.password || parse.data.confirmPassword) {
             if (parse.data.password !== parse.data.confirmPassword) throw new BadRequest(`Passwords don't match`);
 
             user.password = parse.data.password;
         }
 
-        if (imageURL && imagePublicID) {
-            if (user.avatar.imagePublicID && user.avatar.imagePublicID !== process.env.DEFAULT_AVATAR_PUBLIC_ID) {
-                await cloudinary.uploader.destroy(user.avatar.imagePublicID)
-            }
-
-            user.avatar.imageURL = imageURL;
-            user.avatar.imagePublicID = imagePublicID;
+        const oldPublicID = user.avatar?.imagePublicID;
+        if (req.file) {
+            uploadImage = await cloudinaryUploader(req.file.buffer, 'avatar');
+            user.avatar.imageURL = uploadImage.secure_url;
+            user.avatar.imagePublicID = uploadImage.public_id;
         }
 
         await user.save();
-        return user;
+        if (req.file && (oldPublicID && oldPublicID !== process.env.DEFAULT_AVATAR_PUBLIC_ID)) {
+            await cloudinary.uploader.destroy(oldPublicID)
+        }
 
+        return user;
     } catch (error) {
-        if (imagePublicID) {
-            await cloudinary.uploader.destroy(imagePublicID);
+        if (uploadImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadImage.public_id);
         }
         throw error;
     }

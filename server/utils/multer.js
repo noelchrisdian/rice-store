@@ -1,9 +1,7 @@
 import multer from 'multer';
 import { BadRequest } from '../errors/badRequest.js';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { Readable } from 'stream';
 import { v2 as cloudinary } from 'cloudinary'; 
-
-const formats = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,30 +9,33 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
-const storage = new CloudinaryStorage({
-    cloudinary,
-    params: {
-        folder: 'rice-store',
-        allowed_formats: ['jpeg', 'png', 'jpg', 'webp']
-    }
+const upload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new BadRequest('Invalid file format'), false)
+        }
+    },
+    limits: { fileSize: 10 * 1024 * 1024 }
 })
 
-const filter = (req, file, cb) => {
-    if (!formats.includes(file.mimetype)) {
-        cb(new BadRequest('Invalid file format'), false);
-    }
-    
-    cb(null, true);
+const cloudinaryUploader = (buffer, folder) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream({ folder: `rice-store/${folder}` }, (error, result) => {
+            if (result) {
+                resolve(result);
+            } else {
+                reject(error);
+            }
+        })
+
+        Readable.from(buffer).pipe(stream);
+    })
 }
 
-const upload = multer({
-    storage,
-    limits: {
-        fileSize: 10 * 1024 * 1024
-    },
-    fileFilter: filter
-})
-
 export {
+    cloudinaryUploader,
     upload
 }

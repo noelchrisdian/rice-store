@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { BadRequest } from "../errors/badRequest.js";
+import { cloudinaryUploader } from "../utils/multer.js";
 import { inventoryModel as Inventories } from "../api/inventories/model.js";
 import { NotFound } from "../errors/notFound.js";
 import { ParseError } from "../errors/parseError.js";
@@ -30,9 +31,7 @@ const createProduct = async (req) => {
     if (!req.file) {
         throw new BadRequest('Image is required');
     }
-
-    const imageURL = req.file?.path;
-    const imagePublicID = req.file?.filename;
+    let uploadImage;
 
     try {
         const parse = await productSchema.safeParseAsync(req.body);
@@ -43,13 +42,15 @@ const createProduct = async (req) => {
     
         const check = await Products.findOne({ name: parse.data.name });
         if (check) throw new BadRequest('Product existed');
+
+        uploadImage = await cloudinaryUploader(req.file.buffer, 'products')
         
         return await Products.create({
             name: parse.data?.name,
             price: parse.data?.price,
             image: {
-                imageURL,
-                imagePublicID
+                imageURL: uploadImage.secure_url,
+                imagePublicID: uploadImage.public_id
             },
             description: parse.data?.description,
             unit: 'package',
@@ -57,8 +58,8 @@ const createProduct = async (req) => {
             inventories: []
         })
     } catch (error) {
-        if (imagePublicID) {
-            await cloudinary.uploader.destroy(imagePublicID);
+        if (uploadImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadImage.public_id);
         }
         throw error;
     }
@@ -68,9 +69,7 @@ const createProduct = async (req) => {
 const updateProduct = async (req) => {
     const { id } = req.params;
     const product = await Products.findOne({ _id: id });
-    if (!product) {
-        throw new NotFound(`Product doesn't exist`);
-    }
+    if (!product) throw new NotFound(`Product doesn't exist`);
 
     const parse = await productSchema.safeParseAsync(req.body);
     if (!parse.success) {
@@ -79,29 +78,36 @@ const updateProduct = async (req) => {
     }
 
     const check = await Products.findOne({ name: parse.data.name, _id: { $ne: id } });
-    if (check) {
-        throw new BadRequest('Product existed');
-    }
+    if (check) throw new BadRequest('Product existed');
 
     const data = { ...parse.data };
-    if (req.file) {
-        const oldPublicID = product.image.imagePublicID;
-
-        data.image = {
-            imageURL: req.file?.path,
-            imagePublicID: req.file?.filename
+    let uploadImage;
+    try {
+        if (req.file) {
+            uploadImage = await cloudinaryUploader(req.file.buffer, 'products');
+            data.image = {
+                imageURL: uploadImage.secure_url,
+                imagePublicID: uploadImage.public_id
+            }
         }
 
-        if (oldPublicID) {
-            await cloudinary.uploader.destroy(oldPublicID);
+        const updated = await Products.findOneAndUpdate(
+            { _id: id },
+            data,
+            { new: true }
+        )
+
+        if (req.file && product.image?.imagePublicID) {
+            await cloudinary.uploader.destroy(product.image.imagePublicID);
         }
+
+        return updated;
+    } catch (error) {
+        if (uploadImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadImage.public_id)
+        }
+        throw error;
     }
-
-    return await Products.findOneAndUpdate(
-        { _id: id },
-        data,
-        { new: true }
-    )
 }
 
 const deleteProduct = async (req) => {
@@ -111,9 +117,7 @@ const deleteProduct = async (req) => {
 
     try {
         const product = await Products.findOneAndDelete({ _id: id }).session(session);
-        if (!product) {
-            throw new NotFound(`Product doesn't exist`);
-        }
+        if (!product) throw new NotFound(`Product doesn't exist`);
 
         const imagePublicID = product.image.imagePublicID;
         await cloudinary.uploader.destroy(imagePublicID);

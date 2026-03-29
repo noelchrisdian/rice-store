@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import mongoose from 'mongoose';
 import { BadRequest } from '../errors/badRequest.js';
+import { cloudinaryUploader } from '../utils/multer.js';
 import {
     escape,
     orderDeliveredSchema,
@@ -121,43 +122,47 @@ const getOrder = async (req) => {
 
 const updateOrderShipped = async (req) => {
     if (!req.file) throw new BadRequest('Image is required');
-
-    const imageURL = req.file?.path;
-    const imagePublicID = req.file?.filename;
-
+    
+    let uploadImage;
     const { id } = req.params;
-    const order = await Orders.findById(id);
-    if (!order) throw new NotFound(`Order doesn't exist`);
 
-    if (order.shipping.status === null || order.shipping.status !== 'processing') {
-        throw new BadRequest(`Only orders with status processing can be marked as shipped`);
-    }
+    try {
+        const order = await Orders.findById(id);
+        if (!order) throw new NotFound(`Order doesn't exist`);
 
-    const parse = await orderShippedSchema.safeParseAsync(req.body);
-    if (!parse.success) {
-        if (imagePublicID) await cloudinary.uploader.destroy(imagePublicID);
+        if (order.shipping?.status !== 'processing') throw new BadRequest(`Only orders with status processing can be marked as shipped`);
 
-        const errors = parse.error.issues.map((error) => error.message);
-        throw new ParseError(`Invalid data type`, StatusCodes.BAD_REQUEST, errors);
-    }
+        const parse = await orderShippedSchema.safeParseAsync(req.body);
+        if (!parse.success) {
+            const errors = parse.error.issues.map((error) => error.message);
+            throw new ParseError(`Invalid data type`, StatusCodes.BAD_REQUEST, errors);
+        }
 
-    return await Orders.findOneAndUpdate(
-        { _id: id },
-        {
-            $set: {
-                "shipping.status": 'shipped',
-                "shipping.courier": parse.data.courier,
-                "shipping.fee": parse.data.fee,
-                "shipping.trackingNumber": parse.data.trackingNumber,
-                "shipping.shippedAt": parse.data.shippedAt,
-                "shipping.proofImage": {
-                    imageURL,
-                    imagePublicID
+        uploadImage = await cloudinaryUploader(req.file.buffer, 'deliveries');
+
+        return await Orders.findOneAndUpdate(
+            { _id: id },
+            {
+                $set: {
+                    "shipping.status": 'shipped',
+                    "shipping.courier": parse.data.courier,
+                    "shipping.fee": parse.data.fee,
+                    "shipping.trackingNumber": parse.data.trackingNumber,
+                    "shipping.shippedAt": parse.data.shippedAt,
+                    "shipping.proofImage": {
+                        imageURL: uploadImage.secure_url,
+                        imagePublicID: uploadImage.public_id
+                    }
                 }
-            }
-        },
-        { new: true }
-    )
+            },
+            { new: true }
+        )
+    } catch (error) {
+        if (uploadImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadImage.public_id);
+        }
+        throw error;
+    }
 }
 
 const updateOrderShippedInfo = async (req) => {
@@ -192,43 +197,51 @@ const updateOrderShippedInfo = async (req) => {
 const updateOrderDelivered = async (req) => {
     if (!req.file) throw new BadRequest('Image is required');
 
-    const imageURL = req.file?.path;
-    const imagePublicID = req.file?.filename;
-
+    let uploadImage;
     const { id } = req.params;
-    const order = await Orders.findById(id);
-    if (!order) throw new NotFound(`Order doesn't exist`);
 
-    if (order.shipping.status === null || order.shipping.status !== 'shipped') {
-        throw new BadRequest(`Only orders with status shipped can be marked as delivered`);
-    }
+    try {
+        const order = await Orders.findById(id);
+        if (!order) throw new NotFound(`Order doesn't exist`);
 
-    const parse = await orderDeliveredSchema.safeParseAsync(req.body);
-    if (!parse.success) {
-        if (imagePublicID) await cloudinary.uploader.destroy(imagePublicID);
+        if (order.shipping?.status !== 'shipped') {
+            throw new BadRequest(`Only orders with status shipped can be marked as delivered`);
+        }
 
-        const errors = parse.error.issues.map((error) => error.message);
-        throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors);
-    }
+        const parse = await orderDeliveredSchema.safeParseAsync(req.body);
+        if (!parse.success) {
+            const errors = parse.error.issues.map((error) => error.message);
+            throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors);
+        }
 
-    const oldPublicID = order.shipping.proofImage.imagePublicID;
-    const updated = await Orders.findOneAndUpdate(
-        { _id: id },
-        {
-            $set: {
-                "shipping.status": 'delivered',
-                "shipping.deliveredAt": parse.data.deliveredAt,
-                "shipping.proofImage": {
-                    imageURL,
-                    imagePublicID
+        uploadImage = await cloudinaryUploader(req.file.buffer, 'deliveries');
+        const oldPublicID = order.shipping?.proofImage?.imagePublicID;
+        const updated = await Orders.findOneAndUpdate(
+            { _id: id },
+            {
+                $set: {
+                    "shipping.status": 'delivered',
+                    "shipping.deliveredAt": parse.data.deliveredAt,
+                    "shipping.proofImage": {
+                        imageURL: uploadImage.secure_url,
+                        imagePublicID: uploadImage.public_id
+                    }
                 }
-            }
-        },
-        { new: true }
-    )
-    if (updated && oldPublicID) await cloudinary.uploader.destroy(oldPublicID);
+            },
+            { new: true }
+        )
 
-    return updated;
+        if (updated && oldPublicID) {
+            await cloudinary.uploader.destroy(oldPublicID);
+        }
+
+        return updated;
+    } catch (error) {
+        if (uploadImage?.public_id) {
+            await cloudinary.uploader.destroy(uploadImage.public_id);
+        }
+        throw error;
+    }
 }
 
 const deleteReview = async (req) => {
