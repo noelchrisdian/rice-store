@@ -23,11 +23,12 @@ import { toast } from "sonner";
 const router = [
 	{
 		path: "/admin",
-		loader: () => {
-			const session = getSession();
-			if (!session || session.role !== "admin") {
-				throw redirect("/");
-			}
+		loader: async () => {
+			const session = await getSession();
+			if (!session) throw redirect('/sign-in');
+			if (session.role !== 'admin') throw redirect('/');
+
+			return null;
 		},
 		children: [
 			{

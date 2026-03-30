@@ -53,11 +53,11 @@ const router = [
 	},
 	{
 		loader: async () => {
-			const session = getSession();
-			if (!session || session.role === "admin") {
-				toast.warning("Silakan mendaftar atau masuk dengan akun Anda");
-				return redirect("/sign-in");
-			}
+			const session = await getSession();
+			if (!session) throw redirect('/sign-in');
+			if (session.role !== 'customer') throw redirect('/admin');
+
+			return null;
 		},
 		children: [
 			{

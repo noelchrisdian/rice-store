@@ -1,6 +1,7 @@
 import { authenticated } from '../../middlewares/auth.js';
 import {
     login,
+    logout,
     register,
     update
 } from "./controller.js";
@@ -26,6 +27,7 @@ const limiter = rateLimit({
 
 router
     .post('/sign-in', limiter, login)
+    .post('/sign-out', logout)
     .post('/sign-up', limiter, upload.single('image'), register)
     .put('/change-profile', authenticated, upload.single('image'), update)
 

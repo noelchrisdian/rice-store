@@ -20,7 +20,14 @@ const CustomerHome = () => {
 		},
 		initialData: initial
 	})
-	const session = getSession();
+	const { data: session } = useQuery({
+		queryKey: ['session'],
+		queryFn: getSession,
+		retry: false,
+		staleTime: 5 * 60 * 1000,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false
+	})
 
 	return (
 		<>
@@ -32,7 +39,7 @@ const CustomerHome = () => {
 				<BenefitSection />
 				<ProductSection products={products} />
 				<ReviewSection reviews={reviews} />
-				{!session?.role && session?.role !== 'customer' && (
+				{!session && (
 					<RegisterSection />
 				)}
 				<Footer />

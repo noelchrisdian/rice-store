@@ -31,12 +31,8 @@ const signin = async (req) => {
     }, process.env.JWT_SECRET, { expiresIn: '6h' })
 
     return {
-        name: user.name,
-        role: user.role,
-        avatar: {
-            imageURL: user.avatar.imageURL
-        },
-        token
+        token, 
+        user
     }
 }
 

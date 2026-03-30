@@ -8,11 +8,35 @@ import { success } from "../../utils/response.js";
 
 const login = async (req, res, next) => {
     try {
-        const result = await signin(req);
-        success(res, result, 'Sign in successful');
+        const { token, user } = await signin(req);
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 6 * 60 * 60 * 1000
+        })
+
+        success(res, {
+            name: user.name,
+            role: user.role,
+            avatar: {
+                imageURL: user.avatar.imageURL
+            }
+        }, 'Sign in successful');
     } catch (error) {
         next(error);
     }
+}
+
+const logout = async (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    })
+
+    success(res, {}, 'Sign out successful');
 }
 
 const register = async (req, res, next) => {
@@ -35,6 +59,7 @@ const update = async (req, res, next) => {
 
 export {
     login,
+    logout,
     register,
     update
 }

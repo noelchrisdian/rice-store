@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { json, urlencoded } from 'express';
 import { authenticated, authorize } from './middlewares/auth.js';
@@ -40,11 +41,22 @@ app
     .use(json())
     .use(urlencoded({ extended: true }))
     .use(express.static('public'))
-    .use(cors())
+    .use(cookieParser())
+    .use(cors({
+        origin: process.env.NODE_ENV === 'production' ? 'https://tokoberasad.up.railway.app' : 'http://localhost:5173',
+        credentials: true
+    }))
 
-app.get('/', (req, res) => {
-    res.send('Welcome to AD Rice Store API');
-})
+app
+    .get('/', (req, res) => {
+        res.send('Welcome to AD Rice Store API');
+    })
+    .get('/me', authenticated, (req, res) => {
+        res.json({
+            id: req.user.id,
+            role: req.user.role
+        })
+    })
 
 app.post('/midtrans-notification', notification);
 
