@@ -1,4 +1,3 @@
-import secureLocalStorage from "react-secure-storage";
 import { CircularLoading } from 'respinner';
 import { Form, Input } from "antd";
 import { Link, useNavigate } from "react-router-dom";
@@ -35,10 +34,9 @@ const LoginForm = () => {
 
 		try {
 			const response = await mutateAsync(result.data);
-			const { name, role, token } = response.data;
-			secureLocalStorage.setItem("SESSION_KEY", { role, token });
+			const { name, role } = response.data;
 			toast.success(`Halo, ${name}`);
-			if (response.data?.role === "admin") {
+			if (role === "admin") {
 				navigate("/admin");
 			} else {
 				navigate("/");

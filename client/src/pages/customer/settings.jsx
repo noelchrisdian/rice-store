@@ -1,24 +1,18 @@
-import secureLocalStorage from "react-secure-storage";
 import { Image } from "antd";
 import {
 	Link,
 	useLoaderData,
 	useNavigate
 } from "react-router-dom";
+import { handleLogout } from "../../utils/logout";
 import { LogOutIcon, UserPen } from "lucide-react";
-import { Navbar } from '../../components/navbar';
+import { Navbar } from "../../components/navbar";
 import { useQueryClient } from "@tanstack/react-query";
 
 const UserSettings = () => {
-    const user = useLoaderData();
+	const user = useLoaderData();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-
-    const handleLogout = () => {
-		secureLocalStorage.removeItem('SESSION_KEY');
-		queryClient.clear();
-        navigate('/');
-    }
 
 	return (
 		<>
@@ -35,24 +29,15 @@ const UserSettings = () => {
 								/>
 							</div>
 							<h2
-								className={`font-font-heading text-2xl font-bold text-foreground ${
-									user?.role === "admin" ? "mb-0.5" : ""
-								}`}>
+								className={`font-font-heading text-2xl font-bold text-foreground`}>
 								{user?.name}
 							</h2>
-							<p className="text-sm text-muted-foreground">
-								{user?.role === "admin" ? "Administrator" : ""}
-							</p>
 						</div>
 					</div>
 					<div className="mb-4">
 						<div className="space-y-2">
 							<Link
-								to={
-									user.role === "admin"
-										? `/admin/change-profile`
-										: "/account/change-profile"
-								}
+								to={"/account/change-profile"}
 								className="w-full bg-card rounded-xl border border-border/50 shadow-sm p-4 flex items-center justify-between transition-colors active:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/50">
 								<div className="flex items-center gap-3">
 									<div className="size-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -72,7 +57,7 @@ const UserSettings = () => {
 					</div>
 					<div className="">
 						<button
-							onClick={() => handleLogout()}
+							onClick={() => handleLogout(queryClient, navigate)}
 							className="w-full bg-card rounded-xl border border-border/50 shadow-sm p-4 flex items-center justify-between cursor-pointer active:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/50">
 							<div className="flex items-center gap-3">
 								<div className="size-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -92,10 +77,7 @@ const UserSettings = () => {
 				</section>
 			</main>
 			<section className="lg:hidden">
-				<Navbar
-					active={user.role === "admin" ? "settings" : "account"}
-					position={"bottom"}
-				/>
+				<Navbar active={"account"} position={"bottom"} />
 			</section>
 		</>
 	)

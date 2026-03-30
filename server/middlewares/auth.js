@@ -4,15 +4,9 @@ import { Unauthorized } from "../errors/unauthorized.js";
 
 const authenticated = async (req, res, next) => {
     try {
-        let token;
-        const header = req.headers.authorization;
-        if (header?.startsWith('Bearer')) {
-            token = header.split(' ')[1];
-        }
+        const token = req.cookies.token;
     
-        if (!token) {
-            throw new Unauthorized('Authentication failed, please sign in again');
-        }
+        if (!token) throw new Unauthorized('Authentication failed, please sign in again');
     
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         req.user = {

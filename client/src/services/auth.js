@@ -23,6 +23,11 @@ const login = async (data) => {
     return response.data;
 }
 
+const logout = async () => {
+    const response = await api.post('/sign-out', {});
+    return response.data;
+}
+
 const register = async (data) => {
     const response = await api.post('/sign-up', data);
     return response.data;
@@ -36,6 +41,7 @@ const reset = async (data) => {
 export {
     login,
     loginSchema,
+    logout,
     register,
     registerSchema,
     reset

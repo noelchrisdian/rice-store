@@ -12,15 +12,11 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: "/sign-in",
-				loader: () => {
-					const session = getSession();
-					if (session) {
-						if (session.role === "admin") {
-							throw redirect("/admin");
-						} else {
-							throw redirect("/");
-						}
-					}
+				loader: async () => {
+					const session = await getSession();
+					if (session) throw redirect(session.role === 'admin' ? '/admin' : '/');
+
+					return null
 				},
 				element: <LoginForm />
 			},

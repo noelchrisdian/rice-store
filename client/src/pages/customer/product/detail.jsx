@@ -12,17 +12,25 @@ import { ReviewSection } from "./review";
 import { ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 const CustomerProductDetail = () => {
 	const navigate = useNavigate();
-	const session = getSession();
 	const { product, reviews } = useLoaderData();
 	const [modalUser, setModalUser] = useState(false);
 	const [openModal, setOpenModal] = useState(false);
 	const [quantity, setQuantity] = useState(1);
 
 	const totalReviews = reviews?.analytics?.total;
+
+	const { data: session } = useQuery({
+		queryKey: ["session"],
+		queryFn: getSession,
+		retry: false,
+		staleTime: 5 * 60 * 1000,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false
+	})
 
 	const { isPending, mutateAsync } = useMutation({
 		mutationFn: (data) => addItem(data)

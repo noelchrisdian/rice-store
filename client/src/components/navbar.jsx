@@ -1,4 +1,3 @@
-import secureLocalStorage from "react-secure-storage";
 import {
 	ClipboardList,
 	House,
@@ -13,19 +12,13 @@ import { Dropdown } from "antd";
 import { getCart } from "../services/carts";
 import { getCustomer } from "../services/users";
 import { getSession } from "../utils/axios";
+import { handleLogout } from "../utils/logout";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Navbar = ({ active, position }) => {
 	const navigate = useNavigate();
-	const session = getSession();
 	const queryClient = useQueryClient();
-
-	const handleLogout = () => {
-		secureLocalStorage.removeItem("SESSION_KEY");
-		queryClient.clear();
-		navigate("/");
-	}
 
 	const items = [
 		{
@@ -68,12 +61,18 @@ const Navbar = ({ active, position }) => {
 		}
 	]
 
+	const { data: session } = useQuery({
+		queryKey: ['session'],
+		queryFn: getSession,
+		retry: false,
+	})
+
 	const handleClick = (e) => {
 		if (!session) return;
 		if (e.key === "change-profile") {
 			navigate("/account/change-profile");
 		} else if (e.key === "log-out") {
-			handleLogout();
+			handleLogout(queryClient, navigate);
 		}
 	}
 

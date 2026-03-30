@@ -1,38 +1,31 @@
 import axios from 'axios';
-import secureLocalStorage from 'react-secure-storage';
-
-const getSession = () => {
-    const session = secureLocalStorage.getItem('SESSION_KEY');
-
-    return session ? session : null;
-}
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
-    timeout: 15_000
+    timeout: 15_000,
+    withCredentials: true
 })
 
 const privateAPI = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
-    timeout: 15_000
+    timeout: 15_000,
+    withCredentials: true
 })
 
-privateAPI.interceptors.request.use((config) => {
-    const session = getSession();
-    config.headers.Authorization = `Bearer ${session?.token}`;
-    return config;
-})
-
-privateAPI.interceptors.response.use((response) => {
-    return response;
-}, (error) => {
-    if (error?.response?.data?.message === 'jwt expired') {
-        secureLocalStorage.removeItem('SESSION_KEY');
-        window.location.href = '/sign-in';
-    }
-
+privateAPI.interceptors.response.use(
+    (response) => response, (error) => {
     return Promise.reject(error);
 })
+
+const getSession = async () => {
+    try {
+        const response = await privateAPI.get('/me');
+        return response.data;
+    } catch (error) {
+        if (error?.response?.status === 401) return null;
+        throw error;
+    }
+}
 
 export {
     api,

@@ -1,4 +1,3 @@
-import secureLocalStorage from "react-secure-storage";
 import {
 	BanknoteArrowDown,
 	ClipboardList,
@@ -14,6 +13,7 @@ import {
 	getUserStats
 } from "../../../services/dashboard";
 import { handleCurrency } from "../../../utils/price";
+import { handleLogout } from "../../../utils/logout";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader } from "../../../components/loader";
 import { Navbar } from "../../../components/navbar";
@@ -28,12 +28,6 @@ import { UserSection } from "./user";
 const AdminHome = () => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-
-	const handleLogout = () => {
-		secureLocalStorage.removeItem("SESSION_KEY");
-		queryClient.clear();
-		navigate("/");
-	}
 
 	const { data: todayOrders, isFetching: fetchingOrders } = useQuery({
 		queryKey: ["orders", "today"],
@@ -124,7 +118,7 @@ const AdminHome = () => {
 									</Link>
 									<button
 										className="size-8 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 active:bg-white/30"
-										onClick={() => handleLogout()}>
+										onClick={() => handleLogout(queryClient, navigate)}>
 										<LogOut className="size-4" />
 									</button>
 								</div>
