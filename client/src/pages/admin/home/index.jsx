@@ -16,7 +16,7 @@ import { handleCurrency } from "../../../utils/price";
 import { handleLogout } from "../../../utils/logout";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader } from "../../../components/loader";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from "../../../components/navbar/navbar";
 import { OrderSection } from "./order";
 import { ProductSection } from "./product";
 import { socket } from "../../../utils/socket";

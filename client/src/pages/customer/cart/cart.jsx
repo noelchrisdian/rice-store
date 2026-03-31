@@ -4,7 +4,7 @@ import { EmptySection } from "./empty";
 import { getCart } from "../../../services/carts";
 import { ItemSection } from "./item";
 import { Modal } from "antd";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from "../../../components/navbar/navbar";
 import { toast } from "sonner";
 import { updateItem } from "../../../services/carts";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ const CustomerCart = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	const { data: cart } = useQuery({
+	const { data: cart, isFetching } = useQuery({
 		queryKey: ["user-cart"],
 		queryFn: async () => {
 			const result = await getCart();
@@ -215,6 +215,7 @@ const CustomerCart = () => {
 						handleAddQuantity={handleAddQuantity}
 						handleCreateOrder={handleCreateOrder}
 						handleRemoveQuantity={handleRemoveQuantity}
+						isFetching={isFetching}
 						loadingItem={loadingItem}
 						pending={isPending}
 						total={total}

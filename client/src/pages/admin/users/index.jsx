@@ -10,7 +10,7 @@ import { getUsers } from "../../../services/users";
 import { handleDate } from "../../../utils/date";
 import { Input, Pagination } from "antd";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from "../../../components/navbar/navbar";
 import { useDebounce } from "use-debounce";
 import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";

@@ -3,7 +3,7 @@ import { Footer } from "../../../components/footer";
 import { getGlobalProducts } from "../../../services/products";
 import { getSession } from "../../../utils/axios";
 import { HeroSection } from "./hero";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from "../../../components/navbar/navbar";
 import { ProductSection } from "./product";
 import { RegisterSection } from "./register";
 import { ReviewSection } from "./review";
@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const CustomerHome = () => {
 	const { initial, reviews } = useLoaderData();
-	const { data: products } = useQuery({
+	const { data: products, isFetching } = useQuery({
 		queryKey: ["index-products"],
 		queryFn: async () => {
 			const result = await getGlobalProducts();
@@ -37,7 +37,7 @@ const CustomerHome = () => {
 			<main className="relative bg-background font-sans text-foreground min-h-screen">
 				<HeroSection />
 				<BenefitSection />
-				<ProductSection products={products} />
+				<ProductSection products={products} isFetching={isFetching} />
 				<ReviewSection reviews={reviews} />
 				{!session && (
 					<RegisterSection />

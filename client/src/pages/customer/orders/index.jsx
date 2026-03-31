@@ -1,6 +1,6 @@
 import { ClipboardX } from "lucide-react";
 import { FilterSection } from "./filter";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from '../../../components/navbar/navbar';
 import { OrderSection } from "./orders";
 import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";

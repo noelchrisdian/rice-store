@@ -6,7 +6,7 @@ import {
     ClipboardX
 } from "lucide-react";
 import { handleCurrency } from "../../../../utils/price";
-import { handleDatetime } from "../../../../utils/date";
+import { handleDate } from "../../../../utils/date";
 import { setPaymentStatus } from "../../../../utils/order";
 
 const PaymentSection = ({ order }) => {
@@ -73,7 +73,7 @@ const PaymentSection = ({ order }) => {
 								Tanggal Pembayaran
 							</p>
 							<p className="text-sm text-foreground">
-								{handleDatetime(order?.payment?.paidAt)}
+								{handleDate(order?.payment?.paidAt)}
 							</p>
 						</div>
 					</div>

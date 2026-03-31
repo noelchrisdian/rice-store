@@ -1,4 +1,9 @@
+import { Skeleton } from "antd";
+import { useState } from "react";
+
 const HeroSection = () => {
+	const [imageLoaded, setImageLoaded] = useState(false);
+
 	return (
 		<section className="relative px-4 py-8 overflow-hidden lg:pt-28 lg:pb-8">
 			<div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-accent/30 rounded-full blur-3xl -z-10" />
@@ -18,10 +23,14 @@ const HeroSection = () => {
 					</p>
 				</div>
 				<div className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-xl shadow-primary/10">
+					{!imageLoaded && (
+						<Skeleton.Image active block className="w-full! h-full!" />
+					)}
 					<img
 						src="/Hero.jpg"
 						alt=""
 						className="w-full h-full object-cover object-bottom"
+						onLoad={() => setImageLoaded(true)}
 					/>
 				</div>
 			</div>
@@ -30,5 +39,5 @@ const HeroSection = () => {
 }
 
 export {
-    HeroSection
+	HeroSection
 }

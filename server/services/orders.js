@@ -9,6 +9,7 @@ import { inventoryModel as Inventories } from '../api/inventories/model.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
 import { userModel as Users } from '../api/users/model.js';
+import { webhookModel as Webhooks } from '../api/webhook/model.js';
 
 const getOrders = async (req) => {
     const page = parseInt(req.query.page) || 1;
@@ -251,7 +252,7 @@ const createOrder = async (req) => {
 const midtransWebhook = async (req) => {
     const session = await mongoose.startSession();
     session.startTransaction();
-    let event;
+    let event = null;
 
     try {
         const client = new midtransClient.Snap({
@@ -262,33 +263,50 @@ const midtransWebhook = async (req) => {
 
         const statusResponse = await client.transaction.notification(req.body);
         const { order_id, transaction_id, transaction_status, fraud_status } = statusResponse;
+        const finalStatus = ['settlement', 'capture', 'cancel', 'deny', 'expire'];
 
-        const order = await Orders.findOne({ _id: order_id })
+        try {
+            await Webhooks.create([{
+                transaction_id,
+                order_id,
+                status: transaction_status
+            }], { session })
+        } catch (error) {
+            if (error.code === 11_000) {
+                await session.abortTransaction();
+                return null;
+            }
+
+            throw error;
+        }
+
+        const order = await Orders.findById(order_id)
             .populate('products.product')
             .session(session)
 
-        if (!order) {
-            throw new NotFound('Order not found');
-        }
+        if (!order) throw new NotFound('Order not found');
 
         if (transaction_status === 'settlement' || (transaction_status === 'capture' && fraud_status === 'accept')) {
-            order.payment.status = transaction_status;
-            order.payment.paidAt = new Date();
-            order.shipping.status = 'processing';
-            event = 'PAID';
+            if (!['settlement', 'capture'].includes(order.payment.status)) {
+                order.payment.status = transaction_status;
+                order.payment.paidAt = new Date();
+                order.payment.midtransTransactionID = transaction_id;
+                order.shipping.status = 'processing';
+                event = 'PAID';
+            }
         } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
-            if (order.payment.status === 'pending') {
+            if (order.payment.status === 'pending' && order.reservedStocks.length > 0) {
                 for (const item of order.reservedStocks) {
-                    const inventory = await Inventories.findById(item.inventory).session(session);
-                    if (!inventory) throw new NotFound('Inventory not found');
-                    inventory.remaining += item.quantity;
-                    if (inventory.remaining > 0) {
-                        inventory.status = 'available';
-                    }
-    
-                    await inventory.save({ session });
+                    await Inventories.updateOne(
+                        { _id: item.inventory },
+                        {
+                            $inc: { remaining: item.quantity },
+                            $set: { status: 'available' }
+                        },
+                        { session }
+                    )
                 }
-
+    
                 order.reservedStocks = [];
             }
 
@@ -296,16 +314,21 @@ const midtransWebhook = async (req) => {
             order.payment.midtransTransactionID = transaction_id;
             order.shipping.status = null;
             event = 'CANCELLED';
+        } else if (transaction_status === 'pending' && !finalStatus.includes(order.payment.status)) {
+            order.payment.status = 'pending';
+            order.payment.midtransTransactionID = transaction_id;
         }
 
         await order.save({ session });
         await session.commitTransaction();
 
-        const io = getIO();
-        io.to('admin').emit('orders:event', {
-            orderID: order._id,
-            type: event
-        })
+        if (event) {
+            const io = getIO();
+            io.to('admin').emit('orders:event', {
+                orderID: order._id,
+                type: event
+            })
+        }
 
         return order;
     } catch (error) {

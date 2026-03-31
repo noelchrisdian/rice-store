@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { Link, useLoaderData } from "react-router-dom";
 import { Modal } from "antd";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from "../../../components/navbar/navbar";
 import { ProductSection } from "./products";
 import { toast } from "sonner";
 import { useState } from "react";

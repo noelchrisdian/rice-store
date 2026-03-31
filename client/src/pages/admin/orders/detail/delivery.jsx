@@ -10,7 +10,7 @@ import {
     Truck
 } from "lucide-react";
 import { handleCurrency } from "../../../../utils/price";
-import { handleDatetime } from "../../../../utils/date";
+import { handleDate } from "../../../../utils/date";
 import { Image, Typography } from "antd";
 
 const DeliverySection = ({ order, setModal }) => {
@@ -99,7 +99,7 @@ const DeliverySection = ({ order, setModal }) => {
 							Tanggal Pengiriman
 						</p>
 						<p className="text-sm text-foreground">
-							{handleDatetime(order?.shipping?.shippedAt)}
+							{handleDate(order?.shipping?.shippedAt)}
 						</p>
 					</div>
 				</div>
@@ -112,7 +112,7 @@ const DeliverySection = ({ order, setModal }) => {
 						<p className="text-sm text-foreground">
 							{order?.shipping?.deliveredAt === undefined
 								? "Belum diterima"
-								: handleDatetime(order?.shipping?.deliveredAt)}
+								: handleDate(order?.shipping?.deliveredAt)}
 						</p>
 					</div>
 				</div>

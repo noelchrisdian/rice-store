@@ -2,12 +2,14 @@ import { CircleMinus, CirclePlus } from "lucide-react";
 import { CircularLoading } from "respinner";
 import { handleCurrency } from "../../../utils/price";
 import { Link } from "react-router-dom";
+import { Skeleton } from "antd";
 
 const ItemSection = ({
 	cartItem,
 	handleAddQuantity,
 	handleCreateOrder,
 	handleRemoveQuantity,
+	isFetching,
 	loadingItem,
 	pending,
 	total
@@ -22,57 +24,115 @@ const ItemSection = ({
 								className="bg-card rounded-2xl border border-border/50 p-4 shadow-sm"
 								key={index}>
 								<div className="flex gap-4">
-									<Link to={`/products/${item?.product?._id}`} className="w-24 h-24 rounded-xl bg-secondary overflow-hidden shrink-0">
-										<img
-											src={item?.product?.image?.imageURL}
-											className="w-full h-full object-cover"
-										/>
-									</Link>
+									{isFetching ? (
+										<div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
+											<Skeleton.Image
+												active
+												block
+												className="w-full! h-full!"
+											/>
+										</div>
+									) : (
+										<Link
+											to={`/products/${item?.product?._id}`}
+											className="w-24 h-24 rounded-xl bg-secondary overflow-hidden shrink-0">
+											<img
+												src={item?.product?.image?.imageURL}
+												className="w-full h-full object-cover"
+											/>
+										</Link>
+									)}
 									<div className="flex-1 flex flex-col">
 										<div className="flex justify-between items-start mb-2">
 											<div className="">
-												<h3 className="font-font-heading text-lg leading-tight mb-1">
-													{item?.product?.name}
-												</h3>
-												<p className="text-sm text-muted-foreground mb-1.5">
-													{item?.product?.weightPerUnit} kg
-												</p>
-												<span className="font-bold text-primary text-md">
-													{handleCurrency(item?.product?.price)}
-												</span>
+												{isFetching ? (
+													<div className="w-full flex flex-col items-start">
+														<Skeleton.Input
+															active
+															style={{
+																width: "120px",
+																minWidth: "65%"
+															}}
+															className="mb-1! h-4.5!"
+														/>
+														<Skeleton.Input
+															active
+															style={{
+																width: "60px",
+																minWidth: "30%"
+															}}
+															className="mb-1.5! h-3.5!"
+														/>
+														<Skeleton.Input
+															active
+															style={{
+																width: "80px",
+																minWidth: "45%"
+															}}
+															className="h-3.5!"
+														/>
+													</div>
+												) : (
+													<>
+														<h3 className="font-font-heading text-lg leading-tight mb-1">
+															{item?.product?.name}
+														</h3>
+														<p className="text-sm text-muted-foreground mb-1.5">
+															{item?.product?.weightPerUnit} kg
+														</p>
+														<span className="font-bold text-primary">
+															{handleCurrency(
+																item?.product?.price
+															)}
+														</span>
+													</>
+												)}
 											</div>
 										</div>
 										<div className="mt-2 flex items-center justify-end">
-											<div className="flex items-center gap-3 bg-secondary rounded-lg px-1 py-1">
-												<button
-													disabled={
-														loadingItem[item?.product?._id]
-													}
-													className="size-8 flex items-center justify-center text-primary cursor-pointer rounded-lg transition-all active:bg-primary/10"
-													onClick={() =>
-														handleRemoveQuantity(item)
-													}>
-													<CircleMinus className="size-5" />
-												</button>
-												<span className="font-semibold text-foreground min-w-5 text-center">
-													{loadingItem[item?.product?._id] ? (
-														<CircularLoading
-															color="#3D6F2E"
-															size={18}
-														/>
-													) : (
-														item?.quantity
-													)}
-												</span>
-												<button
-													disabled={
-														loadingItem[item?.product?._id]
-													}
-													className="size-8 flex items-center justify-center text-primary cursor-pointer rounded-lg transition-all active:bg-primary/10"
-													onClick={() => handleAddQuantity(item)}>
-													<CirclePlus className="size-5" />
-												</button>
-											</div>
+											{isFetching ? (
+												<Skeleton.Input
+													active
+													style={{
+														width: "36px",
+														height: "30px"
+													}}
+													className="rounded-lg!"
+												/>
+											) : (
+												<div className="flex items-center gap-3 bg-secondary rounded-lg px-1 py-1">
+													<button
+														disabled={
+															loadingItem[item?.product?._id]
+														}
+														className="size-8 flex items-center justify-center text-primary cursor-pointer rounded-lg transition-all active:bg-primary/10"
+														onClick={() =>
+															handleRemoveQuantity(item)
+														}>
+														<CircleMinus className="size-5" />
+													</button>
+													<span className="font-semibold text-foreground min-w-5 text-center">
+														{loadingItem[item?.product?._id] ? (
+															<CircularLoading
+																color="#3D6F2E"
+																size={18}
+															/>
+														) : (
+															item?.quantity
+														)}
+													</span>
+													<button
+														disabled={
+															loadingItem[item?.product?._id]
+														}
+														className="size-8 flex items-center justify-center text-primary cursor-pointer rounded-lg transition-all active:bg-primary/10"
+														onClick={() =>
+															handleAddQuantity(item)
+														}>
+														<CirclePlus className="size-5" />
+													</button>
+												</div>
+											)}
 										</div>
 									</div>
 								</div>
@@ -89,36 +149,67 @@ const ItemSection = ({
 					<div className="space-y-4 mb-6">
 						<div className="flex justify-between text-sm">
 							<div className="text-muted-foreground">Subtotal</div>
-							<span className="font-medium text-foreground">
-								{handleCurrency(total)}
-							</span>
+							{isFetching ? (
+								<Skeleton.Input
+									active
+									style={{ width: "30px", height: "18px" }}
+								/>
+							) : (
+								<span className="font-medium text-foreground">
+									{handleCurrency(total)}
+								</span>
+							)}
 						</div>
 						<div className="flex justify-between text-sm">
 							<div className="text-muted-foreground">Diskon</div>
-							<span className="font-medium text-foreground">
-								{handleCurrency(0)}
-							</span>
+							{isFetching ? (
+								<Skeleton.Input
+									active
+									style={{ width: "30px", height: "18px" }}
+								/>
+							) : (
+								<span className="font-medium text-foreground">
+									{handleCurrency(0)}
+								</span>
+							)}
 						</div>
 						<div className="border-t border-border pt-4 mb-6">
 							<div className="flex justify-between items-baseline">
 								<span className="text-foreground font-semibold">
 									Total
 								</span>
-								<span className="font-font-heading text-3xl font-bold text-primary">
-									{handleCurrency(total)}
-								</span>
+								{isFetching ? (
+									<Skeleton.Input
+										active
+										style={{ width: "120px", height: "32px" }}
+									/>
+								) : (
+									<span className="font-font-heading text-3xl font-bold text-primary">
+										{handleCurrency(total)}
+									</span>
+								)}
 							</div>
 						</div>
-						<button
-							disabled={pending}
-							onClick={() => handleCreateOrder()}
-							className="w-3xs mx-auto bg-primary text-primary-foreground font-bold p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center shadow-lg text-lg shadow-primary/20 mb-2 mt-10 active:scale-[0.98]">
-							{pending ? (
-								<CircularLoading color="#FFFFFF" size={28} />
-							) : (
-								"Bayar"
-							)}
-						</button>
+						{isFetching ? (
+							<div className="w-full flex justify-center mt-10">
+								<Skeleton.Button
+									active
+									shape="round"
+									style={{ width: "200px", height: "56px" }}
+								/>
+							</div>
+						) : (
+							<button
+								disabled={pending}
+								onClick={() => handleCreateOrder()}
+								className="w-3xs mx-auto bg-primary text-primary-foreground font-bold p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center shadow-lg text-lg shadow-primary/20 mb-2 mt-10 active:scale-[0.98]">
+								{pending ? (
+									<CircularLoading color="#FFFFFF" size={28} />
+								) : (
+									"Bayar"
+								)}
+							</button>
+						)}
 					</div>
 				</div>
 			</div>
@@ -127,5 +218,5 @@ const ItemSection = ({
 }
 
 export {
-    ItemSection
+	ItemSection
 }

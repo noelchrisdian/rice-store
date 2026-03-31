@@ -6,7 +6,7 @@ import {
 	useQuery,
 	useQueryClient
 } from "@tanstack/react-query";
-import { Navbar } from "../../../components/navbar";
+import { Navbar } from "../../../components/navbar/navbar";
 import { OrderSection } from "./orders";
 import { socket } from "../../../utils/socket";
 import { toast } from "sonner";
