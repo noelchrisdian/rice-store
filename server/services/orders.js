@@ -9,7 +9,6 @@ import { inventoryModel as Inventories } from '../api/inventories/model.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
 import { userModel as Users } from '../api/users/model.js';
-import { webhookModel as Webhooks } from '../api/webhook/model.js';
 
 const getOrders = async (req) => {
     const page = parseInt(req.query.page) || 1;
@@ -134,7 +133,7 @@ const createOrder = async (req) => {
             const totalStock = productInventories.reduce((acc, inventory) => acc + inventory.remaining, 0);
 
             if (requiredKg > totalStock) throw new BadRequest(`Stok tidak mencukupi untuk ${product.product.name}`)
-            
+
             for (const inventory of productInventories) {
                 if (requiredKg <= 0) break;
 
@@ -187,6 +186,7 @@ const createOrder = async (req) => {
             { $set: { products: [] } },
             { session }
         )
+        await order.populate('products.product');
 
         const user = await Users.findById(req.user.id).session(session);
         if (!user) {
@@ -198,15 +198,46 @@ const createOrder = async (req) => {
             serverKey: process.env.MIDTRANS_SERVER_KEY
         })
 
+        const clientURL = `${process.env.CLIENT_URL}/orders/confirmation?order_id=${order._id}`;
         const parameter = {
             transaction_details: {
-                "order_id": String(order._id),
-                "gross_amount": order.totalPrice
+                order_id: String(order._id),
+                gross_amount: order.totalPrice
             },
             customer_details: {
                 first_name: user.name,
                 email: user.email,
-                phone: user.phoneNumber
+                phone: user.phoneNumber,
+                billing_address: {
+                    first_name: user.name,
+                    email: user.email,
+                    phone: user.phoneNumber,
+                    address: user.address
+                },
+                shipping_address: {
+                    first_name: user.name,
+                    email: user.email,
+                    phone: user.phoneNumber,
+                    address: user.address
+                }
+            },
+            item_details: order.products.map((product) => ({
+                id: product.product._id,
+                name: product.product.name,
+                quantity: product.quantity,
+                price: product.product.price,
+                merchant_name: 'Toko Beras AD',
+                url: `${process.env.CLIENT_URL}/products/${product.product._id}`
+            })),
+            callbacks: {
+                finish: clientURL
+            },
+            gopay: {
+                enable_callback: true,
+                callback_url: clientURL
+            },
+            shopeepay: {
+                callback_url: clientURL
             }
         }
 
@@ -265,26 +296,15 @@ const midtransWebhook = async (req) => {
         const { order_id, transaction_id, transaction_status, fraud_status } = statusResponse;
         const finalStatus = ['settlement', 'capture', 'cancel', 'deny', 'expire'];
 
-        try {
-            await Webhooks.create([{
-                transaction_id,
-                order_id,
-                status: transaction_status
-            }], { session })
-        } catch (error) {
-            if (error.code === 11_000) {
-                await session.abortTransaction();
-                return null;
-            }
-
-            throw error;
-        }
-
         const order = await Orders.findById(order_id)
             .populate('products.product')
             .session(session)
-
         if (!order) throw new NotFound('Order not found');
+
+        if (finalStatus.includes(order.payment.status)) {
+            await session.commitTransaction();
+            return order;
+        }
 
         if (transaction_status === 'settlement' || (transaction_status === 'capture' && fraud_status === 'accept')) {
             if (!['settlement', 'capture'].includes(order.payment.status)) {
@@ -306,7 +326,7 @@ const midtransWebhook = async (req) => {
                         { session }
                     )
                 }
-    
+                
                 order.reservedStocks = [];
             }
 
@@ -314,9 +334,6 @@ const midtransWebhook = async (req) => {
             order.payment.midtransTransactionID = transaction_id;
             order.shipping.status = null;
             event = 'CANCELLED';
-        } else if (transaction_status === 'pending' && !finalStatus.includes(order.payment.status)) {
-            order.payment.status = 'pending';
-            order.payment.midtransTransactionID = transaction_id;
         }
 
         await order.save({ session });
@@ -351,14 +368,29 @@ const cancelOrder = async (req) => {
         if (!order.user.equals(req.user.id)) throw new Forbidden('User not authorized');
         if (order.payment.status !== 'pending') throw new BadRequest(`Only pending orders can be cancelled`);
 
-        for (const item of order.reservedStocks) {
-            const inventory = await Inventories.findById(item.inventory).session(session);
-            if (!inventory) throw new NotFound('Inventory not found');
-            inventory.remaining += item.quantity;
-            if (inventory.remaining > 0) {
-                inventory.status = 'available';
+        const core = new midtransClient.Snap({
+            isProduction: false,
+            serverKey: process.env.MIDTRANS_SERVER_KEY,
+            clientKey: process.env.MIDTRANS_CLIENT_KEY
+        })
+
+        if (order.payment.midtransOrderID) {
+            try {
+                await core.transaction.cancel(order.payment.midtransOrderID);
+            } catch (error) {
+                console.error(`Midtrans cancel error : ${error}`);
             }
-            await inventory.save({ session });
+        }
+
+        for (const item of order.reservedStocks) {
+            await Inventories.updateOne(
+                { _id: item.inventory },
+                {
+                    $inc: { remaining: item.quantity },
+                    $set: { status: 'available' }
+                },
+                { session }
+            )
         }
 
         order.reservedStocks = [];
