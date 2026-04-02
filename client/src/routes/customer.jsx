@@ -11,9 +11,9 @@ import { getCustomer } from "../services/users";
 import { getGlobalProduct, getGlobalProducts } from "../services/products";
 import { getIndexReviews, getProductReview } from "../services/reviews";
 import { getSession } from "../utils/axios";
+import { NotFound } from "../pages/404";
 import { OrderInvoice } from "../pages/customer/orders/invoice";
 import { redirect } from "react-router-dom";
-import { toast } from "sonner";
 import { UserSettings } from "../pages/customer/settings";
 
 const router = [
@@ -41,21 +41,20 @@ const router = [
 					reviews: reviews.data
 				}
 			} catch (error) {
-				toast.error(
-					error?.response?.data?.message === `Product doesn't exist`
-						? "Produk tidak ditemukan"
-						: "Terjadi kesalahan di sistem"
-				)
-				return redirect("/");
+				if (error?.response?.data?.message === `Product doesn't exist`)
+					throw new Response("Not Found", { status: 404 });
+
+				throw error;
 			}
 		},
-		element: <CustomerProductDetail />
+		element: <CustomerProductDetail />,
+		errorElement: <NotFound />
 	},
 	{
 		loader: async () => {
 			const session = await getSession();
-			if (!session) throw redirect('/sign-in');
-			if (session.role !== 'customer') throw redirect('/admin');
+			if (!session) throw redirect("/sign-in");
+			if (session.role !== "customer") throw redirect("/admin");
 
 			return null;
 		},
@@ -110,14 +109,13 @@ const router = [
 						const order = await findOrder(params.id);
 						return order.data;
 					} catch (error) {
-						toast.error(
-							error?.response?.data?.message === `Order doesn't exist`
-								? "Pesanan tidak ditemukan"
-								: "Terjadi kesalahan di sistem"
-						)
-						return redirect("/orders");
+						if (error?.response?.data?.message === `Order doesn't exist`)
+							throw new Response("Not Found", { status: 404 });
+
+						throw error;
 					}
 				},
+				errorElement: <NotFound />,
 				children: [
 					{
 						path: "/orders/:id",

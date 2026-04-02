@@ -20,7 +20,7 @@ const NotFound = () => {
 			</div>
 
 			<h1 className="text-3xl font-bold mb-2">Halaman Tidak Ditemukan</h1>
-			<p className="text-muted-foreground mb-8 max-w-md">
+			<p className="text-muted-foreground mb-8 max-w-lg">
 				Maaf, halaman yang Anda cari tidak tersedia atau telah dipindahkan
 			</p>
 
