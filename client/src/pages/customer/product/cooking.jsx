@@ -1,6 +1,6 @@
 const CookingSection = () => {
 	return (
-		<div className="bg-secondary/50 rounded-2xl p-5 mb-6 lg:mb-2">
+		<div className="bg-secondary/50 rounded-2xl p-5 mb-6">
 			<h3 className="font-font-heading text-xl font-bold text-foreground mb-3">
 				Cara Memasak
 			</h3>

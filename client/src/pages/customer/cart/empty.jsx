@@ -17,7 +17,7 @@ const EmptySection = () => {
 						</div>
 					</div>
 				</div>
-				<div className="text-center space-y-3 max-w-lg mx-auto">
+				<div className="text-center space-y-3 max-w-lg mx-auto mb-6">
 					<h2 className="text-3xl font-font-heading text-foreground">
 						Keranjangmu masih kosong
 					</h2>
@@ -26,7 +26,7 @@ const EmptySection = () => {
 						kami sekarang!
 					</p>
 				</div>
-				<div className="max-w-lg mt-12 space-y-4">
+				<div className="max-w-lg">
 					<Link
 						to={"/#product"}
 						className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">

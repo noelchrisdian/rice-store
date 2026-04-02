@@ -1,6 +1,6 @@
 import { ClipboardX } from "lucide-react";
 import { FilterSection } from "./filter";
-import { Navbar } from '../../../components/navbar/navbar';
+import { Navbar } from "../../../components/navbar/navbar";
 import { OrderSection } from "./orders";
 import { useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router-dom";
@@ -31,6 +31,8 @@ const CustomerOrders = () => {
 		{ value: "30d", label: "30 Hari Terakhir" },
 		{ value: "90d", label: "90 Hari Terakhir" }
 	]
+
+	const filter = currentStatus || currentRange;
 
 	useEffect(() => {
 		window.scrollTo(0, 0);
@@ -65,9 +67,20 @@ const CustomerOrders = () => {
 								<div className="inline-flex items-center justify-center size-24 bg-muted rounded-full mb-6 lg:size-32">
 									<ClipboardX className="size-12 text-muted-foreground lg:size-16" />
 								</div>
-								<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
-									Pesanan Tidak Ditemukan
-								</h3>
+								{filter ? (
+									<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
+										Pesanan Tidak Ditemukan
+									</h3>
+								) : (
+									<>
+										<h3 className="font-font-heading text-2xl font-bold text-primary mb-3 lg:text-3xl">
+											Belum Ada Pesanan
+										</h3>
+										<p className="text-gray-500 mt-2">
+											Riwayat pesanan Anda akan muncul di sini
+										</p>
+									</>
+								)}
 							</div>
 						</section>
 					)}

@@ -2,6 +2,7 @@ import { AuthLayout } from "../layouts/auth";
 import { createBrowserRouter, redirect } from "react-router-dom";
 import { getSession } from "../utils/axios";
 import { LoginForm } from "../pages/login/form";
+import { NotFound } from "../pages/404";
 import { RegisterForm } from "../pages/register/form";
 import { router as AdminRouter } from "./admin";
 import { router as CustomerRouter } from "./customer";
@@ -27,7 +28,11 @@ const router = createBrowserRouter([
 		]
 	},
 	...AdminRouter,
-	...CustomerRouter
+	...CustomerRouter,
+	{
+		path: '*',
+		element: <NotFound />
+	}
 ])
 
 export {
