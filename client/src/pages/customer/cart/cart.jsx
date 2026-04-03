@@ -20,7 +20,7 @@ const CustomerCart = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	const { data: cart, isFetching } = useQuery({
+	const { data: cart } = useQuery({
 		queryKey: ["user-cart"],
 		queryFn: async () => {
 			const result = await getCart();
@@ -215,7 +215,6 @@ const CustomerCart = () => {
 						handleAddQuantity={handleAddQuantity}
 						handleCreateOrder={handleCreateOrder}
 						handleRemoveQuantity={handleRemoveQuantity}
-						isFetching={isFetching}
 						loadingItem={loadingItem}
 						pending={isPending}
 						total={total}

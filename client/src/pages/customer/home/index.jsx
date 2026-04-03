@@ -1,3 +1,4 @@
+import { Autoscroll } from "../../../components/scroll";
 import { BenefitSection } from "./benefit";
 import { Footer } from "../../../components/footer";
 import { getGlobalProducts } from "../../../services/products";
@@ -31,6 +32,7 @@ const CustomerHome = () => {
 
 	return (
 		<>
+			<Autoscroll />
 			<section className="hidden lg:block">
 				<Navbar active={"home"} position={"top"} />
 			</section>
