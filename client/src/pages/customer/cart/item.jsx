@@ -30,7 +30,6 @@ const ItemSection = ({
 											className="w-full h-full object-cover"
 										/>
 									</Link>
-									<span className="">{item.product.stock}</span>
 									<div className="flex-1 flex flex-col">
 										<div className="flex justify-between items-start mb-2">
 											<div className="">
