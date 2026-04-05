@@ -50,7 +50,7 @@ const ProductModal = ({
 					<button
 						onClick={() => {
 							setOpenModal(false);
-							navigate("/");
+							navigate("/#product");
 						}}
 						className="w-full h-14 bg-secondary text-secondary-foreground rounded-2xl font-semibold text-base transition-transform flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]">
 						<span>Lanjutkan Belanja</span>
