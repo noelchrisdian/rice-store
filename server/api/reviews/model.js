@@ -24,6 +24,10 @@ const reviewSchema = new Schema({
     },
     comment: {
         type: String
+    },
+    deleted: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true })
 

@@ -15,15 +15,13 @@ const getProduct = async (req) => {
     const product = await Products.findById(id)
         .select('name price inventories weightPerUnit image description')
         .populate('inventories', 'remaining')
-    if (!product) {
-        throw new NotFound(`Product doesn't exist`);
-    }
+    if (!product) throw new NotFound(`Product doesn't exist`);
 
     return product;
 }
 
 const getIndexReviews = async () => {
-    return await Reviews.find({ rating: 5 })
+    return await Reviews.find({ rating: 5, deleted: false })
         .select('user rating comment')
         .sort({ createdAt: -1 })
         .limit(5)
@@ -34,19 +32,17 @@ const getIndexReviews = async () => {
 const getReviews = async (req) => {
     const { id } = req.params;
     const product = await Products.findById(id).lean();
-    if (!product) {
-        throw new NotFound(`Product doesn't exist`);
-    }
+    if (!product) throw new NotFound(`Product doesn't exist`);
 
     const [reviews, statistic] = await Promise.all([
-        Reviews.find({ product: id })
+        Reviews.find({ product: id, deleted: false })
             .select('user rating comment createdAt')
             .limit(5)
             .sort({ createdAt: -1 })
             .populate('user', 'name avatar')
             .lean(),
         Reviews.aggregate([
-            { $match: { product: new mongoose.Types.ObjectId(id) } },
+            { $match: { product: new mongoose.Types.ObjectId(id), deleted: false } },
             {
                 $group: {
                     _id: null,

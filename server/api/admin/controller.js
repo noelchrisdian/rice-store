@@ -1,5 +1,4 @@
 import {
-    deleteReview,
     getOrder,
     getOrders,
     getReviews,
@@ -7,7 +6,8 @@ import {
     getUsers,
     updateOrderDelivered,
     updateOrderShipped,
-    updateOrderShippedInfo
+    updateOrderShippedInfo,
+    updateReviewStatus
 } from "../../services/admin.js";
 import {
     getRecentOrders,
@@ -63,7 +63,7 @@ const userStats = async (req, res, next) => {
     }
 }
 
-const indexTodayOrders = async(req, res, next) => {
+const indexTodayOrders = async (req, res, next) => {
     try {
         const orders = await getTodayOrders();
         success(res, orders, 'Orders fetched successfully');
@@ -117,10 +117,10 @@ const indexReviews = async (req, res, next) => {
     }
 }
 
-const removeReview = async (req, res, next) => {
+const updateReview = async (req, res, next) => {
     try {
-        const review = await deleteReview(req);
-        success(res, review, `Review by ${review.user.name} on ${review.product.name} has been deleted`);
+        const review = await updateReviewStatus(req);
+        success(res, review, review.deleted ? `Review by ${review.user.name} on ${review.product.name} has been deleted` : `Review by ${review.user.name} on ${review.product.name} has been restored`);
     } catch (error) {
         next(error);
     }
@@ -154,8 +154,8 @@ export {
     indexRecentUsers,
     indexTodayOrders,
     indexUsers,
-    removeReview,
     updateDelivered,
+    updateReview,
     updateShipped,
     updateShippedInfo,
     userStats

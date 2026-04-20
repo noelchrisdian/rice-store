@@ -6,7 +6,7 @@ import {
 	Progress,
 	Rate
 } from "antd";
-import { Trash } from "lucide-react";
+import { RotateCcw, Trash } from "lucide-react";
 
 const ReviewSection = ({
 	limit,
@@ -43,7 +43,9 @@ const ReviewSection = ({
 							{stars.map((star, index) => {
 								const count = Number(analytics?.[`star${star}`] || 0);
 								return (
-									<div className="flex justify-center items-center gap-2" key={index}>
+									<div
+										className="flex justify-center items-center gap-2"
+										key={index}>
 										<span className="text-xs text-muted-foreground w-8">
 											{star}★
 										</span>
@@ -84,16 +86,31 @@ const ReviewSection = ({
 											<span className="text-xs text-muted-foreground">
 												{handleDate(review.createdAt)}
 											</span>
-											<button
-												onClick={() =>
-													setModal({
-														open: true,
-														reviewID: review._id
-													})
-												}
-												className="p-1.5 rounded-lg bg-destructive/10 text-destructive transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-destructive/50">
-												<Trash className="size-4" />
-											</button>
+											{review?.deleted ? (
+												<button
+													onClick={() =>
+														setModal({
+															deleted: true,
+															open: true,
+															reviewID: review._id
+														})
+													}
+													className="p-1.5 rounded-lg bg-primary/10 text-primary transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
+													<RotateCcw className="size-4" />
+												</button>
+											) : (
+												<button
+													onClick={() =>
+														setModal({
+															deleted: false,
+															open: true,
+															reviewID: review._id
+														})
+													}
+													className="p-1.5 rounded-lg bg-destructive/10 text-destructive transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-destructive/50">
+													<Trash className="size-4" />
+												</button>
+											)}
 										</div>
 									</div>
 									<div className="flex items-center gap-1 mb-2">

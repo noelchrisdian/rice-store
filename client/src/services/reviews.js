@@ -28,16 +28,16 @@ const createReview = async (data, orderID, productID) => {
     return response.data;
 }
 
-const deleteReview = async (id, reviewID) => {
-    const response = await privateAPI.delete(`/admin/products/${id}/reviews/${reviewID}`);
+const updateReview = async (id, reviewID) => {
+    const response = await privateAPI.patch(`/admin/products/${id}/reviews/${reviewID}`);
     return response.data;
 }
 
 export {
     createReview,
-    deleteReview,
     getIndexReviews,
     getProductReview,
     getReviews,
-    reviewSchema
+    reviewSchema,
+    updateReview
 }

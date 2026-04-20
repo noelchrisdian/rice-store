@@ -6,6 +6,7 @@ import { NotFound } from "../errors/notFound.js";
 import { ParseError } from "../errors/parseError.js";
 import { productModel as Products } from "../api/products/model.js";
 import { productSchema } from "../utils/zod.js";
+import { reviewModel as Reviews } from "../api/reviews/model.js";
 import { StatusCodes } from "http-status-codes";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -20,17 +21,13 @@ const getProduct = async (req) => {
         select: 'product quantity remaining receivedAt expiredAt'
     })
 
-    if (!product) {
-        throw new NotFound('Product not found');
-    }
+    if (!product) throw new NotFound('Product not found');
 
     return product;
 }
 
 const createProduct = async (req) => {
-    if (!req.file) {
-        throw new BadRequest('Image is required');
-    }
+    if (!req.file) throw new BadRequest('Image is required');
     let uploadImage;
 
     try {
@@ -112,25 +109,33 @@ const updateProduct = async (req) => {
 
 const deleteProduct = async (req) => {
     const { id } = req.params;
+    let product;
+    
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        const product = await Products.findOneAndDelete({ _id: id }).session(session);
+        product = await Products.findOneAndDelete({ _id: id }).session(session);
         if (!product) throw new NotFound(`Product doesn't exist`);
-
-        const imagePublicID = product.image.imagePublicID;
-        await cloudinary.uploader.destroy(imagePublicID);
         await Inventories.deleteMany({ product: product._id }).session(session);
+        await Reviews.deleteMany({ product: product._id }).session(session);
 
         await session.commitTransaction();
-        return product;
     } catch (error) {
         await session.abortTransaction();
         throw error;
     } finally {
         session.endSession();
     }
+
+    try {
+        const imagePublicID = product.image.imagePublicID;
+        await cloudinary.uploader.destroy(imagePublicID);
+    } catch (error) {
+        console.error(`Failed to delete image : ${error}`);
+    }
+
+    return product;
 }
 
 export {

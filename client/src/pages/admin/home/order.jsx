@@ -1,4 +1,4 @@
-import { ClipboardX, Eye } from "lucide-react";
+import { ClipboardX } from "lucide-react";
 import { handleCurrency } from "../../../utils/price";
 import { Link } from "react-router-dom";
 import { setOrderStatus } from "../../../utils/order";
@@ -33,7 +33,8 @@ const OrderSection = ({ recentOrders }) => {
 							)
 							const currentStyle = styles[status] || styles["default"];
 							return (
-								<div
+								<Link
+									to={`/admin/orders/${order?._id}`}
 									className="flex items-center justify-between bg-muted rounded-xl p-3"
 									key={order?._id}>
 									<div className="flex items-center gap-3">
@@ -52,11 +53,8 @@ const OrderSection = ({ recentOrders }) => {
 											className={`text-xs font-medium px-2.5 py-1 rounded-full ${currentStyle}`}>
 											{status}
 										</span>
-										<Link to={`/admin/orders/${order?._id}`} className="bg-white p-2 border border-border rounded-xl flex items-center justify-center text-muted-foreground transition-all shadow-sm active:text-primary">
-											<Eye className="size-5" />
-										</Link>
 									</div>
-								</div>
+								</Link>
 							)
 						})}
 					</div>

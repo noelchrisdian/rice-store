@@ -1,5 +1,4 @@
 import { handleCurrency } from "../../../utils/price";
-import { Image } from "antd";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 
@@ -18,11 +17,12 @@ const ProductSection = ({ recentProducts }) => {
 			</div>
 			<div className="flex flex-col gap-3 mb-4">
 				{recentProducts?.data.map((product) => (
-					<div
+					<Link
+						to={`/admin/products/${product?._id}`}
 						className="flex items-center gap-3 bg-muted rounded-xl p-3"
 						key={product?._id}>
 						<div className="size-16 bg-background rounded-lg flex items-center justify-center shrink-0">
-							<Image
+							<img
 								width={75}
 								src={product?.image?.imageURL}
 								className="size-full! object-cover! rounded-lg!"
@@ -39,7 +39,7 @@ const ProductSection = ({ recentProducts }) => {
 								{handleCurrency(product?.price)}
 							</p>
 						</div>
-					</div>
+					</Link>
 				))}
 				<Link
 					to={"/admin/products"}

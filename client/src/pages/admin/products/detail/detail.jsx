@@ -1,29 +1,30 @@
 import { BackButton } from "../../../../components/back";
-import { CircleAlert, SquarePen } from "lucide-react";
-import { deleteReview, getReviews } from "../../../../services/reviews";
+import { getReviews, updateReview } from "../../../../services/reviews";
 import { getInventories } from "../../../../services/inventories";
 import { InventorySection } from "./inventory";
-import {
-	Link,
-	useLoaderData,
-	useSearchParams
-} from "react-router-dom";
-import { Loader } from "../../../../components/loader";
-import { Modal } from "antd";
-import { ProductSection } from "./product";
-import { ReviewSection } from "./review";
-import { toast } from "sonner";
 import {
 	keepPreviousData,
 	useMutation,
 	useQuery,
 	useQueryClient
 } from "@tanstack/react-query";
+import {
+	Link,
+	useLoaderData,
+	useSearchParams
+} from "react-router-dom";
+import { Loader } from "../../../../components/loader";
+import { ProductSection } from "./product";
+import { ReviewModal } from "./modal";
+import { ReviewSection } from "./review";
+import { SquarePen } from "lucide-react";
+import { toast } from "sonner";
 import { useState } from "react";
 
 const AdminDetailProduct = () => {
 	const { initialInventories, product, initialReviews } = useLoaderData();
 	const [modal, setModal] = useState({
+		deleted: null,
 		open: false,
 		reviewID: null
 	})
@@ -69,7 +70,7 @@ const AdminDetailProduct = () => {
 	})
 
 	const { isPending, mutateAsync } = useMutation({
-		mutationFn: ({ id, reviewID }) => deleteReview(id, reviewID),
+		mutationFn: ({ id, reviewID }) => updateReview(id, reviewID),
 		onSuccess: () =>
 			queryClient.invalidateQueries({ queryKey: ["reviews", product._id] })
 	})
@@ -78,11 +79,11 @@ const AdminDetailProduct = () => {
 		setModal({ open: false, reviewID: null });
 	}
 
-	const handleDeleteReview = async (id, reviewID) => {
+	const handleUpdateReview = async (id, reviewID) => {
 		try {
 			const response = await mutateAsync({ id, reviewID });
 			toast.success(
-				`Ulasan dari ${response?.data?.user?.name} berhasil dihapus`
+				`Ulasan dari ${response?.data?.user?.name} berhasil ${response?.data?.deleted ? "dihapus" : "dipulihkan"}`
 			)
 		} catch (error) {
 			toast.error(error?.response?.data?.message);
@@ -93,7 +94,7 @@ const AdminDetailProduct = () => {
 
 	return (
 		<main className="bg-background font-sans text-foreground min-h-screen py-10 lg:py-20">
-			<BackButton type={"link"} path={"/admin/products"} />
+			<BackButton type={"link"} path={-1} />
 			<section className="flex items-center justify-end pb-6 pr-4 lg:pr-6">
 				<Link
 					to={`/admin/products/edit-product/${product._id}`}
@@ -131,31 +132,13 @@ const AdminDetailProduct = () => {
 					/>
 				)}
 			</div>
-			<Modal
-				open={modal.open}
-				onCancel={handleCloseModal}
-				onOk={() => handleDeleteReview(product._id, modal.reviewID)}
-				title={
-					<div className="flex flex-row items-center gap-2">
-						<CircleAlert className="text-destructive size-6" />
-						<p className="text-md">Hapus Ulasan</p>
-					</div>
-				}
-				centered
-				confirmLoading={isPending}
-				okText={"Hapus"}
-				okButtonProps={{
-					className:
-						"bg-destructive! border-desctructive! text-white! shadow-none!"
-				}}
-				cancelText={"Batal"}
-				cancelButtonProps={{
-					className: "bg-primary! border-primary! text-white! shadow-none!"
-				}}>
-				<p className="text-sm font-semibold my-4">
-					Anda yakin ingin menghapus ulasan ini?
-				</p>
-			</Modal>
+			<ReviewModal
+				handleCloseModal={handleCloseModal}
+				handleUpdateReview={handleUpdateReview}
+				isPending={isPending}
+				modal={modal}
+				product={product}
+			/>
 		</main>
 	)
 }

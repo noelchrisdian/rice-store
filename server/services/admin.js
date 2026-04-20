@@ -112,10 +112,7 @@ const getOrder = async (req) => {
         .populate('products.product', 'name image price')
         .populate('user', 'name phoneNumber email address')
         .lean()
-
-    if (!order) {
-        throw new NotFound(`Order doesn't exist`);
-    }
+    if (!order) throw new NotFound(`Order doesn't exist`);
 
     return order;
 }
@@ -244,15 +241,16 @@ const updateOrderDelivered = async (req) => {
     }
 }
 
-const deleteReview = async (req) => {
+const updateReviewStatus = async (req) => {
     const { reviewID } = req.params;
-    const review = await Reviews.findOneAndDelete({ _id: reviewID })
+    const review = await Reviews.findOneAndUpdate(
+        { _id: reviewID },
+        [{ $set: { "deleted": { $not: "$deleted" } } }],
+        { new: true }
+    )
         .populate('product', 'name')
         .populate('user', 'name')
-
-    if (!review) {
-        throw new NotFound(`Review doesn't exist`);
-    }
+    if (!review) throw new NotFound(`Review doesn't exist`);
 
     return review;
 }
@@ -260,9 +258,7 @@ const deleteReview = async (req) => {
 const getReviews = async (req) => {
     const { id } = req.params;
     const product = await Products.findById(id);
-    if (!product) {
-        throw new NotFound(`Product doesn't exist`);
-    }
+    if (!product) throw new NotFound(`Product doesn't exist`);
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -270,7 +266,7 @@ const getReviews = async (req) => {
 
     const [reviews, total, statistic] = await Promise.all([
         Reviews.find({ product: id })
-            .select('user rating comment createdAt')
+            .select('user rating comment createdAt deleted')
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 })
@@ -367,16 +363,12 @@ const getUsers = async (req) => {
 
 const getUser = async (req) => {
     const user = await Users.findById(req.user.id).lean();
-
-    if (!user) {
-        throw new NotFound(`User doesn't exist`);
-    }
+    if (!user) throw new NotFound(`User doesn't exist`);
 
     return user;
 }
 
 export {
-    deleteReview,
     getOrder,
     getOrders,
     getReviews,
@@ -384,5 +376,6 @@ export {
     getUsers,
     updateOrderDelivered,
     updateOrderShipped,
-    updateOrderShippedInfo
+    updateOrderShippedInfo,
+    updateReviewStatus
 }
