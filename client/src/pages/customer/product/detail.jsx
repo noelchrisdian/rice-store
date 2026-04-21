@@ -72,6 +72,7 @@ const CustomerProductDetail = () => {
 						<Image
 							alt={product?.name}
 							src={product?.image?.imageURL}
+							preview={{ toolbarRender: () => false }}
 							className="w-full! object-cover! rounded-2xl!"
 						/>
 					</div>

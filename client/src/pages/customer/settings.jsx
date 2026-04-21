@@ -1,4 +1,3 @@
-import { Image } from "antd";
 import {
 	Link,
 	useLoaderData,
@@ -21,11 +20,9 @@ const UserSettings = () => {
 					<div className="mb-6">
 						<div className="bg-card rounded-2xl border border-border/50 shadow-sm p-6 flex flex-col items-center">
 							<div className="size-24 rounded-full overflow-hidden mb-4 border-4 border-primary/20">
-								<Image
+								<img
 									src={user?.avatar?.imageURL}
-									width={88}
-									height={88}
-									className="w-full! object-cover! object-center!"
+									className="w-full! h-full! object-cover! object-center!"
 								/>
 							</div>
 							<h2

@@ -16,6 +16,7 @@ const ItemSection = ({ order, setModal }) => {
 							src={product?.product?.image?.imageURL}
 							height={85}
 							width={85}
+							preview={{ toolbarRender: () => false }}
 							className="rounded-xl! object-cover! bg-muted! border! border-border/50!"
 						/>
 						<div className="flex-1 min-w-0">

@@ -106,6 +106,7 @@ const DeliverySection = ({ order }) => {
 					<Image
 						src={order?.shipping?.proofImage?.imageURL}
 						width={200}
+						preview={{ toolbarRender: () => false }}
 						className="w-full! rounded-lg! border! border-border! object-cover!"
 					/>
 				</div>

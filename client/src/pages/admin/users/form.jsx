@@ -27,6 +27,7 @@ const UserForm = ({
 					<Image
 						src={preview}
 						width={100}
+						preview={{ toolbarRender: () => false }}
 						className="rounded-full! bg-muted! border! border-border/60! w-25! h-25.75! object-cover!"
 					/>
 					<Form.Item>
