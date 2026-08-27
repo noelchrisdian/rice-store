@@ -1,9 +1,11 @@
+import { StatusCodes } from "http-status-codes";
+
+import { NODE_ENV } from "../../core/config.js";
 import {
     signin,
     signup,
     updateUser
 } from "../../services/auth.js";
-import { StatusCodes } from "http-status-codes";
 import { success } from "../../utils/response.js";
 
 const login = async (req, res, next) => {
@@ -12,8 +14,8 @@ const login = async (req, res, next) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: NODE_ENV === 'production',
+            sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 6 * 60 * 60 * 1000
         })
 
@@ -32,8 +34,8 @@ const login = async (req, res, next) => {
 const logout = async (req, res) => {
     res.clearCookie('token', {
         httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: NODE_ENV === 'production',
+        sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
     })
 
     success(res, {}, 'Sign out successful');

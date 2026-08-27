@@ -1,11 +1,13 @@
 import dayjs from 'dayjs';
 import midtransClient from 'midtrans-client';
 import mongoose from "mongoose";
+
 import { BadRequest } from "../errors/badRequest.js";
 import { cartModel as Carts } from "../api/carts/model.js";
 import { Forbidden } from '../errors/forbidden.js';
 import { getIO } from '../utils/socket.js';
 import { inventoryModel as Inventories } from '../api/inventories/model.js';
+import { MIDTRANS_CONFIG } from '../core/config.js';
 import { NotFound } from "../errors/notFound.js";
 import { orderModel as Orders } from "../api/orders/model.js";
 import { userModel as Users } from '../api/users/model.js';
@@ -195,10 +197,10 @@ const createOrder = async (req) => {
 
         const snap = new midtransClient.Snap({
             isProduction: false,
-            serverKey: process.env.MIDTRANS_SERVER_KEY
+            serverKey: MIDTRANS_CONFIG.SERVER_KEY
         })
 
-        const clientURL = `${process.env.CLIENT_URL}/orders/confirmation?order_id=${order._id}`;
+        const clientURL = `${MIDTRANS_CONFIG.CLIENT_URL}/orders/confirmation?order_id=${order._id}`;
         const parameter = {
             transaction_details: {
                 order_id: String(order._id),
@@ -227,7 +229,7 @@ const createOrder = async (req) => {
                 quantity: product.quantity,
                 price: product.product.price,
                 merchant_name: 'Toko Beras AD',
-                url: `${process.env.CLIENT_URL}/products/${product.product._id}`
+                url: `${MIDTRANS_CONFIG.CLIENT_URL}/products/${product.product._id}`
             })),
             callbacks: {
                 finish: clientURL
@@ -288,8 +290,8 @@ const midtransWebhook = async (req) => {
     try {
         const client = new midtransClient.Snap({
             isProduction: false,
-            serverKey: process.env.MIDTRANS_SERVER_KEY,
-            clientKey: process.env.MIDTRANS_CLIENT_KEY
+            serverKey: MIDTRANS_CONFIG.SERVER_KEY,
+            clientKey: MIDTRANS_CONFIG.CLIENT_KEY
         })
 
         const statusResponse = await client.transaction.notification(req.body);
@@ -370,8 +372,8 @@ const cancelOrder = async (req) => {
 
         const core = new midtransClient.Snap({
             isProduction: false,
-            serverKey: process.env.MIDTRANS_SERVER_KEY,
-            clientKey: process.env.MIDTRANS_CLIENT_KEY
+            serverKey: MIDTRANS_CONFIG.SERVER_KEY,
+            clientKey: MIDTRANS_CONFIG.CLIENT_KEY
         })
 
         if (order.payment.midtransOrderID) {

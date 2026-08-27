@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
+
 import { Forbidden } from '../errors/forbidden.js';
+import { JWT_SECRET } from '../core/config.js';
 import { Unauthorized } from "../errors/unauthorized.js";
 
 const authenticated = async (req, res, next) => {
@@ -8,7 +10,7 @@ const authenticated = async (req, res, next) => {
     
         if (!token) throw new Unauthorized('Authentication failed, please sign in again');
     
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const payload = jwt.verify(token, JWT_SECRET);
         req.user = {
             id: payload.id,
             role: payload.role,

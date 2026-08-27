@@ -1,12 +1,14 @@
 import multer from 'multer';
-import { BadRequest } from '../errors/badRequest.js';
 import { Readable } from 'stream';
-import { v2 as cloudinary } from 'cloudinary'; 
+import { v2 as cloudinary } from 'cloudinary';
+
+import { CLOUDINARY_CONFIG } from '../core/config.js';
+import { BadRequest } from '../errors/badRequest.js';
 
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    cloud_name: CLOUDINARY_CONFIG.CLOUD_NAME,
+    api_key: CLOUDINARY_CONFIG.API_KEY,
+    api_secret: CLOUDINARY_CONFIG.API_SECRET
 })
 
 const upload = multer({
