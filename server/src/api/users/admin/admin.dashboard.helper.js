@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { orderModel as Orders } from '../../order/order.model.js'
+import { OrderModel as Orders } from '../../order/order.model.js'
 import { ProductModel as Products } from '../../product/product.model.js'
 import { UserModel as Users } from '../user.model.js'
 

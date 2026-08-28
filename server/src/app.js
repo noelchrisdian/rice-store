@@ -7,10 +7,10 @@ import { createServer } from 'http'
 import { Authenticated, Authorize } from './shared/middleware/auth.middleware.js'
 import { ConnectDB } from './core/db.js'
 import { ErrorHandler } from './shared/middleware/error_handler.middleware.js'
-import { init } from './shared/service/socket_io.service.js'
+import { InitializeWebsocket } from './shared/service/socket_io.service.js'
 import { Limiter } from './shared/middleware/limiter.middleware.js'
+import { MidtransWebhook } from './api/order/order.controller.js'
 import { NODE_ENV, PORT } from './core/config.js'
-import { notification } from './api/order/order.controller.js'
 import { router as AdminRouter } from './api/users/admin/admin.router.js'
 import { router as AuthRouter } from './api/users/auth/auth.router.js'
 import { router as CustomerRouter } from './api/users/customer/customer.router.js'
@@ -20,7 +20,7 @@ const app = express()
 const port = PORT
 
 const server = createServer(app)
-init(server)
+InitializeWebsocket(server)
 
 ConnectDB()
 
@@ -49,7 +49,7 @@ app
     })
   })
 
-app.post('/midtrans-notification', notification)
+app.post('/midtrans-notification', MidtransWebhook)
 
 app
   .use(Limiter)

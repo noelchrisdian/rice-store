@@ -1,66 +1,24 @@
-import dayjs from 'dayjs'
-import midtransClient from 'midtrans-client'
 import mongoose from 'mongoose'
 
 import { BadRequest } from '../../shared/error/bad_request.error.js'
 import { CartModel as Carts } from '../cart/cart.model.js'
+import {
+  CreateMidtransSnap,
+  CreateReservedStocks,
+  GetCart,
+  InitializeMidtransClient,
+  OrderFilterOptions,
+  RestoreReservedStocks
+} from './order.utils.js'
 import { Forbidden } from '../../shared/error/forbidden.error.js'
-import { getIO } from '../../shared/service/socket_io.service.js'
-import { InventoryModel as Inventories } from '../inventory/inventory.model.js'
-import { MIDTRANS_CONFIG } from '../../core/config.js'
+import { GetIO } from '../../shared/service/socket_io.service.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
-import { orderModel as Orders } from './order.model.js'
+import { OrderModel as Orders } from './order.model.js'
 import { UserModel as Users } from '../users/user.model.js'
 
-const getOrders = async (req) => {
-  const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 10
+const GetOrdersHelper = async ({ limit, page, range, status, user }) => {
+  const filter = OrderFilterOptions(range, status, user)
   const skip = (page - 1) * limit
-
-  const filter = { user: req.user.id }
-  const { range, status } = req.query
-
-  if (status) {
-    switch (status) {
-      case 'pending':
-        filter['payment.status'] = 'pending'
-        break
-      case 'failed':
-        filter['payment.status'] = { $in: ['deny', 'cancel', 'failure', 'expire'] }
-        break
-      case 'processing':
-      case 'shipped':
-      case 'delivered':
-        filter['payment.status'] = { $in: ['settlement', 'capture'] }
-        filter['shipping.status'] = status
-        break
-    }
-  }
-
-  if (range && range !== '') {
-    let startDate
-    const endDate = dayjs().endOf('day').toDate()
-
-    switch (range) {
-      case 'today':
-        startDate = dayjs().startOf('day').toDate()
-        break
-      case '7d':
-        startDate = dayjs().subtract(7, 'day').startOf('day').toDate()
-        break
-      case '30d':
-        startDate = dayjs().subtract(30, 'day').startOf('day').toDate()
-        break
-      case '90d':
-        startDate = dayjs().subtract(90, 'day').startOf('day').toDate()
-        break
-      default:
-        startDate = null
-        break
-    }
-
-    filter.createdAt = { $gte: startDate, $lte: endDate }
-  }
 
   const [orders, total] = await Promise.all([
     Orders.find(filter)
@@ -84,89 +42,32 @@ const getOrders = async (req) => {
   }
 }
 
-const getOrder = async (req) => {
-  const { id } = req.params
+const FindOrderHelper = async (id) => {
   const order = await Orders.findById(id)
     .populate('products.product', 'name image price weightPerUnit')
     .populate('user', 'name phoneNumber email address')
     .lean()
 
   if (!order) {
-    throw new NotFound(`Order doesn't exist`)
+    throw new NotFound(`ORDER NOT EXIST`)
   }
 
   return order
 }
 
-const createOrder = async (req) => {
+const CreateOrderHelper = async ({ reqUser }) => {
   const session = await mongoose.startSession()
   session.startTransaction()
 
   try {
-    const cart = await Carts.findOne({ user: req.user.id })
-      .populate({
-        path: 'products.product',
-        select: 'name price stock weightPerUnit'
-      })
-      .session(session)
-    if (!cart || cart.products.length === 0) throw new BadRequest('Cart not found or empty')
-
-    const productIDs = cart.products.map((product) => product.product._id)
-    const inventories = await Inventories.find({
-      product: { $in: productIDs },
-      remaining: { $gt: 0 },
-      status: 'available'
-    })
-      .sort({ receivedAt: 1 })
-      .session(session)
-    const inventoriesMap = {}
-    for (const inventory of inventories) {
-      const key = inventory.product.toString()
-      if (!inventoriesMap[key]) inventoriesMap[key] = []
-      inventoriesMap[key].push(inventory)
-    }
-
-    const reservedStocks = []
-    for (const product of cart.products) {
-      const id = product.product._id.toString()
-      const productInventories = inventoriesMap[id] || []
-      let requiredKg = product.quantity * product.product.weightPerUnit
-      const totalStock = productInventories.reduce((acc, inventory) => acc + inventory.remaining, 0)
-
-      if (requiredKg > totalStock)
-        throw new BadRequest(`Stok tidak mencukupi untuk ${product.product.name}`)
-
-      for (const inventory of productInventories) {
-        if (requiredKg <= 0) break
-
-        const take = Math.min(inventory.remaining, requiredKg)
-        if (take <= 0) continue
-
-        const updated = await Inventories.findOneAndUpdate(
-          { _id: inventory._id, remaining: { $gte: take } },
-          {
-            $inc: { remaining: -take },
-            $set: { status: inventory.remaining - take <= 0 ? 'depleted' : 'available' }
-          },
-          { session, new: true }
-        )
-
-        if (!updated) {
-          throw new BadRequest(`Stok tidak mencukupi untuk ${product.product.name}`)
-        }
-
-        requiredKg -= take
-        reservedStocks.push({
-          inventory: inventory._id,
-          quantity: take
-        })
-      }
-    }
+    const cart = await GetCart(reqUser, session)
+    const productIds = cart.products.map((product) => product.product._id)
+    const reservedStocks = await CreateReservedStocks(cart, productIds, session)
 
     const [order] = await Orders.create(
       [
         {
-          user: req.user.id,
+          user: reqUser.id,
           products: cart.products.map((item) => {
             return {
               product: item.product._id,
@@ -194,68 +95,12 @@ const createOrder = async (req) => {
     await Carts.updateOne({ _id: cart._id }, { $set: { products: [] } }, { session })
     await order.populate('products.product')
 
-    const user = await Users.findById(req.user.id).session(session)
+    const user = await Users.findById(user.id).session(session)
     if (!user) {
-      throw new NotFound(`User not found`)
+      throw new NotFound(`USER NOT FOUND`)
     }
 
-    const snap = new midtransClient.Snap({
-      isProduction: false,
-      serverKey: MIDTRANS_CONFIG.SERVER_KEY
-    })
-
-    const clientURL = `${MIDTRANS_CONFIG.CLIENT_URL}/orders/confirmation?order_id=${order._id}`
-    const parameter = {
-      transaction_details: {
-        order_id: String(order._id),
-        gross_amount: order.totalPrice
-      },
-      customer_details: {
-        first_name: user.name,
-        email: user.email,
-        phone: user.phoneNumber,
-        billing_address: {
-          first_name: user.name,
-          email: user.email,
-          phone: user.phoneNumber,
-          address: user.address
-        },
-        shipping_address: {
-          first_name: user.name,
-          email: user.email,
-          phone: user.phoneNumber,
-          address: user.address
-        }
-      },
-      item_details: order.products.map((product) => ({
-        id: product.product._id,
-        name: product.product.name,
-        quantity: product.quantity,
-        price: product.product.price,
-        merchant_name: 'Toko Beras AD',
-        url: `${MIDTRANS_CONFIG.CLIENT_URL}/products/${product.product._id}`
-      })),
-      callbacks: {
-        finish: clientURL
-      },
-      gopay: {
-        enable_callback: true,
-        callback_url: clientURL
-      },
-      shopeepay: {
-        callback_url: clientURL
-      }
-    }
-
-    let transaction
-    try {
-      transaction = await snap.createTransaction(parameter)
-    } catch (error) {
-      console.error(`Snap error : ${error}`)
-      throw new BadRequest(
-        'Gagal terhubung ke layanan pembayaran, silakan hubungi administrator untuk bantuan lebih lanjut'
-      )
-    }
+    const transaction = await CreateMidtransSnap(order, user)
     await Orders.updateOne(
       { _id: order._id },
       {
@@ -266,10 +111,9 @@ const createOrder = async (req) => {
       },
       { session }
     )
-
     await session.commitTransaction()
 
-    const io = getIO()
+    const io = GetIO()
     io.to('admin').emit('orders:event', {
       orderID: order._id,
       type: 'CREATED'
@@ -287,24 +131,19 @@ const createOrder = async (req) => {
   }
 }
 
-const midtransWebhook = async (req) => {
+const MidtransWebhookHelper = async ({ data }) => {
   const session = await mongoose.startSession()
   session.startTransaction()
   let event = null
 
   try {
-    const client = new midtransClient.Snap({
-      isProduction: false,
-      serverKey: MIDTRANS_CONFIG.SERVER_KEY,
-      clientKey: MIDTRANS_CONFIG.CLIENT_KEY
-    })
-
-    const statusResponse = await client.transaction.notification(req.body)
+    const client = InitializeMidtransClient()
+    const statusResponse = await client.transaction.notification(data)
     const { order_id, transaction_id, transaction_status, fraud_status } = statusResponse
     const finalStatus = ['settlement', 'capture', 'cancel', 'deny', 'expire']
 
     const order = await Orders.findById(order_id).populate('products.product').session(session)
-    if (!order) throw new NotFound('Order not found')
+    if (!order) throw new NotFound('ORDER NOT FOUND')
 
     if (finalStatus.includes(order.payment.status)) {
       await session.commitTransaction()
@@ -324,18 +163,7 @@ const midtransWebhook = async (req) => {
       }
     } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
       if (order.payment.status === 'pending' && order.reservedStocks.length > 0) {
-        for (const item of order.reservedStocks) {
-          await Inventories.updateOne(
-            { _id: item.inventory },
-            {
-              $inc: { remaining: item.quantity },
-              $set: { status: 'available' }
-            },
-            { session }
-          )
-        }
-
-        order.reservedStocks = []
+        await RestoreReservedStocks(order, session)
       }
 
       order.payment.status = transaction_status
@@ -348,7 +176,7 @@ const midtransWebhook = async (req) => {
     await session.commitTransaction()
 
     if (event) {
-      const io = getIO()
+      const io = GetIO()
       io.to('admin').emit('orders:event', {
         orderID: order._id,
         type: event
@@ -358,57 +186,41 @@ const midtransWebhook = async (req) => {
     return order
   } catch (error) {
     await session.abortTransaction()
-    console.error(`Webhook error : ${error}`)
+    console.error(`WEBHOOK ERROR: ${error}`)
     throw error
   } finally {
     session.endSession()
   }
 }
 
-const cancelOrder = async (req) => {
+const CancelOrderHelper = async (id) => {
   const session = await mongoose.startSession()
   session.startTransaction()
 
   try {
-    const { id } = req.params
     const order = await Orders.findById(id).session(session)
-    if (!order) throw new NotFound('Order not found')
-    if (!order.user.equals(req.user.id)) throw new Forbidden('User not authorized')
+    if (!order) throw new NotFound('ORDER NOT FOUND')
+    if (!order.user.equals(req.user.id)) throw new Forbidden('USER NOT AUTHORIZED')
     if (order.payment.status !== 'pending')
-      throw new BadRequest(`Only pending orders can be cancelled`)
+      throw new BadRequest(`ONLY PENDING ORDERS CAN BE CANCELLED`)
 
-    const core = new midtransClient.Snap({
-      isProduction: false,
-      serverKey: MIDTRANS_CONFIG.SERVER_KEY,
-      clientKey: MIDTRANS_CONFIG.CLIENT_KEY
-    })
+    const core = InitializeMidtransClient()
 
     if (order.payment.midtransOrderID) {
       try {
         await core.transaction.cancel(order.payment.midtransOrderID)
       } catch (error) {
-        console.error(`Midtrans cancel error : ${error}`)
+        console.error(`MIDTRANS CANCEL ERROR : ${error}`)
       }
     }
 
-    for (const item of order.reservedStocks) {
-      await Inventories.updateOne(
-        { _id: item.inventory },
-        {
-          $inc: { remaining: item.quantity },
-          $set: { status: 'available' }
-        },
-        { session }
-      )
-    }
-
-    order.reservedStocks = []
+    await RestoreReservedStocks(order, session)
     order.payment.status = 'cancel'
     order.shipping.status = null
     await order.save({ session })
     await session.commitTransaction()
 
-    const io = getIO()
+    const io = GetIO()
     io.to('admin').emit('orders:event', {
       orderID: order._id,
       type: 'CANCELLED'
@@ -423,4 +235,10 @@ const cancelOrder = async (req) => {
   }
 }
 
-export { cancelOrder, createOrder, getOrder, getOrders, midtransWebhook }
+export {
+  CancelOrderHelper,
+  CreateOrderHelper,
+  FindOrderHelper,
+  GetOrdersHelper,
+  MidtransWebhookHelper
+}

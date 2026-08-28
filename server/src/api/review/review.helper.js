@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { BadRequest } from '../../shared/error/bad_request.error.js'
 import { Forbidden } from '../../shared/error/forbidden.error.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
-import { orderModel as Orders } from '../order/order.model.js'
+import { OrderModel as Orders } from '../order/order.model.js'
 import { ReviewModel as Reviews } from './review.model.js'
 
 const CreateReviewHelper = async ({ data, orderId, productId, user }) => {

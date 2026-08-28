@@ -23,7 +23,7 @@ const GetProducts = async (req, res, next) => {
 
 const FindProduct = async (req, res, next) => {
   try {
-    const { id } = ValidationInput(IdSchema, req.params)
+    const { id } = await ValidationInput(IdSchema, req.params)
     const product = await FindProductHelper(id)
     SendSuccess(res, product, `${product.name} fetched successfully`)
   } catch (error) {
@@ -61,7 +61,7 @@ const UpdateProduct = async (req, res, next) => {
 
 const DeleteProduct = async (req, res, next) => {
   try {
-    const { id } = ValidationInput(IdSchema, req.params)
+    const { id } = await ValidationInput(IdSchema, req.params)
     const product = await DeleteProductHelper(id)
     SendSuccess(res, product, `${product.name} has been deleted`)
   } catch (error) {

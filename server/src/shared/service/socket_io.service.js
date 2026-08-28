@@ -2,7 +2,7 @@ import { Server } from 'socket.io'
 
 let io
 
-const init = (server) => {
+const InitializeWebsocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: ['http://localhost:5173', 'https://tokoberasad.up.railway.app'],
@@ -20,7 +20,7 @@ const init = (server) => {
   return io
 }
 
-const getIO = () => {
+const GetIO = () => {
   if (!io) {
     throw new Error('Socket.io not initialized')
   }
@@ -28,4 +28,4 @@ const getIO = () => {
   return io
 }
 
-export { getIO, init }
+export { GetIO, InitializeWebsocket }

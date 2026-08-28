@@ -14,9 +14,11 @@ import { ValidationInput } from '../../shared/utils/input_validation.utils.js'
 const GetInventories = async (req, res, next) => {
   try {
     const { productId } = await ValidationInput(IdSchema, req.params)
+    const { limit, page } = req.query
     const inventories = await GetInventoriesHelper({
-      productId,
-      query: req.query
+      limit: parseInt(limit) || 10,
+      page: parseInt(page) || 1,
+      productId
     })
     SendSuccess(res, inventories, `Inventories fetched successfully`)
   } catch (error) {

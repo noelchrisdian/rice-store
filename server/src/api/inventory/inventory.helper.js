@@ -4,15 +4,12 @@ import { InventoryModel as Inventories } from './inventory.model.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
 import { ProductModel as Products } from '../product/product.model.js'
 
-const GetInventoriesHelper = async ({ productId, query }) => {
-  const page = parseInt(query.page) || 1
-  const limit = parseInt(query.limit) || 10
-  const skip = (page - 1) * limit
-
+const GetInventoriesHelper = async ({ limit, page, productId }) => {
   const product = await Products.findOne({ _id: productId })
   if (!product) {
     throw new NotFound(`PRODUCT NOT EXIST`)
   }
+  const skip = (page - 1) * limit
 
   const [inventories, total] = await Promise.all([
     Inventories.find({ product: productId }).sort({ receivedAt: 1 }).skip(skip).limit(limit).lean(),
