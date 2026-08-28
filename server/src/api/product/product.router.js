@@ -8,8 +8,8 @@ import {
   UpdateProduct
 } from './product.controller.js'
 import { indexReviews, updateReview } from '../users/admin/admin.controller.js'
-import { router as inventoryRouter } from '../inventory/inventory.router.js'
-import { upload } from '../../../utils/multer.js'
+import { router as InventoryRouter } from '../inventory/inventory.router.js'
+import { upload } from '../../shared/service/multer.service.js'
 
 const router = Router()
 
@@ -23,6 +23,6 @@ router
   .get('/:id/reviews', indexReviews)
   .patch('/:id/reviews/:reviewID', updateReview)
 
-  .use('/', inventoryRouter)
+  .use('/', InventoryRouter)
 
 export { router }

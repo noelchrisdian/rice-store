@@ -4,7 +4,7 @@ import { Forbidden } from '../error/forbidden.error.js'
 import { JWT_SECRET } from '../../core/config.js'
 import { Unauthorized } from '../error/unauthorized.error.js'
 
-const authenticated = async (req, res, next) => {
+const Authenticated = async (req, res, next) => {
   try {
     const token = req.cookies.token
 
@@ -22,7 +22,7 @@ const authenticated = async (req, res, next) => {
   }
 }
 
-const authorize = (role) => (req, res, next) => {
+const Authorize = (role) => (req, res, next) => {
   if (req?.user?.role === role) {
     return next()
   }
@@ -32,4 +32,4 @@ const authorize = (role) => (req, res, next) => {
   )
 }
 
-export { authenticated, authorize }
+export { Authenticated, Authorize }

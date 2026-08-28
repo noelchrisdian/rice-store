@@ -1,12 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { NODE_ENV } from '../../../core/config.js'
-import { signin, signup, updateUser } from './auth.helper.js'
-import { success } from '../../../utils/response.js'
+import { SendSuccess } from '../../../shared/utils/response.utils.js'
+import { SignInHelper, SignUpHelper, UpdateUserHelper } from './auth.helper.js'
+import { SignInSchema, UserSchema } from '../user.schema.js'
+import { ValidationInput } from '../../../shared/utils/input_validation.utils.js'
 
-const login = async (req, res, next) => {
+const SignIn = async (req, res, next) => {
   try {
-    const { token, user } = await signin(req)
+    const data = await ValidationInput(SignInSchema, req.body)
+    const { token, user } = await SignInHelper(data)
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -15,7 +18,7 @@ const login = async (req, res, next) => {
       maxAge: 6 * 60 * 60 * 1000
     })
 
-    success(
+    SendSuccess(
       res,
       {
         name: user.name,
@@ -31,32 +34,41 @@ const login = async (req, res, next) => {
   }
 }
 
-const logout = async (req, res) => {
+const SignOut = async (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: NODE_ENV === 'production',
     sameSite: NODE_ENV === 'production' ? 'none' : 'lax'
   })
 
-  success(res, {}, 'Sign out successful')
+  SendSuccess(res, {}, 'Sign out successful')
 }
 
-const register = async (req, res, next) => {
+const SignUp = async (req, res, next) => {
   try {
-    const user = await signup(req)
-    success(res, user, 'Sign up successful', StatusCodes.CREATED)
+    const data = await ValidationInput(UserSchema, req.body)
+    const user = await SignUpHelper({
+      data,
+      file: req.file
+    })
+    SendSuccess(res, user, 'Sign up successful', StatusCodes.CREATED)
   } catch (error) {
     next(error)
   }
 }
 
-const update = async (req, res, next) => {
+const UpdateUser = async (req, res, next) => {
   try {
-    const user = await updateUser(req)
-    success(res, user, `User ${user.name} has been updated`)
+    const data = await ValidationInput(UserSchema, req.body)
+    const user = await UpdateUserHelper({
+      data,
+      file: req.file,
+      reqUser: req.user
+    })
+    SendSuccess(res, user, `User ${user.name} has been updated`)
   } catch (error) {
     next(error)
   }
 }
 
-export { login, logout, register, update }
+export { SignIn, SignOut, SignUp, UpdateUser }

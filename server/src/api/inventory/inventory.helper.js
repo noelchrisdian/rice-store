@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
 
-import { inventoryModel as Inventories } from './inventory.model.js'
+import { InventoryModel as Inventories } from './inventory.model.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
-import { productModel as Products } from '../product/product.model.js'
+import { ProductModel as Products } from '../product/product.model.js'
 
 const GetInventoriesHelper = async ({ productId, query }) => {
   const page = parseInt(query.page) || 1

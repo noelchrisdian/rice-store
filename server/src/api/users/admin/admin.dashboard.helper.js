@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { orderModel as Orders } from '../../order/order.model.js'
-import { productModel as Products } from '../../product/product.model.js'
-import { userModel as Users } from '../user.model.js'
+import { ProductModel as Products } from '../../product/product.model.js'
+import { UserModel as Users } from '../user.model.js'
 
 const getTodayOrders = async () => {
   const start = dayjs().startOf('day').toDate()

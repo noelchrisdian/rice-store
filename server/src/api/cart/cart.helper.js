@@ -1,12 +1,8 @@
-import { StatusCodes } from 'http-status-codes'
-
-import { cartModel as Carts } from './cart.model.js'
-import { cartSchema } from '../../utils/zod.js'
+import { CartModel as Carts } from './cart.model.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
-import { ParseError } from '../../shared/error/parse_error.error.js'
 
-const getCart = async (req) => {
-  const cart = await Carts.findOne({ user: req.user.id }).populate({
+const GetCartHelper = async ({ user }) => {
+  const cart = await Carts.findOne({ user: user.id }).populate({
     path: 'products.product',
     select: 'name price image inventories weightPerUnit',
     populate: {
@@ -17,7 +13,7 @@ const getCart = async (req) => {
 
   if (!cart) {
     return {
-      user: req.user.id,
+      user: user.id,
       products: [],
       total: 0
     }
@@ -31,22 +27,16 @@ const getCart = async (req) => {
   }
 }
 
-const addItem = async (req) => {
-  const parse = await cartSchema.safeParseAsync(req.body)
-  if (!parse.success) {
-    const errors = parse.error.issues.map((error) => error.message)
-    throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
-  }
-
-  const cart = await Carts.findOne({ user: req.user.id })
+const AddItemHelper = async ({ data, user }) => {
+  const cart = await Carts.findOne({ user: user.id })
   if (!cart) {
     return await Carts.create({
-      user: req.user.id,
-      products: parse.data?.products
+      user: user.id,
+      products: data.products
     })
   }
 
-  for (const product of parse.data?.products) {
+  for (const product of data.products) {
     const exist = cart.products.find((item) => item.product.toString() === product.product)
     if (exist) {
       exist.quantity += product.quantity
@@ -59,22 +49,16 @@ const addItem = async (req) => {
   return cart
 }
 
-const updateCart = async (req) => {
-  const parse = await cartSchema.safeParseAsync(req.body)
-  if (!parse.success) {
-    const errors = parse.error.issues.map((error) => error.message)
-    throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
-  }
-
-  const cart = await Carts.findOne({ user: req.user.id })
+const UpdateCartHelper = async ({ data, user }) => {
+  const cart = await Carts.findOne({ user: user.id })
   if (!cart) {
-    throw new NotFound('Cart not found')
+    throw new NotFound('CART NOT EXIST')
   }
 
-  for (const product of parse.data.products) {
+  for (const product of data.products) {
     const exist = cart.products.find((item) => item.product.toString() === product.product)
     if (!exist) {
-      throw new NotFound('Product not found in cart')
+      throw new NotFound('PRODUCT NOT EXIST')
     }
 
     if (product.quantity === 0) {
@@ -88,4 +72,4 @@ const updateCart = async (req) => {
   return cart
 }
 
-export { addItem, getCart, updateCart }
+export { AddItemHelper, GetCartHelper, UpdateCartHelper }

@@ -1,29 +1,16 @@
-import { authenticated } from '../../../shared/middleware/auth.middleware.js'
-import { login, logout, register, update } from './controller.js'
-import { rateLimit } from 'express-rate-limit'
 import { Router } from 'express'
-import { upload } from '../../../utils/multer.js'
+
+import { Authenticated } from '../../../shared/middleware/auth.middleware.js'
+import { SignIn, SignOut, SignUp, UpdateUser } from './auth.controller.js'
+import { SignInLimiter } from '../../../shared/middleware/limiter.middleware.js'
+import { upload } from '../../../shared/service/multer.service.js'
 
 const router = Router()
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  statusCode: 429,
-  message: {
-    data: null,
-    status: 'failed',
-    message: 'Terlalu banyak request, silakan coba lagi nanti'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  ipv6Subnet: 64
-})
-
 router
-  .post('/sign-in', limiter, login)
-  .post('/sign-out', logout)
-  .post('/sign-up', limiter, upload.single('image'), register)
-  .put('/change-profile', authenticated, upload.single('image'), update)
+  .post('/sign-in', SignInLimiter, SignIn)
+  .post('/sign-out', SignOut)
+  .post('/sign-up', SignInLimiter, upload.single('image'), SignUp)
+  .put('/change-profile', Authenticated, upload.single('image'), UpdateUser)
 
 export { router }

@@ -1,71 +1,61 @@
 import mongoose from 'mongoose'
-import { StatusCodes } from 'http-status-codes'
 
-import { BadRequest } from '../../errors/badRequest.js'
-import { Forbidden } from '../../errors/forbidden.js'
-import { NotFound } from '../../errors/notFound.js'
+import { BadRequest } from '../../shared/error/bad_request.error.js'
+import { Forbidden } from '../../shared/error/forbidden.error.js'
+import { NotFound } from '../../shared/error/not_found.error.js'
 import { orderModel as Orders } from '../order/order.model.js'
-import { ParseError } from '../../errors/parseError.js'
-import { reviewModel as Reviews } from './review.model.js'
-import { reviewSchema } from '../../utils/zod.js'
+import { ReviewModel as Reviews } from './review.model.js'
 
-const createReview = async (req) => {
-  const { orderID, productID } = req.params
+const CreateReviewHelper = async ({ data, orderId, productId, user }) => {
   const session = await mongoose.startSession()
   session.startTransaction()
 
   try {
-    const parse = await reviewSchema.safeParseAsync(req.body)
-    if (!parse.success) {
-      const errors = parse.error.issues.map((error) => error.message)
-      throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
-    }
-
-    const order = await Orders.findOne({ _id: orderID, user: req.user.id }).session(session)
+    const order = await Orders.findOne({ _id: orderId, user: user.id }).session(session)
     if (!order) {
-      throw new NotFound(`Order doesn't exist`)
+      throw new NotFound(`ORDER NOT EXIST`)
     }
     if (order.shipping.status !== 'delivered') {
-      throw new Forbidden(`Order is not completed yet`)
+      throw new Forbidden(`ORDER NOT COMPLETED YET`)
     }
 
-    const item = order.products.find((p) => p.product.toString() === productID.toString())
+    const item = order.products.find((p) => p.product.toString() === productId.toString())
     if (!item) {
-      throw new BadRequest(`Product doesn't exist in this order`)
+      throw new BadRequest(`PRODUCT NOT EXIST`)
     }
     if (item.reviewed) {
-      throw new BadRequest(`Product already reviewed`)
+      throw new BadRequest(`PRODUCT REVIEWED`)
     }
 
     const existing = await Reviews.findOne({
-      product: productID,
-      order: orderID,
-      user: req.user.id
+      product: productId,
+      order: orderId,
+      user: user.id
     }).session(session)
     if (existing) {
-      throw new BadRequest('Review exist')
+      throw new BadRequest('REVIEW EXISTED')
     }
 
     const [review] = await Reviews.create(
       [
         {
-          user: req.user.id,
-          product: productID,
-          order: orderID,
-          rating: parse.data.rating,
-          comment: parse.data.comment
+          user: user.id,
+          product: productId,
+          order: orderId,
+          rating: data.rating,
+          comment: data.comment
         }
       ],
       { session }
     )
 
     const updatedOrder = await Orders.findOneAndUpdate(
-      { _id: orderID, 'products.product': new mongoose.Types.ObjectId(productID) },
+      { _id: orderId, 'products.product': new mongoose.Types.ObjectId(productId) },
       { $set: { 'products.$.reviewed': true } },
       { new: true, session }
     )
     if (!updatedOrder) {
-      throw new BadRequest('Failed to update order reviewed status')
+      throw new BadRequest('FAILED TO UPDATE ORDER REVIEWED STATUS')
     }
     await session.commitTransaction()
 
@@ -78,4 +68,4 @@ const createReview = async (req) => {
   }
 }
 
-export { createReview }
+export { CreateReviewHelper }

@@ -6,10 +6,10 @@ import { escape, orderDeliveredSchema, orderShippedSchema } from '../../utils/zo
 import { NotFound } from '../../errors/notFound.js'
 import { orderModel as Orders } from '../src/api/orders/model.js'
 import { ParseError } from '../../errors/parseError.js'
-import { productModel as Products } from '../src/api/products/model.js'
-import { reviewModel as Reviews } from '../src/api/reviews/model.js'
+import { ProductModel as Products } from '../src/api/products/model.js'
+import { ReviewModel as Reviews } from '../src/api/reviews/model.js'
 import { StatusCodes } from 'http-status-codes'
-import { userModel as Users } from '../src/api/users/model.js'
+import { UserModel as Users } from '../src/api/users/model.js'
 import { v2 as cloudinary } from 'cloudinary'
 
 const getOrders = async (req) => {

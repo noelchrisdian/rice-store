@@ -4,17 +4,17 @@ import cors from 'cors'
 import express, { json, urlencoded } from 'express'
 import { createServer } from 'http'
 
-import { authenticated, authorize } from './shared/middleware/auth.middleware.js'
-import { connectDB } from './core/db.js'
-import { errorHandler } from './shared/middleware/error_handler.middleware.js'
+import { Authenticated, Authorize } from './shared/middleware/auth.middleware.js'
+import { ConnectDB } from './core/db.js'
+import { ErrorHandler } from './shared/middleware/error_handler.middleware.js'
 import { init } from './shared/service/socket_io.service.js'
-import { limiter } from './shared/middleware/limiter.middleware.js'
+import { Limiter } from './shared/middleware/limiter.middleware.js'
 import { NODE_ENV, PORT } from './core/config.js'
 import { notification } from './api/order/order.controller.js'
-import { router as adminRouter } from './api/users/admin/admin.router.js'
-import { router as authRouter } from './api/users/auth/auth.router.js'
-import { router as customerRouter } from './api/users/customer/customer.router.js'
-import { router as globalRouter } from './api/users/global/global.router.js'
+import { router as AdminRouter } from './api/users/admin/admin.router.js'
+import { router as AuthRouter } from './api/users/auth/auth.router.js'
+import { router as CustomerRouter } from './api/users/customer/customer.router.js'
+import { router as GlobalRouter } from './api/users/global/global.router.js'
 
 const app = express()
 const port = PORT
@@ -22,7 +22,7 @@ const port = PORT
 const server = createServer(app)
 init(server)
 
-connectDB()
+ConnectDB()
 
 app
   .set('trust proxy', 1)
@@ -42,7 +42,7 @@ app
   .get('/', (req, res) => {
     res.send('Welcome to AD Rice Store API')
   })
-  .get('/me', authenticated, (req, res) => {
+  .get('/me', Authenticated, (req, res) => {
     res.json({
       id: req.user.id,
       role: req.user.role
@@ -52,12 +52,12 @@ app
 app.post('/midtrans-notification', notification)
 
 app
-  .use(limiter)
-  .use('/', authRouter)
-  .use('/', globalRouter)
-  .use('/admin', authenticated, authorize('admin'), adminRouter)
-  .use('/customers', authenticated, authorize('customer'), customerRouter)
-  .use(errorHandler)
+  .use(Limiter)
+  .use('/', AuthRouter)
+  .use('/', GlobalRouter)
+  .use('/admin', Authenticated, Authorize('admin'), AdminRouter)
+  .use('/customers', Authenticated, Authorize('customer'), CustomerRouter)
+  .use(ErrorHandler)
 
 server.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)

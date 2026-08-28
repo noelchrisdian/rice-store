@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const IdSchema = z.object({
-  id: z.string().refine(mongoose.isValidObjectId, 'INVALID PRODUCT ID')
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/)
 })
 
 export {

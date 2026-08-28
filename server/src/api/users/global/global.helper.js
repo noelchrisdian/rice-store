@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
 
 import { NotFound } from '../../../shared/error/not_found.error.js'
-import { productModel as Products } from '../src/api/products/model.js'
-import { reviewModel as Reviews } from '../src/api/reviews/model.js'
+import { ProductModel as Products } from '../src/api/products/model.js'
+import { ReviewModel as Reviews } from '../src/api/reviews/model.js'
 
 const getProducts = async () => {
   return await Products.find()

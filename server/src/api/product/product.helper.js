@@ -3,10 +3,10 @@ import { v2 as cloudinary } from 'cloudinary'
 
 import { BadRequest } from '../../errors/badRequest.js'
 import { cloudinaryUploader } from '../../shared/service/multer.service.js'
-import { inventoryModel as Inventories } from '../inventory/inventory.model.js'
+import { InventoryModel as Inventories } from '../inventory/inventory.model.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
-import { productModel as Products } from './product.model.js'
-import { reviewModel as Reviews } from '../review/review.model.js'
+import { ProductModel as Products } from './product.model.js'
+import { ReviewModel as Reviews } from '../review/review.model.js'
 
 const GetProductsHelper = async () => {
   return await Products.find().populate('inventories', 'remaining')

@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 import { DB_URL } from './config.js'
 
-const connectDB = async () => {
+const ConnectDB = async () => {
   const connection = mongoose.connection
 
   connection.on('open', (_) => {
@@ -21,4 +21,4 @@ const connectDB = async () => {
   }
 }
 
-export { connectDB }
+export { ConnectDB }

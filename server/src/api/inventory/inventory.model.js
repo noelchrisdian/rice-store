@@ -1,53 +1,54 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from 'mongoose'
 
-const inventorySchema = new Schema({
+const inventorySchema = new Schema(
+  {
     product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
     },
     quantity: {
-        type: Number,
-        required: true
+      type: Number,
+      required: true
     },
     remaining: {
-        type: Number,
-        required: true,
-        min: 0
+      type: Number,
+      required: true,
+      min: 0
     },
     receivedAt: {
-        type: Date,
-        required: true,
-        default: Date.now
+      type: Date,
+      required: true,
+      default: Date.now
     },
     expiredAt: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true
     },
     status: {
-        type: String,
-        enum: ['available', 'depleted', 'expired'],
-        default: 'available',
-        required: true
+      type: String,
+      enum: ['available', 'depleted', 'expired'],
+      default: 'available',
+      required: true
     }
-}, { timestamps: true })
+  },
+  { timestamps: true }
+)
 
-inventorySchema.index({ product: 1, receivedAt: 1 });
+inventorySchema.index({ product: 1, receivedAt: 1 })
 
 inventorySchema.pre('save', function (next) {
-    if (this.remaining === 0) {
-        this.status = 'depleted';
-    } else if (Date.now() > this.expiredAt) {
-        this.status = 'expired';
-    } else {
-        this.status = 'available';
-    }
+  if (this.remaining === 0) {
+    this.status = 'depleted'
+  } else if (Date.now() > this.expiredAt) {
+    this.status = 'expired'
+  } else {
+    this.status = 'available'
+  }
 
-    next();
+  next()
 })
 
-const inventoryModel = model('Inventory', inventorySchema);
+const InventoryModel = model('Inventory', inventorySchema)
 
-export {
-    inventoryModel
-}
+export { InventoryModel }

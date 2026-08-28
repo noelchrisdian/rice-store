@@ -3,14 +3,14 @@ import midtransClient from 'midtrans-client'
 import mongoose from 'mongoose'
 
 import { BadRequest } from '../../shared/error/bad_request.error.js'
-import { cartModel as Carts } from '../cart/cart.model.js'
+import { CartModel as Carts } from '../cart/cart.model.js'
 import { Forbidden } from '../../shared/error/forbidden.error.js'
 import { getIO } from '../../shared/service/socket_io.service.js'
-import { inventoryModel as Inventories } from '../inventory/inventory.model.js'
+import { InventoryModel as Inventories } from '../inventory/inventory.model.js'
 import { MIDTRANS_CONFIG } from '../../core/config.js'
 import { NotFound } from '../../shared/error/not_found.error.js'
 import { orderModel as Orders } from './order.model.js'
-import { userModel as Users } from '../users/user.model.js'
+import { UserModel as Users } from '../users/user.model.js'
 
 const getOrders = async (req) => {
   const page = parseInt(req.query.page) || 1

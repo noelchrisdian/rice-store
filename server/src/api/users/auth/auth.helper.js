@@ -1,31 +1,29 @@
 import jwt from 'jsonwebtoken'
-import { StatusCodes } from 'http-status-codes'
+import { compare, genSalt, hash } from 'bcrypt'
 import { v2 as cloudinary } from 'cloudinary'
 
 import { AVATAR } from '../../../core/config.js'
 import { BadRequest } from '../../../shared/error/bad_request.error.js'
-import { cloudinaryUploader } from '../../../utils/multer.js'
+import { cloudinaryUploader } from '../../../shared/service/multer.service.js'
 import { JWT_SECRET } from '../../../core/config.js'
 import { NotFound } from '../../../shared/error/not_found.error.js'
-import { ParseError } from '../../../shared/error/parse_error.error.js'
 import { Unauthorized } from '../../../shared/error/unauthorized.error.js'
-import { userModel as Users } from '../users/model.js'
-import { userSchema } from '../../../utils/zod.js'
+import { UserModel as Users } from '../../users/user.model.js'
 
-const signin = async (req) => {
-  const { phoneNumber, password } = req.body
+const SignInHelper = async ({ data }) => {
+  const { phoneNumber, password } = data
   if (!phoneNumber || !password) {
-    throw new BadRequest('Please provide phone number and password')
+    throw new BadRequest('PLEASE PROVIDE PHONE NUMBER AND PASSWORD')
   }
 
   const user = await Users.findOne({ phoneNumber })
   if (!user) {
-    throw new Unauthorized(`Phone number is not registered`)
+    throw new Unauthorized(`PHONE NUMBER NOT EXIST`)
   }
 
-  const comparePassword = await user.comparePassword(password)
-  if (!comparePassword) {
-    throw new Unauthorized('Incorrect password')
+  const passwordMatch = await compare(password, user.password)
+  if (!passwordMatch) {
+    throw new Unauthorized('INCORRECT PASSWORD')
   }
 
   const token = jwt.sign(
@@ -43,47 +41,42 @@ const signin = async (req) => {
   }
 }
 
-const signup = async (req) => {
+const SignUpHelper = async ({ data, file }) => {
   let uploadImage
 
   try {
-    const parse = await userSchema.safeParseAsync(req.body)
-    if (!parse.success) {
-      const errors = parse.error.issues.map((error) => error.message)
-      throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
-    }
-
     const check = await Users.findOne({
-      $or: [{ phoneNumber: parse.data.phoneNumber }, { email: parse.data.email }]
+      $or: [{ phoneNumber: data.phoneNumber }, { email: data.email }]
     })
     if (check) {
-      if (check.email === parse.data.email) {
-        throw new BadRequest('Email existed')
+      if (check.email === data.email) {
+        throw new BadRequest('EMAIL EXISTED')
       }
 
-      if (check.phoneNumber === parse.data.phoneNumber) {
-        throw new BadRequest('Phone number existed')
+      if (check.phoneNumber === data.phoneNumber) {
+        throw new BadRequest('PHONE NUMBER EXISTED')
       }
     }
 
-    if (parse.data.password !== parse.data.confirmPassword)
-      throw new BadRequest(`Passwords don't match`)
+    if (data.password !== data.confirmPassword) throw new BadRequest(`PASSWORD NOT MATCH`)
+    const salt = await genSalt(12)
+    const hashedPassword = await hash(data.password, salt)
 
-    if (req.file) {
-      uploadImage = await cloudinaryUploader(req.file.buffer, 'avatar')
+    if (file) {
+      uploadImage = await cloudinaryUploader(file.buffer, 'avatar')
     }
 
     return Users.create({
-      name: parse.data.name,
-      phoneNumber: parse.data.phoneNumber,
-      email: parse.data.email,
-      password: parse.data.password,
+      name: data.name,
+      phoneNumber: data.phoneNumber,
+      email: data.email,
+      password: hashedPassword,
       role: 'customer',
       avatar: {
         imageURL: uploadImage?.secure_url || AVATAR.DEFAULT_URL,
         imagePublicID: uploadImage?.public_id || AVATAR.DEFAULT_PUBLIC_ID
       },
-      address: parse.data.address
+      address: data.address
     })
   } catch (error) {
     if (uploadImage?.public_id) {
@@ -93,53 +86,46 @@ const signup = async (req) => {
   }
 }
 
-const updateUser = async (req) => {
+const UpdateUserHelper = async ({ data, file, reqUser }) => {
   let uploadImage
 
   try {
-    const user = await Users.findOne({ _id: req.user.id })
-    if (!user) throw new NotFound(`User doesn't exist`)
+    const user = await Users.findOne({ _id: reqUser.id })
+    if (!user) throw new NotFound(`USER NOT EXIST`)
 
-    const parse = await userSchema.safeParseAsync(req.body)
-    if (!parse.success) {
-      const errors = parse.error.issues.map((error) => error.message)
-      throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
+    if (data.email && data.email !== user.email) {
+      const exist = await Users.findOne({ email: data.email, _id: { $ne: user._id } })
+      if (exist) throw new BadRequest(`EMAIL EXISTED`)
     }
 
-    if (parse.data.email && parse.data.email !== user.email) {
-      const exist = await Users.findOne({ email: parse.data.email, _id: { $ne: user._id } })
-      if (exist) throw new BadRequest(`Email already in use`)
-    }
-
-    if (parse.data.phoneNumber && parse.data.phoneNumber !== user.phoneNumber) {
+    if (data.phoneNumber && data.phoneNumber !== user.phoneNumber) {
       const exist = await Users.findOne({
-        phoneNumber: parse.data.phoneNumber,
+        phoneNumber: data.phoneNumber,
         _id: { $ne: user._id }
       })
-      if (exist) throw new BadRequest(`Phone number already in use`)
+      if (exist) throw new BadRequest(`PHONE NUMBER EXISTED`)
     }
 
-    if (parse.data.name) user.name = parse.data.name
-    if (parse.data.phoneNumber) user.phoneNumber = parse.data.phoneNumber
-    if (parse.data.email) user.email = parse.data.email
-    if (parse.data.address) user.address = parse.data.address
+    if (data.name) user.name = data.name
+    if (data.phoneNumber) user.phoneNumber = data.phoneNumber
+    if (data.email) user.email = data.email
+    if (data.address) user.address = data.address
 
-    if (parse.data.password || parse.data.confirmPassword) {
-      if (parse.data.password !== parse.data.confirmPassword)
-        throw new BadRequest(`Passwords don't match`)
+    if (data.password || data.confirmPassword) {
+      if (data.password !== data.confirmPassword) throw new BadRequest(`PASSWORD NOT MATCH`)
 
-      user.password = parse.data.password
+      user.password = data.password
     }
 
     const oldPublicID = user.avatar?.imagePublicID
-    if (req.file) {
-      uploadImage = await cloudinaryUploader(req.file.buffer, 'avatar')
+    if (file) {
+      uploadImage = await cloudinaryUploader(file.buffer, 'avatar')
       user.avatar.imageURL = uploadImage.secure_url
       user.avatar.imagePublicID = uploadImage.public_id
     }
 
     await user.save()
-    if (req.file && oldPublicID && oldPublicID !== AVATAR.DEFAULT_PUBLIC_ID) {
+    if (file && oldPublicID && oldPublicID !== AVATAR.DEFAULT_PUBLIC_ID) {
       await cloudinary.uploader.destroy(oldPublicID)
     }
 
@@ -152,4 +138,4 @@ const updateUser = async (req) => {
   }
 }
 
-export { signin, signup, updateUser }
+export { SignInHelper, SignUpHelper, UpdateUserHelper }

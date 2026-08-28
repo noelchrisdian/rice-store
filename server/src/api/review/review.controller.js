@@ -1,15 +1,25 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { createReview } from './review.helper.js'
-import { success } from '../../../utils/response.js'
+import { CreateReviewHelper } from './review.helper.js'
+import { IdSchema } from '../../shared/utils/id_schema.utils.js'
+import { ReviewSchema } from './review.schema.js'
+import { SendSuccess } from '../../shared/utils/response.utils.js'
+import { ValidationInput } from '../../shared/utils/input_validation.utils.js'
 
-const create = async (req, res, next) => {
+const CreateReview = async (req, res, next) => {
   try {
-    const review = await createReview(req)
-    success(res, review, 'Review has been created', StatusCodes.CREATED)
+    const { orderId, productId } = await ValidationInput(IdSchema, req.params)
+    const data = await ValidationInput(ReviewSchema, req.body)
+    const review = await CreateReviewHelper({
+      data,
+      orderId,
+      productId,
+      user: req.user
+    })
+    SendSuccess(res, review, 'Review has been created', StatusCodes.CREATED)
   } catch (error) {
     next(error)
   }
 }
 
-export { create }
+export { CreateReview }

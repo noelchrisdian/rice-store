@@ -1,38 +1,39 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from 'mongoose'
 
-const reviewSchema = new Schema({
+const reviewSchema = new Schema(
+  {
     user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
     product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
     },
     order: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Order',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+      required: true
     },
     rating: {
-        type: Number,
-        min: 1,
-        max: 5,
-        required: true
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true
     },
     comment: {
-        type: String
+      type: String
     },
     deleted: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     }
-}, { timestamps: true })
+  },
+  { timestamps: true }
+)
 
-const reviewModel = model('Review', reviewSchema);
+const ReviewModel = model('Review', reviewSchema)
 
-export {
-    reviewModel
-}
+export { ReviewModel }

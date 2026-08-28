@@ -4,34 +4,6 @@ const escape = (string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const userSchema = z.object({
-    name: z.string().min(5, 'Name must be at least 5 characters long'),
-    phoneNumber: z.e164(),
-    email: z.string().email(),
-    password: z.string().min(5, 'Password must be at least 5 characters long'),
-    confirmPassword: z.string().min(5, 'Password must be at least 5 characters long'),
-    address: z.string().min(5, 'Address must be at least 5 characters long')
-}).strict();
-
-const emailSchema = userSchema.omit({ name: true, phoneNumber: true, password: true, confirmPassword: true, address: true });
-
-const passwordSchema = z.object({
-    password: z.string().min(5, 'Password must be at least 5 characters long'),
-    confirmPassword: z.string().min(5, 'Password must be at least 5 characters long')
-}).strict();
-
-const cartSchema = z.object({
-    products: z.array(z.object({
-        product: z.string(),
-        quantity: z.coerce.number().int().nonnegative('Quantity must be a positive number')
-    })).min(1, 'At least one product is required')
-})
-
-const reviewSchema = z.object({
-    rating: z.coerce.number().int('Rating must be an integer').min(1).max(5),
-    comment: z.string()
-}).strict();
-
 const orderShippedSchema = z.object({
     courier: z.string(),
     fee: z.coerce.number().min(0, `Shipping fee couldn't be negative number`),
