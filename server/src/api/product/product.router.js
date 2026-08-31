@@ -7,7 +7,7 @@ import {
   GetProducts,
   UpdateProduct
 } from './product.controller.js'
-import { indexReviews, updateReview } from '../users/admin/admin.controller.js'
+import { GetReviews, UpdateReviewStatus } from '../users/admin/admin.controller.js'
 import { router as InventoryRouter } from '../inventory/inventory.router.js'
 import { upload } from '../../shared/service/multer.service.js'
 
@@ -20,8 +20,8 @@ router
   .put('/:id', upload.single('image'), UpdateProduct)
   .delete('/:id', DeleteProduct)
 
-  .get('/:id/reviews', indexReviews)
-  .patch('/:id/reviews/:reviewID', updateReview)
+  .get('/:id/reviews', GetReviews)
+  .patch('/:id/reviews/:reviewId', UpdateReviewStatus)
 
   .use('/', InventoryRouter)
 

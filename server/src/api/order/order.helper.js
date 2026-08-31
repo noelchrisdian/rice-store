@@ -95,7 +95,7 @@ const CreateOrderHelper = async ({ reqUser }) => {
     await Carts.updateOne({ _id: cart._id }, { $set: { products: [] } }, { session })
     await order.populate('products.product')
 
-    const user = await Users.findById(user.id).session(session)
+    const user = await Users.findById(reqUser.id).session(session)
     if (!user) {
       throw new NotFound(`USER NOT FOUND`)
     }

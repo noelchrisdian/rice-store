@@ -1,13 +1,18 @@
 import { Router } from 'express'
 
-import { findProduct, indexProducts, indexReviews, productReviews } from './global.controller.js'
+import {
+  FindGlobalProduct,
+  GetGlobalProducts,
+  GetGlobalProductReviews,
+  GetGlobalReviews
+} from './global.controller.js'
 
 const router = Router()
 
 router
-  .get('/products', indexProducts)
-  .get('/products/:id', findProduct)
-  .get('/products/:id/reviews', productReviews)
-  .get('/reviews', indexReviews)
+  .get('/products', GetGlobalProducts)
+  .get('/products/:id', FindGlobalProduct)
+  .get('/products/:id/reviews', GetGlobalProductReviews)
+  .get('/reviews', GetGlobalReviews)
 
 export { router }

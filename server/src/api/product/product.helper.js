@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { v2 as cloudinary } from 'cloudinary'
 
-import { BadRequest } from '../../errors/badRequest.js'
+import { BadRequest } from '../../shared/error/bad_request.error.js'
 import { cloudinaryUploader } from '../../shared/service/multer.service.js'
 import { InventoryModel as Inventories } from '../inventory/inventory.model.js'
 import { NotFound } from '../../shared/error/not_found.error.js'

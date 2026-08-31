@@ -1,82 +1,19 @@
-import dayjs from 'dayjs'
 import mongoose from 'mongoose'
-import { BadRequest } from '../../../shared/error/bad_request.error.js'
-import { cloudinaryUploader } from '../../../shared/service/multer.service.js'
-import { escape, orderDeliveredSchema, orderShippedSchema } from '../../utils/zod.js'
-import { NotFound } from '../../errors/notFound.js'
-import { OrderModel as Orders } from '../src/api/orders/model.js'
-import { ParseError } from '../../errors/parseError.js'
-import { ProductModel as Products } from '../src/api/products/model.js'
-import { ReviewModel as Reviews } from '../src/api/reviews/model.js'
-import { StatusCodes } from 'http-status-codes'
-import { UserModel as Users } from '../src/api/users/model.js'
 import { v2 as cloudinary } from 'cloudinary'
 
-const getOrders = async (req) => {
-  const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 10
+import { AdminOrdersPipeline, ReviewAnalytics } from './admin.utils.js'
+import { BadRequest } from '../../../shared/error/bad_request.error.js'
+import { cloudinaryUploader } from '../../../shared/service/multer.service.js'
+import { escape } from '../../../shared/utils/escape_characters.utils.js'
+import { NotFound } from '../../../shared/error/not_found.error.js'
+import { OrderModel as Orders } from '../../order/order.model.js'
+import { ProductModel as Products } from '../../product/product.model.js'
+import { ReviewModel as Reviews } from '../../review/review.model.js'
+import { UserModel as Users } from '../user.model.js'
+
+const GetOrdersHelper = async ({ limit, page, range, search, status }) => {
   const skip = (page - 1) * limit
-
-  const filter = {}
-  const { range, search, status } = req.query
-
-  if (status) {
-    switch (status) {
-      case 'pending':
-        filter['payment.status'] = 'pending'
-        break
-      case 'failed':
-        filter['payment.status'] = { $in: ['deny', 'cancel', 'failure', 'expire'] }
-        break
-      case 'processing':
-      case 'shipped':
-      case 'delivered':
-        filter['payment.status'] = { $in: ['settlement', 'capture'] }
-        filter['shipping.status'] = status
-        break
-    }
-  }
-
-  if (range && range !== '') {
-    let startDate
-    const endDate = dayjs().endOf('day').toDate()
-
-    switch (range) {
-      case 'today':
-        startDate = dayjs().startOf('day').toDate()
-        break
-      case '7d':
-        startDate = dayjs().subtract(7, 'day').startOf('day').toDate()
-        break
-      case '30d':
-        startDate = dayjs().subtract(30, 'day').startOf('day').toDate()
-        break
-      case '90d':
-        startDate = dayjs().subtract(90, 'day').startOf('day').toDate()
-        break
-      default:
-        startDate = null
-        break
-    }
-
-    filter.createdAt = { $gte: startDate, $lte: endDate }
-  }
-
-  const pipeline = [
-    { $match: filter },
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'user',
-        foreignField: '_id',
-        as: 'user'
-      }
-    },
-    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
-    ...(search
-      ? [{ $match: { 'user.name': { $regex: escape(search.trim()), $options: 'i' } } }]
-      : [])
-  ]
+  const pipeline = AdminOrdersPipeline(range, search, status)
 
   const [orders, totalAggregate] = await Promise.all([
     Orders.aggregate([
@@ -101,163 +38,20 @@ const getOrders = async (req) => {
   }
 }
 
-const getOrder = async (req) => {
-  const { id } = req.params
+const FindOrderHelper = async (id) => {
   const order = await Orders.findById(id)
     .populate('products.product', 'name image price')
     .populate('user', 'name phoneNumber email address')
     .lean()
-  if (!order) throw new NotFound(`Order doesn't exist`)
+  if (!order) throw new NotFound(`ORDER NOT EXIST`)
 
   return order
 }
 
-const updateOrderShipped = async (req) => {
-  if (!req.file) throw new BadRequest('Image is required')
-
-  let uploadImage
-  const { id } = req.params
-
-  try {
-    const order = await Orders.findById(id)
-    if (!order) throw new NotFound(`Order doesn't exist`)
-
-    if (order.shipping?.status !== 'processing')
-      throw new BadRequest(`Only orders with status processing can be marked as shipped`)
-
-    const parse = await orderShippedSchema.safeParseAsync(req.body)
-    if (!parse.success) {
-      const errors = parse.error.issues.map((error) => error.message)
-      throw new ParseError(`Invalid data type`, StatusCodes.BAD_REQUEST, errors)
-    }
-
-    uploadImage = await cloudinaryUploader(req.file.buffer, 'deliveries')
-
-    return await Orders.findOneAndUpdate(
-      { _id: id },
-      {
-        $set: {
-          'shipping.status': 'shipped',
-          'shipping.courier': parse.data.courier,
-          'shipping.fee': parse.data.fee,
-          'shipping.trackingNumber': parse.data.trackingNumber,
-          'shipping.shippedAt': parse.data.shippedAt,
-          'shipping.proofImage': {
-            imageURL: uploadImage.secure_url,
-            imagePublicID: uploadImage.public_id
-          }
-        }
-      },
-      { new: true }
-    )
-  } catch (error) {
-    if (uploadImage?.public_id) {
-      await cloudinary.uploader.destroy(uploadImage.public_id)
-    }
-    throw error
-  }
-}
-
-const updateOrderShippedInfo = async (req) => {
-  const { id } = req.params
-  const order = await Orders.findById(id)
-  if (!order) throw new NotFound(`Order doesn't exist`)
-
-  if (order.shipping.status !== 'shipped') {
-    throw new BadRequest('Shipping info can only be edited for shipped orders')
-  }
-
-  const parse = await orderShippedSchema.safeParseAsync(req.body)
-  if (!parse.success) {
-    const errors = parse.error.issues.map((error) => error.message)
-    throw new ParseError(`Invalid data type`, StatusCodes.BAD_REQUEST, errors)
-  }
-
-  return await Orders.findOneAndUpdate(
-    { _id: id },
-    {
-      $set: {
-        'shipping.courier': parse.data.courier,
-        'shipping.fee': parse.data.fee,
-        'shipping.trackingNumber': parse.data.trackingNumber,
-        'shipping.shippedAt': parse.data.shippedAt
-      }
-    },
-    { new: true }
-  )
-}
-
-const updateOrderDelivered = async (req) => {
-  if (!req.file) throw new BadRequest('Image is required')
-
-  let uploadImage
-  const { id } = req.params
-
-  try {
-    const order = await Orders.findById(id)
-    if (!order) throw new NotFound(`Order doesn't exist`)
-
-    if (order.shipping?.status !== 'shipped') {
-      throw new BadRequest(`Only orders with status shipped can be marked as delivered`)
-    }
-
-    const parse = await orderDeliveredSchema.safeParseAsync(req.body)
-    if (!parse.success) {
-      const errors = parse.error.issues.map((error) => error.message)
-      throw new ParseError('Invalid data type', StatusCodes.BAD_REQUEST, errors)
-    }
-
-    uploadImage = await cloudinaryUploader(req.file.buffer, 'deliveries')
-    const oldPublicID = order.shipping?.proofImage?.imagePublicID
-    const updated = await Orders.findOneAndUpdate(
-      { _id: id },
-      {
-        $set: {
-          'shipping.status': 'delivered',
-          'shipping.deliveredAt': parse.data.deliveredAt,
-          'shipping.proofImage': {
-            imageURL: uploadImage.secure_url,
-            imagePublicID: uploadImage.public_id
-          }
-        }
-      },
-      { new: true }
-    )
-
-    if (updated && oldPublicID) {
-      await cloudinary.uploader.destroy(oldPublicID)
-    }
-
-    return updated
-  } catch (error) {
-    if (uploadImage?.public_id) {
-      await cloudinary.uploader.destroy(uploadImage.public_id)
-    }
-    throw error
-  }
-}
-
-const updateReviewStatus = async (req) => {
-  const { reviewID } = req.params
-  const review = await Reviews.findOneAndUpdate(
-    { _id: reviewID },
-    [{ $set: { deleted: { $not: '$deleted' } } }],
-    { new: true }
-  )
-    .populate('product', 'name')
-    .populate('user', 'name')
-  if (!review) throw new NotFound(`Review doesn't exist`)
-
-  return review
-}
-
-const getReviews = async (req) => {
-  const { id } = req.params
+const GetReviewsHelper = async ({ id, limit, page }) => {
   const product = await Products.findById(id)
-  if (!product) throw new NotFound(`Product doesn't exist`)
+  if (!product) throw new NotFound(`PRODUCT NOT EXIST`)
 
-  const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 10
   const skip = (page - 1) * limit
 
   const [reviews, total, statistic] = await Promise.all([
@@ -286,28 +80,9 @@ const getReviews = async (req) => {
     ])
   ])
 
-  const analytics =
-    statistic.length > 0
-      ? {
-          average: statistic[0].average.toFixed(1),
-          total: statistic[0].total,
-          star5: statistic[0].star5,
-          star4: statistic[0].star4,
-          star3: statistic[0].star3,
-          star2: statistic[0].star2,
-          star1: statistic[0].star1
-        }
-      : {
-          average: 0,
-          total: 0,
-          star5: 0,
-          star4: 0,
-          star3: 0,
-          star2: 0,
-          star1: 0
-        }
-
+  const analytics = ReviewAnalytics(statistic)
   const totalPages = Math.ceil(total / limit)
+
   return {
     reviews,
     analytics,
@@ -320,12 +95,8 @@ const getReviews = async (req) => {
   }
 }
 
-const getUsers = async (req) => {
-  const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 10
+const GetUsersHelper = async ({ limit, page, search }) => {
   const skip = (page - 1) * limit
-
-  const { search } = req.query
   const filter = {}
   filter.role = 'customer'
 
@@ -360,21 +131,135 @@ const getUsers = async (req) => {
   }
 }
 
-const getUser = async (req) => {
-  const user = await Users.findById(req.user.id).lean()
-  if (!user) throw new NotFound(`User doesn't exist`)
+const FindUserHelper = async ({ reqUser }) => {
+  const user = await Users.findById(reqUser.id).lean()
+  if (!user) throw new NotFound(`USER NOT EXIST`)
 
   return user
 }
 
+const UpdateOrderShippedHelper = async ({ data, file, id }) => {
+  if (!file) throw new BadRequest('IMAGE IS REQUIRED')
+  let uploadImage
+
+  try {
+    const order = await Orders.findById(id)
+    if (!order) throw new NotFound(`ORDER NOT EXIST`)
+    if (order.shipping?.status !== 'processing')
+      throw new BadRequest(`ONLY ORDERS WITH STATUS PROCESSING CAN BE MARKED AS SHIPPED`)
+
+    uploadImage = await cloudinaryUploader(file.buffer, 'deliveries')
+
+    return await Orders.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: {
+          'shipping.status': 'shipped',
+          'shipping.courier': data.courier,
+          'shipping.fee': data.fee,
+          'shipping.trackingNumber': data.trackingNumber,
+          'shipping.shippedAt': data.shippedAt,
+          'shipping.proofImage': {
+            imageURL: uploadImage.secure_url,
+            imagePublicID: uploadImage.public_id
+          }
+        }
+      },
+      { new: true }
+    )
+  } catch (error) {
+    if (uploadImage?.public_id) {
+      await cloudinary.uploader.destroy(uploadImage.public_id)
+    }
+    throw error
+  }
+}
+
+const UpdateOrderShippedInfoHelper = async ({ data, id }) => {
+  const order = await Orders.findById(id)
+  if (!order) throw new NotFound(`ORDER NOT EXIST`)
+
+  if (order.shipping.status !== 'shipped') {
+    throw new BadRequest('SHIPPING INFO CAN ONLY BE EDITED FOR SHIPPED ORDERS')
+  }
+
+  return await Orders.findOneAndUpdate(
+    { _id: id },
+    {
+      $set: {
+        'shipping.courier': data.courier,
+        'shipping.fee': data.fee,
+        'shipping.trackingNumber': data.trackingNumber,
+        'shipping.shippedAt': data.shippedAt
+      }
+    },
+    { new: true }
+  )
+}
+
+const UpdateOrderDeliveredHelper = async ({ data, file, id }) => {
+  if (!file) throw new BadRequest('IMAGE IS REQUIRED')
+  let uploadImage
+
+  try {
+    const order = await Orders.findById(id)
+    if (!order) throw new NotFound(`ORDER NOT EXIST`)
+
+    if (order.shipping?.status !== 'shipped') {
+      throw new BadRequest(`ONLY ORDERS WITH STATUS SHIPPED CAN BE MARKED AS DELIVERED`)
+    }
+
+    uploadImage = await cloudinaryUploader(file.buffer, 'deliveries')
+    const oldPublicID = order.shipping?.proofImage?.imagePublicID
+    const updated = await Orders.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: {
+          'shipping.status': 'delivered',
+          'shipping.deliveredAt': data.deliveredAt,
+          'shipping.proofImage': {
+            imageURL: uploadImage.secure_url,
+            imagePublicID: uploadImage.public_id
+          }
+        }
+      },
+      { new: true }
+    )
+
+    if (updated && oldPublicID) {
+      await cloudinary.uploader.destroy(oldPublicID)
+    }
+
+    return updated
+  } catch (error) {
+    if (uploadImage?.public_id) {
+      await cloudinary.uploader.destroy(uploadImage.public_id)
+    }
+    throw error
+  }
+}
+
+const UpdateReviewStatusHelper = async ({ reviewId }) => {
+  const review = await Reviews.findOneAndUpdate(
+    { _id: reviewId },
+    [{ $set: { deleted: { $not: '$deleted' } } }],
+    { new: true }
+  )
+    .populate('product', 'name')
+    .populate('user', 'name')
+  if (!review) throw new NotFound(`Review doesn't exist`)
+
+  return review
+}
+
 export {
-  getOrder,
-  getOrders,
-  getReviews,
-  getUser,
-  getUsers,
-  updateOrderDelivered,
-  updateOrderShipped,
-  updateOrderShippedInfo,
-  updateReviewStatus
+  FindOrderHelper,
+  GetOrdersHelper,
+  GetReviewsHelper,
+  FindUserHelper,
+  GetUsersHelper,
+  UpdateOrderDeliveredHelper,
+  UpdateOrderShippedHelper,
+  UpdateOrderShippedInfoHelper,
+  UpdateReviewStatusHelper
 }

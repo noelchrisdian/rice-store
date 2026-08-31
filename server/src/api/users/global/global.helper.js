@@ -1,17 +1,18 @@
 import mongoose from 'mongoose'
 
 import { NotFound } from '../../../shared/error/not_found.error.js'
-import { ProductModel as Products } from '../src/api/products/model.js'
-import { ReviewModel as Reviews } from '../src/api/reviews/model.js'
+import { ProductModel as Products } from '../../product/product.model.js'
+import { ReviewAnalytics } from '../admin/admin.utils.js'
+import { ReviewModel as Reviews } from '../../review/review.model.js'
 
-const getProducts = async () => {
+const GetGlobalProductsHelper = async () => {
   return await Products.find()
     .select('name price image description inventories weightPerUnit')
     .populate('inventories', 'remaining')
     .sort({ name: 1 })
 }
 
-const getProduct = async (req) => {
+const FindGlobalProductHelper = async (req) => {
   const { id } = req.params
   const product = await Products.findById(id)
     .select('name price inventories weightPerUnit image description')
@@ -21,7 +22,7 @@ const getProduct = async (req) => {
   return product
 }
 
-const getIndexReviews = async () => {
+const GetGlobalReviewsHelper = async () => {
   return await Reviews.find({ rating: 5, deleted: false })
     .select('user rating comment')
     .sort({ createdAt: -1 })
@@ -30,7 +31,7 @@ const getIndexReviews = async () => {
     .lean()
 }
 
-const getReviews = async (req) => {
+const GetGlobalProductReviewsHelper = async (req) => {
   const { id } = req.params
   const product = await Products.findById(id).lean()
   if (!product) throw new NotFound(`Product doesn't exist`)
@@ -59,26 +60,7 @@ const getReviews = async (req) => {
     ])
   ])
 
-  const analytics =
-    statistic.length > 0
-      ? {
-          average: statistic[0].average.toFixed(1),
-          total: statistic[0].total,
-          star5: statistic[0].star5,
-          star4: statistic[0].star4,
-          star3: statistic[0].star3,
-          star2: statistic[0].star2,
-          star1: statistic[0].star1
-        }
-      : {
-          average: 0,
-          total: 0,
-          star5: 0,
-          star4: 0,
-          star3: 0,
-          star2: 0,
-          star1: 0
-        }
+  const analytics = ReviewAnalytics(statistic)
 
   return {
     reviews,
@@ -86,4 +68,9 @@ const getReviews = async (req) => {
   }
 }
 
-export { getIndexReviews, getProduct, getProducts, getReviews }
+export {
+  FindGlobalProductHelper,
+  GetGlobalProductsHelper,
+  GetGlobalProductReviewsHelper,
+  GetGlobalReviewsHelper
+}

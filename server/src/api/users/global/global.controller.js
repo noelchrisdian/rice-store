@@ -1,40 +1,45 @@
-import { getIndexReviews, getProduct, getProducts, getReviews } from './global.helper.js'
-import { success } from '../../../utils/response.js'
+import {
+  FindGlobalProductHelper,
+  GetGlobalProductsHelper,
+  GetGlobalProductReviewsHelper,
+  GetGlobalReviewsHelper
+} from './global.helper.js'
+import { SendSuccess } from '../../../shared/utils/response.utils.js'
 
-const indexProducts = async (req, res, next) => {
+const GetGlobalProducts = async (req, res, next) => {
   try {
-    const products = await getProducts()
-    success(res, products, 'Products fetched successfully')
+    const products = await GetGlobalProductsHelper()
+    SendSuccess(res, products, 'Products fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const findProduct = async (req, res, next) => {
+const FindGlobalProduct = async (req, res, next) => {
   try {
-    const product = await getProduct(req)
-    success(res, product, `${product.name} fetched successfully`)
+    const product = await FindGlobalProductHelper(req)
+    SendSuccess(res, product, `${product.name} fetched successfully`)
   } catch (error) {
     next(error)
   }
 }
 
-const indexReviews = async (req, res, next) => {
+const GetGlobalReviews = async (req, res, next) => {
   try {
-    const reviews = await getIndexReviews()
-    success(res, reviews, 'Reviews fetched successfully')
+    const reviews = await GetGlobalReviewsHelper()
+    SendSuccess(res, reviews, 'Reviews fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const productReviews = async (req, res, next) => {
+const GetGlobalProductReviews = async (req, res, next) => {
   try {
-    const reviews = await getReviews(req)
-    success(res, reviews, 'Reviews fetched successfully')
+    const reviews = await GetGlobalProductReviewsHelper(req)
+    SendSuccess(res, reviews, 'Reviews fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-export { findProduct, indexProducts, indexReviews, productReviews }
+export { FindGlobalProduct, GetGlobalProducts, GetGlobalProductReviews, GetGlobalReviews }

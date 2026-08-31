@@ -3,7 +3,7 @@ import { OrderModel as Orders } from '../../order/order.model.js'
 import { ProductModel as Products } from '../../product/product.model.js'
 import { UserModel as Users } from '../user.model.js'
 
-const getTodayOrders = async () => {
+const GetTodayOrdersHelper = async () => {
   const start = dayjs().startOf('day').toDate()
   const end = dayjs().endOf('day').toDate()
   const orders = await Orders.aggregate([
@@ -28,7 +28,7 @@ const getTodayOrders = async () => {
   }
 }
 
-const getRecentOrders = async () => {
+const GetRecentOrdersHelper = async () => {
   return await Orders.find()
     .sort({ createdAt: -1 })
     .select('user products totalPrice payment.status shipping.status')
@@ -37,11 +37,11 @@ const getRecentOrders = async () => {
     .lean()
 }
 
-const getRecentProducts = async () => {
+const GetRecentProductsHelper = async () => {
   return await Products.find().sort({ createdAt: -1 }).populate('inventories', 'remaining').limit(3)
 }
 
-const getRecentUsers = async () => {
+const GetRecentUsersHelper = async () => {
   return await Users.find({ role: 'customer' })
     .sort({ createdAt: -1 })
     .select('name phoneNumber avatar')
@@ -49,7 +49,7 @@ const getRecentUsers = async () => {
     .lean()
 }
 
-const getUserStats = async () => {
+const GetUserStatsHelper = async () => {
   const start = dayjs().startOf('month').toDate()
 
   const [total, newThisMonth] = await Promise.all([
@@ -63,4 +63,10 @@ const getUserStats = async () => {
   }
 }
 
-export { getRecentProducts, getRecentOrders, getRecentUsers, getTodayOrders, getUserStats }
+export {
+  GetRecentProductsHelper,
+  GetRecentOrdersHelper,
+  GetRecentUsersHelper,
+  GetTodayOrdersHelper,
+  GetUserStatsHelper
+}

@@ -1,126 +1,148 @@
 import {
-  getOrder,
-  getOrders,
-  getReviews,
-  getUser,
-  getUsers,
-  updateOrderDelivered,
-  updateOrderShipped,
-  updateOrderShippedInfo,
-  updateReviewStatus
+  FindOrderHelper,
+  FindUserHelper,
+  GetOrdersHelper,
+  GetReviewsHelper,
+  GetUsersHelper,
+  UpdateOrderDeliveredHelper,
+  UpdateOrderShippedHelper,
+  UpdateOrderShippedInfoHelper,
+  UpdateReviewStatusHelper
 } from './admin.helper.js'
 import {
-  getRecentOrders,
-  getRecentProducts,
-  getRecentUsers,
-  getTodayOrders,
-  getUserStats
-} from '../../../services/dashboard.js'
-import { success } from '../../../utils/response.js'
+  GetRecentOrdersHelper,
+  GetRecentProductsHelper,
+  GetRecentUsersHelper,
+  GetTodayOrdersHelper,
+  GetUserStatsHelper
+} from './admin.dashboard.helper.js'
+import { IdSchema } from '../../../shared/utils/id_schema.utils.js'
+import { OrderDeliveredSchema, OrderShippedSchema } from './admin.order.schema.js'
+import { SendSuccess } from '../../../shared/utils/response.utils.js'
+import { ValidationInput } from '../../../shared/utils/input_validation.utils.js'
 
-const indexOrders = async (req, res, next) => {
+const GetOrders = async (req, res, next) => {
   try {
-    const result = await getOrders(req)
-    success(res, result, 'Orders fetched successfully')
+    const { limit, page, range, search, status } = req.query
+    const result = await GetOrdersHelper({
+      limit: parseInt(limit) || 10,
+      page: parseInt(page) || 1,
+      range: String(range),
+      search: String(search),
+      status: String(status)
+    })
+    SendSuccess(res, result, 'Orders fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const indexRecentOrders = async (req, res, next) => {
+const GetTodayOrders = async (req, res, next) => {
   try {
-    const orders = await getRecentOrders()
-    success(res, orders, 'Orders fetched successfully')
+    const orders = await GetTodayOrdersHelper()
+    SendSuccess(res, orders, 'Orders fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const indexRecentProducts = async (req, res, next) => {
+const FindOrder = async (req, res, next) => {
   try {
-    const products = await getRecentProducts()
-    success(res, products, 'Products fetched successfully')
+    const { id } = await ValidationInput(IdSchema, req.params)
+    const order = await FindOrderHelper(id)
+    SendSuccess(res, order, 'Order fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const indexRecentUsers = async (req, res, next) => {
+const GetReviews = async (req, res, next) => {
   try {
-    const users = await getRecentUsers()
-    success(res, users, 'Users fetched successfully')
+    const { limit, page } = req.query
+    const { id } = await ValidationInput(IdSchema, req.params)
+    const result = await GetReviewsHelper({
+      id,
+      limit: parseInt(limit) || 10,
+      page: parseInt(page) || 1
+    })
+    SendSuccess(res, result, 'Reviews fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const userStats = async (req, res, next) => {
+const GetUsers = async (req, res, next) => {
   try {
-    const user = await getUserStats()
-    success(res, user, 'User fetched successfully')
+    const { limit, page, search } = req.query
+    const result = await GetUsersHelper({
+      limit: parseInt(limit) || 10,
+      page: parseInt(page) || 1,
+      search: String(search)
+    })
+    SendSuccess(res, result, 'Users fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const indexTodayOrders = async (req, res, next) => {
+const FindUser = async (req, res, next) => {
   try {
-    const orders = await getTodayOrders()
-    success(res, orders, 'Orders fetched successfully')
+    const user = await FindUserHelper({ reqUser: req.user })
+    SendSuccess(res, user, 'User fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const findOrder = async (req, res, next) => {
+const UpdateShipped = async (req, res, next) => {
   try {
-    const order = await getOrder(req)
-    success(res, order, 'Order fetched successfully')
+    const { id } = await ValidationInput(IdSchema, req.params)
+    const data = await ValidationInput(OrderShippedSchema, req.body)
+    const order = await UpdateOrderShippedHelper({
+      data,
+      file: req.file,
+      id
+    })
+    SendSuccess(res, order, 'Order updated successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const updateShipped = async (req, res, next) => {
+const UpdateShippedInfo = async (req, res, next) => {
   try {
-    const order = await updateOrderShipped(req)
-    success(res, order, 'Order updated successfully')
+    const { id } = await ValidationInput(IdSchema, req.params)
+    const data = await ValidationInput(OrderShippedSchema, req.body)
+    const order = await UpdateOrderShippedInfoHelper({
+      data,
+      id
+    })
+    SendSuccess(res, order, 'Order updated successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const updateShippedInfo = async (req, res, next) => {
+const UpdateDelivered = async (req, res, next) => {
   try {
-    const order = await updateOrderShippedInfo(req)
-    success(res, order, 'Order updated successfully')
+    const { id } = await ValidationInput(IdSchema, req.params)
+    const data = await ValidationInput(OrderDeliveredSchema, req.body)
+    const order = await UpdateOrderDeliveredHelper({
+      data,
+      file: req.file,
+      id
+    })
+    SendSuccess(res, order, 'Order updated successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const updateDelivered = async (req, res, next) => {
+const UpdateReviewStatus = async (req, res, next) => {
   try {
-    const order = await updateOrderDelivered(req)
-    success(res, order, 'Order updated successfully')
-  } catch (error) {
-    next(error)
-  }
-}
-
-const indexReviews = async (req, res, next) => {
-  try {
-    const result = await getReviews(req)
-    success(res, result, 'Reviews fetched successfully')
-  } catch (error) {
-    next(error)
-  }
-}
-
-const updateReview = async (req, res, next) => {
-  try {
-    const review = await updateReviewStatus(req)
-    success(
+    const { reviewId } = await ValidationInput(IdSchema, req.params)
+    const review = await UpdateReviewStatusHelper({ reviewId })
+    SendSuccess(
       res,
       review,
       review.deleted
@@ -132,37 +154,55 @@ const updateReview = async (req, res, next) => {
   }
 }
 
-const indexUsers = async (req, res, next) => {
+const GetRecentOrders = async (req, res, next) => {
   try {
-    const result = await getUsers(req)
-    success(res, result, 'Users fetched successfully')
+    const orders = await GetRecentOrdersHelper()
+    SendSuccess(res, orders, 'Orders fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
-const findUser = async (req, res, next) => {
+const GetRecentProducts = async (req, res, next) => {
   try {
-    const user = await getUser(req)
-    success(res, user, 'User fetched successfully')
+    const products = await GetRecentProductsHelper()
+    SendSuccess(res, products, 'Products fetched successfully')
+  } catch (error) {
+    next(error)
+  }
+}
+
+const GetRecentUsers = async (req, res, next) => {
+  try {
+    const users = await GetRecentUsersHelper()
+    SendSuccess(res, users, 'Users fetched successfully')
+  } catch (error) {
+    next(error)
+  }
+}
+
+const GetUserStats = async (req, res, next) => {
+  try {
+    const user = await GetUserStatsHelper()
+    SendSuccess(res, user, 'User fetched successfully')
   } catch (error) {
     next(error)
   }
 }
 
 export {
-  findOrder,
-  findUser,
-  indexOrders,
-  indexReviews,
-  indexRecentOrders,
-  indexRecentProducts,
-  indexRecentUsers,
-  indexTodayOrders,
-  indexUsers,
-  updateDelivered,
-  updateReview,
-  updateShipped,
-  updateShippedInfo,
-  userStats
+  FindOrder,
+  FindUser,
+  GetOrders,
+  GetReviews,
+  GetRecentOrders,
+  GetRecentProducts,
+  GetRecentUsers,
+  GetUsers,
+  GetUserStats,
+  GetTodayOrders,
+  UpdateDelivered,
+  UpdateReviewStatus,
+  UpdateShipped,
+  UpdateShippedInfo
 }

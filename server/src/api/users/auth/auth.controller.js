@@ -9,7 +9,7 @@ import { ValidationInput } from '../../../shared/utils/input_validation.utils.js
 const SignIn = async (req, res, next) => {
   try {
     const data = await ValidationInput(SignInSchema, req.body)
-    const { token, user } = await SignInHelper(data)
+    const { token, user } = await SignInHelper({ data })
 
     res.cookie('token', token, {
       httpOnly: true,

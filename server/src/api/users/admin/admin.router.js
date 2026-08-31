@@ -1,38 +1,38 @@
 import { Router } from 'express'
 
 import {
-  findOrder,
-  findUser,
-  indexOrders,
-  indexRecentOrders,
-  indexRecentProducts,
-  indexRecentUsers,
-  indexTodayOrders,
-  indexUsers,
-  updateDelivered,
-  updateShipped,
-  updateShippedInfo,
-  userStats
+  FindOrder,
+  FindUser,
+  GetOrders,
+  GetRecentOrders,
+  GetRecentProducts,
+  GetRecentUsers,
+  GetTodayOrders,
+  GetUsers,
+  GetUserStats,
+  UpdateDelivered,
+  UpdateShipped,
+  UpdateShippedInfo
 } from './admin.controller.js'
-import { router as productRouter } from '../product/product.router.js'
-import { upload } from '../../../utils/multer.js'
+import { router as ProductRouter } from '../../product/product.router.js'
+import { upload } from '../../../shared/service/multer.service.js'
 
 const router = Router()
 
 router
-  .get('/orders', indexOrders)
-  .get('/orders/:id', findOrder)
-  .get('/orders/:id/invoice', findOrder)
-  .patch('/orders/:id/delivered', upload.single('image'), updateDelivered)
-  .patch('/orders/:id/shipped', upload.single('image'), updateShipped)
-  .patch('/orders/:id/edit-shipping', updateShippedInfo)
-  .get('/recent-orders', indexRecentOrders)
-  .get('/recent-products', indexRecentProducts)
-  .get('/recent-users', indexRecentUsers)
-  .get('/user-stats', userStats)
-  .get('/today-orders', indexTodayOrders)
-  .get('/users', indexUsers)
-  .get('/user', findUser)
-  .use('/products', productRouter)
+  .get('/orders', GetOrders)
+  .get('/orders/:id', FindOrder)
+  .get('/orders/:id/invoice', FindOrder)
+  .patch('/orders/:id/delivered', upload.single('image'), UpdateDelivered)
+  .patch('/orders/:id/shipped', upload.single('image'), UpdateShipped)
+  .patch('/orders/:id/edit-shipping', UpdateShippedInfo)
+  .get('/recent-orders', GetRecentOrders)
+  .get('/recent-products', GetRecentProducts)
+  .get('/recent-users', GetRecentUsers)
+  .get('/user-stats', GetUserStats)
+  .get('/today-orders', GetTodayOrders)
+  .get('/users', GetUsers)
+  .get('/user', FindUser)
+  .use('/products', ProductRouter)
 
 export { router }

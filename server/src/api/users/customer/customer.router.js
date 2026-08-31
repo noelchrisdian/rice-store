@@ -1,11 +1,11 @@
 import { Router } from 'express'
 
-import { findUser } from '../admin/admin.controller.js'
-import { router as cartRouter } from '../../cart/cart.router.js'
-import { router as orderRouter } from '../../order/order.router.js'
+import { FindUser } from '../admin/admin.controller.js'
+import { router as CartRouter } from '../../cart/cart.router.js'
+import { router as OrderRouter } from '../../order/order.router.js'
 
 const router = Router()
 
-router.get('/user', findUser).use('/cart', cartRouter).use('/orders', orderRouter)
+router.get('/user', FindUser).use('/cart', CartRouter).use('/orders', OrderRouter)
 
 export { router }
