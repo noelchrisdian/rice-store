@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-import { DB_URL } from './config.js'
+import { DB_URL } from './config.ts'
 
 const ConnectDB = async () => {
   const connection = mongoose.connection
@@ -14,6 +14,10 @@ const ConnectDB = async () => {
   })
 
   try {
+    if (!DB_URL) {
+      throw new Error('DB_URL is not defined')
+    }
+
     await mongoose.connect(DB_URL)
   } catch (error) {
     console.log(`Database connection error : ${error}`)

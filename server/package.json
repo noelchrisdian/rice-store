@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/app.js"
+    "dev": "tsx watch src/app.js",
+    "typecheck": "tsc --noEmit"
   },
   "author": "noelchrisdian",
   "license": "ISC",
@@ -24,8 +25,13 @@
     "midtrans-client": "^1.4.3",
     "mongoose": "^8.19.1",
     "multer": "^2.0.2",
-    "nodemon": "^3.1.10",
     "socket.io": "^4.8.3",
     "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

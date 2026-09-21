@@ -11,7 +11,6 @@ import { Unauthorized } from '../../../shared/error/unauthorized.error.js'
 import { UserModel as Users } from '../../users/user.model.js'
 
 const SignInHelper = async ({ data }) => {
-  console.log(data)
   const { phoneNumber, password } = data
   if (!phoneNumber || !password) {
     throw new BadRequest('PLEASE PROVIDE PHONE NUMBER AND PASSWORD')

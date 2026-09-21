@@ -26,31 +26,32 @@ const OrderFilterOptions = (range, status, user) => {
     }
   }
 
-  if (!(range && range !== '')) {
-    return
-  }
-  let startDate
-  const endDate = dayjs().endOf('day').toDate()
+  if (range) {
+    let startDate
+    const endDate = dayjs().endOf('day').toDate()
 
-  switch (range) {
-    case 'today':
-      startDate = dayjs().startOf('day').toDate()
-      break
-    case '7d':
-      startDate = dayjs().subtract(7, 'day').startOf('day').toDate()
-      break
-    case '30d':
-      startDate = dayjs().subtract(30, 'day').startOf('day').toDate()
-      break
-    case '90d':
-      startDate = dayjs().subtract(90, 'day').startOf('day').toDate()
-      break
-    default:
-      startDate = null
-      break
+    switch (range) {
+      case 'today':
+        startDate = dayjs().startOf('day').toDate()
+        break
+      case '7d':
+        startDate = dayjs().subtract(7, 'day').startOf('day').toDate()
+        break
+      case '30d':
+        startDate = dayjs().subtract(30, 'day').startOf('day').toDate()
+        break
+      case '90d':
+        startDate = dayjs().subtract(90, 'day').startOf('day').toDate()
+        break
+      default:
+        break
+    }
+
+    if (startDate) {
+      filter.createdAt = { $gte: startDate, $lte: endDate }
+    }
   }
 
-  filter.createdAt = { $gte: startDate, $lte: endDate }
   return filter
 }
 

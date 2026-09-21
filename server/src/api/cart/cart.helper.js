@@ -1,4 +1,4 @@
-import { CartModel as Carts } from './cart.model.js'
+import { CartModel as Carts } from './cart.model.ts'
 import { NotFound } from '../../shared/error/not_found.error.js'
 
 const GetCartHelper = async ({ user }) => {

@@ -1,16 +1,25 @@
-import mongoose, { model, Schema } from 'mongoose'
+import mongoose, { model, Schema, Types } from 'mongoose'
+
+interface CartInterface {
+  user: Types.ObjectId
+  products: {
+    product: Types.ObjectId
+    quantity: number
+    addedAt: Date
+  }[]
+}
 
 const cartSchema = new Schema(
   {
     user: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
     products: [
       {
         product: {
-          type: mongoose.Schema.Types.ObjectId,
+          type: Schema.Types.ObjectId,
           ref: 'Product',
           required: true
         },
@@ -29,6 +38,7 @@ const cartSchema = new Schema(
   { timestamps: true }
 )
 
-const CartModel = model('Cart', cartSchema)
+const CartModel = model<CartInterface>('Cart', cartSchema)
 
+export type { CartInterface }
 export { CartModel }
